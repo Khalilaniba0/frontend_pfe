@@ -1,21 +1,42 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import NavBar from './components/Navbar/NavBar';
-import Fotter from './components/Footer/Fotter';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import "assets/styles/tailwind.css";
+
+import { AuthProvider } from "context/AuthContext";
+import { ROUTES } from "constants/routes";
+import AdminLayout from "layouts/AdminLayout.jsx";
+import LandingPage from "pages/LandingPage.jsx";
+import ProfileForm from "pages/ProfileForm.jsx";
+import Login from "pages/Login.jsx";
+import ForgotPassword from "pages/ForgotPassword.jsx";
+import SignUp from "pages/SignUp.jsx";
+
+const root = createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
-    </NavBar />
-    <App />
-    <Fotter />
-  </React.StrictMode>
-);
+  <AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        {/* Dashboard RH/Admin */}
+        <Route path="/dashboard/*" element={<AdminLayout />} />
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+        {/* Landing entreprise */}
+        <Route path={ROUTES.LANDING} element={<LandingPage />} />
+
+        {/* Formulaire profil */}
+        <Route path={ROUTES.PROFILE_FORM} element={<ProfileForm />} />
+
+        {/* Pages d'authentification */}
+        <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
+        <Route path={ROUTES.SIGNUP} element={<SignUp />} />
+
+        {/* Redirection par défaut vers la landing */}
+        <Route path="/" element={<Navigate to={ROUTES.LANDING} replace />} />
+        <Route path="*" element={<Navigate to={ROUTES.LANDING} replace />} />
+      </Routes>
+    </BrowserRouter>
+  </AuthProvider>
+);
