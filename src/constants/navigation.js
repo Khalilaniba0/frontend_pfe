@@ -23,12 +23,7 @@ export const NAV_ITEMS = [
     icon: "calendar_month",
     roles: ["rh", "admin"],
   },
-  {
-    label: "Candidats",
-    path: "/dashboard/candidates",
-    icon: "group",
-    roles: ["rh", "admin"],
-  },
+ 
   {
     label: "Utilisateurs",
     path: "/dashboard/users",

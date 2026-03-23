@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-export default function UserRow({ user, onEdit, onDelete }) {
+export default function UserRow({ user, onEdit }) {
   const getInitials = function (name) {
     return name
       .split(" ")
@@ -114,16 +114,6 @@ export default function UserRow({ user, onEdit, onDelete }) {
           >
             <span className="material-symbols-outlined text-lg">edit</span>
           </button>
-          <button
-            type="button"
-            onClick={function () {
-              onDelete && onDelete(user.id);
-            }}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-red-50 hover:text-red-500"
-            title="Supprimer"
-          >
-            <span className="material-symbols-outlined text-lg">delete</span>
-          </button>
         </div>
       </td>
     </tr>
@@ -141,5 +131,4 @@ UserRow.propTypes = {
     avatar: PropTypes.string,
   }).isRequired,
   onEdit: PropTypes.func,
-  onDelete: PropTypes.func,
 };

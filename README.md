@@ -962,7 +962,7 @@ const COLORS = {
 - [x] Landing page marketing
 - [x] Pages d'authentification (Login, SignUp, ForgotPassword)
 - [x] Dashboard RH avec statistiques
-- [x] Pipeline recrutement Kanban
+- [x] Pipeline recrutement Kanban avec tri par score IA
 - [x] Pages Dashboard Jobs et Candidates
 - [x] **Page Entretiens avec layout 2 colonnes et 2 onglets**
   - Calendrier (vue mensuelle + briefing + statistiques)
@@ -988,6 +988,66 @@ const COLORS = {
 ### À implémenter
 
 - [ ] Drag & drop Kanban fonctionnel
+
+---
+
+
+## Pipeline de recrutement - Tri par score IA
+
+
+### Fonctionnalité
+
+Le pipeline de recrutement Kanban intègre un système de tri automatique par score IA qui classe les candidats selon leur pertinence pour le poste.
+
+**Comportement :**
+- **Tri décroissant** : Les candidats avec le score le plus élevé apparaissent en premier
+- **Toutes les colonnes** : Le tri s'applique à l'ensemble du pipeline (Candidature, Présélection, Entretien, Test technique, Offre)
+- **Tri automatique** : Appliqué lors du filtrage par poste et à chaque actualisation des données
+
+
+### Implémentation technique
+
+**Fichier :** `src/pages/Recruitment.jsx`
+**Fonction :** `getFilteredPipeline()`
+
+```js
+// Tri par score IA décroissant sur toutes les colonnes
+return data.map(function (column) {
+  var sorted = column.candidates.slice().sort(function (a, b) {
+    return b.score - a.score;  // Tri décroissant
+  });
+  return {
+    title: column.title,
+    color: column.color,
+    candidates: sorted,
+  };
+});
+```
+
+
+### Données de score
+
+Chaque candidat possède une propriété `score` (entier 0-100) qui représente :
+- **Score IA** : Niveau de correspondance calculé entre le profil du candidat et les exigences du poste
+- **Utilisation** : Tri automatique, identification des "top candidats", priorisation des entretiens
+
+**Exemple :**
+```js
+{
+  id: "c1",
+  name: "Sophie Martin",
+  job: "Ingénieure logiciel",
+  score: 91,  // Score IA élevé = priorité haute
+  // ... autres propriétés
+}
+```
+
+
+### Interface utilisateur
+
+- **Tri visible** : Les candidats apparaissent automatiquement triés par score dans chaque colonne
+- **Badge "Top candidat"** : Mis en évidence pour le meilleur score de chaque poste (uniquement en colonne "Candidature")
+- **Cohérence** : Le tri est maintenu lors des déplacements entre colonnes et du filtrage par poste
 
 ---
 

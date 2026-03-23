@@ -2,15 +2,15 @@ import React from "react";
 import PropTypes from "prop-types";
 
 export default function StatCard({
-  statTitle,
-  statValue,
-  statSubtext,
-  statTrend,
-  trendLabel,
-  iconClass,
-  iconBgColor,
-  iconTextColor,
-  variant,
+  statTitle = "Statistique",
+  statValue = "0",
+  statSubtext = "",
+  statTrend = "",
+  trendLabel = "",
+  iconClass = "fas fa-users",
+  iconBgColor = "bg-indigo-50",
+  iconTextColor = "text-indigo-500",
+  variant = "default",
 }) {
   const isHighlight = variant === "highlight";
 
@@ -64,18 +64,6 @@ export default function StatCard({
     </div>
   );
 }
-
-StatCard.defaultProps = {
-  statTitle: "Statistique",
-  statValue: "0",
-  statSubtext: "",
-  statTrend: "",
-  trendLabel: "",
-  iconClass: "fas fa-users",
-  iconBgColor: "bg-indigo-50",
-  iconTextColor: "text-indigo-500",
-  variant: "default",
-};
 
 StatCard.propTypes = {
   statTitle: PropTypes.string,

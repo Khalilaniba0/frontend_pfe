@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import ManageUsersModal from "../ManageUsersModal";
 
 const INITIAL_SESSIONS = [
   {
@@ -33,6 +34,7 @@ export default function SecuriteTab() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [sessions, setSessions] = useState(INITIAL_SESSIONS);
   const [saving, setSaving] = useState(false);
+  const [showManageUsers, setShowManageUsers] = useState(false);
 
   const passwordStrength = useMemo(
     function () {
@@ -404,43 +406,25 @@ export default function SecuriteTab() {
                 les accès.
               </p>
             </div>
-            <a
-              href="/dashboard/users"
-              className="flex items-center gap-1 whitespace-nowrap font-body text-sm font-semibold text-primary no-underline transition-colors hover:text-primary-dark"
+            <button
+              type="button"
+              onClick={function () {
+                setShowManageUsers(true);
+              }}
+              className="flex items-center gap-1 whitespace-nowrap font-body text-sm font-semibold text-primary transition-colors hover:text-primary-dark"
             >
               Gérer les rôles
               <span className="material-symbols-outlined text-base">
                 arrow_forward
               </span>
-            </a>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <div className="flex items-start gap-3">
-            <span className="material-symbols-outlined flex-shrink-0 text-xl text-red-500">
-              warning
-            </span>
-            <div className="flex-1">
-              <h3 className="font-display text-sm font-semibold text-red-600">
-                Zone dangereuse
-              </h3>
-              <p className="mt-1 font-body text-sm text-red-600/80">
-                La suppression du compte est irréversible. Toutes vos données,
-                candidatures et historiques seront définitivement supprimés.
-              </p>
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              className="rounded-xl border border-red-200 bg-white px-5 py-2.5 font-body text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
-            >
-              Supprimer le compte
             </button>
           </div>
         </div>
       </div>
+
+      {showManageUsers && (
+        <ManageUsersModal onClose={function () { setShowManageUsers(false); }} />
+      )}
     </div>
   );
 }

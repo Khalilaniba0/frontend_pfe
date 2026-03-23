@@ -8,7 +8,7 @@ const DEFAULT_SOURCES = [
   { label: "Cooptation", percent: 12, color: "bg-secondary/40" },
 ];
 
-export default function SourceChart({ sources }) {
+export default function SourceChart({ sources = DEFAULT_SOURCES }) {
   const total = sources.reduce(function (sum, s) {
     return sum + s.percent;
   }, 0);
@@ -84,8 +84,4 @@ SourceChart.propTypes = {
       color: PropTypes.string,
     })
   ),
-};
-
-SourceChart.defaultProps = {
-  sources: DEFAULT_SOURCES,
 };

@@ -72,7 +72,6 @@ export default function Users() {
   };
 
   const handleEdit = function (userId) {
-    console.log("Edit user:", userId);
   };
 
   const handleDelete = function (userId) {

@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-export default function UserStatsCard({ icon, label, value, color }) {
+export default function UserStatsCard({ icon, label, value, color = "primary" }) {
   const colorClasses = {
     primary: "bg-primary-light text-primary",
     success: "bg-emerald-50 text-emerald-600",
@@ -34,8 +34,4 @@ UserStatsCard.propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   color: PropTypes.oneOf(["primary", "success", "warning", "secondary"]),
-};
-
-UserStatsCard.defaultProps = {
-  color: "primary",
 };

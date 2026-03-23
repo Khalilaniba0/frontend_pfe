@@ -8,7 +8,6 @@ import ProtectedRoute from "components/common/ProtectedRoute";
 import Dashboard from "pages/Dashboard";
 import Recruitment from "pages/Recruitment";
 import Jobs from "pages/Jobs";
-import Candidates from "pages/Candidates";
 import Interviews from "pages/Interviews";
 import Users from "pages/Users";
 import Settings from "pages/Settings";
@@ -28,7 +27,6 @@ export default function AdminLayout() {
               <Route path="recruitment" element={<Recruitment />} />
               <Route path="jobs" element={<Jobs />} />
               <Route path="interviews" element={<Interviews />} />
-              <Route path="candidates" element={<Candidates />} />
 
               <Route
                 path="users"

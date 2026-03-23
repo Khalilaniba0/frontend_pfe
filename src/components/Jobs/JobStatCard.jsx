@@ -5,11 +5,11 @@ export default function JobStatCard({
   icon,
   label,
   value,
-  badge,
-  badgeLabel,
-  iconBg,
-  iconColor,
-  trend,
+  badge = null,
+  badgeLabel = "",
+  iconBg = "bg-primary-light",
+  iconColor = "text-primary",
+  trend = "neutral",
 }) {
   return (
     <div className="group relative flex h-36 flex-col justify-between overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md">
@@ -66,12 +66,4 @@ JobStatCard.propTypes = {
   iconBg: PropTypes.string,
   iconColor: PropTypes.string,
   trend: PropTypes.oneOf(["up", "down", "neutral"]),
-};
-
-JobStatCard.defaultProps = {
-  badge: null,
-  badgeLabel: "",
-  iconBg: "bg-primary-light",
-  iconColor: "text-primary",
-  trend: "neutral",
 };

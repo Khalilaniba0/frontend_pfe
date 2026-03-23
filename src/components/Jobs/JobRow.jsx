@@ -7,7 +7,7 @@ export default function JobRow({
   department,
   location,
   status,
-  candidates,
+  candidates = { avatars: [], extra: 0 },
   team,
   date,
 }) {
@@ -128,8 +128,4 @@ JobRow.propTypes = {
   }),
   team: PropTypes.string.isRequired,
   date: PropTypes.string.isRequired,
-};
-
-JobRow.defaultProps = {
-  candidates: { avatars: [], extra: 0 },
 };

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import ModalBackdrop from "../common/ModalBackdrop";
 
 const EMPTY_FORM = {
   firstName: "",
@@ -95,6 +96,14 @@ export default function CreateUserModal({ onClose, onSubmit }) {
     }, 600);
   };
 
+  const handleCancel = function () {
+    setForm(EMPTY_FORM);
+    setShowPassword(false);
+    setShowConfirm(false);
+    setErrors({});
+    onClose();
+  };
+
   const inputBase =
     "w-full rounded-xl border bg-white px-4 py-2.5 font-body text-sm text-text-primary placeholder:text-text-muted outline-none transition-all duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20";
 
@@ -106,12 +115,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
     form.confirmPassword.length > 0 && form.password === form.confirmPassword;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
-      onClick={function (e) {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
+    <ModalBackdrop>
       <div className="flex max-h-[90vh] w-full max-w-lg animate-scale-in flex-col rounded-2xl border border-border bg-white shadow-2xl">
         <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
@@ -381,7 +385,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCancel}
               disabled={submitting}
               className="rounded-xl border border-border bg-white px-5 py-2.5 font-body text-sm font-medium text-text-primary transition-colors hover:bg-bg-soft disabled:opacity-50"
             >
@@ -412,7 +416,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
           </div>
         </div>
       </div>
-    </div>
+    </ModalBackdrop>
   );
 }
 

@@ -36,9 +36,9 @@ const SETTINGS_TABS = [
 
 export default function SettingsLayout({ activeTab, onTabChange, children }) {
   return (
-    <div className="bg-white rounded-xl border border-border shadow-sm flex min-h-[600px]">
-      {/* Colonne gauche - Navigation */}
-      <div className="w-64 border-r border-border p-4 flex-shrink-0">
+    <div className="flex items-start gap-6 rounded-xl border border-border bg-white shadow-sm">
+      {/* Colonne gauche - Navigation sticky */}
+      <div className="sticky top-6 w-64 flex-shrink-0 self-start p-4">
         <p className="text-xs font-display font-semibold text-text-muted uppercase tracking-wider mb-4 px-2">
           Paramètres
         </p>
@@ -84,8 +84,8 @@ export default function SettingsLayout({ activeTab, onTabChange, children }) {
         </nav>
       </div>
 
-      {/* Colonne droite - Contenu */}
-      <div className="flex-1 p-8">{children}</div>
+      {/* Colonne droite - Contenu scrollable */}
+      <div className="min-w-0 flex-1 border-l border-border p-8">{children}</div>
     </div>
   );
 }

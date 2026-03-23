@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import JobStatCard from "components/Jobs/JobStatCard";
 import JobsTable from "components/Jobs/JobsTable";
 import SourceChart from "components/Jobs/SourceChart";
 import RecruitmentTimeCard from "components/Jobs/RecruitmentTimeCard";
+import CreateJobModal from "components/Jobs/CreateJobModal";
 
 const STATS = [
   {
@@ -85,8 +86,39 @@ const SOURCES = [
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [jobs, setJobs] = useState(JOBS);
+  const [toast, setToast] = useState(null);
 
-  const filteredJobs = JOBS.filter(function (j) {
+  useEffect(
+    function () {
+      if (toast) {
+        const timer = setTimeout(function () {
+          setToast(null);
+        }, 4000);
+        return function () {
+          clearTimeout(timer);
+        };
+      }
+    },
+    [toast]
+  );
+
+  const handleCreateJob = function (newJob) {
+    setJobs(function (prev) {
+      return [
+        {
+          ...newJob,
+          candidates: { avatars: [], extra: 0 },
+        },
+        ...prev,
+      ];
+    });
+    setShowCreateModal(false);
+    setToast(newJob.title);
+  };
+
+  const filteredJobs = jobs.filter(function (j) {
     return (
       j.title.toLowerCase().includes(search.toLowerCase()) ||
       j.department.toLowerCase().includes(search.toLowerCase())
@@ -118,6 +150,9 @@ export default function Jobs() {
           </button>
           <button
             type="button"
+            onClick={function () {
+              setShowCreateModal(true);
+            }}
             className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg"
           >
             <span className="material-symbols-outlined text-lg">add</span>
@@ -153,6 +188,31 @@ export default function Jobs() {
         <SourceChart sources={SOURCES} />
         <RecruitmentTimeCard days={22} improvement={5} />
       </section>
+
+      {showCreateModal && (
+        <CreateJobModal
+          onClose={function () {
+            setShowCreateModal(false);
+          }}
+          onSubmit={handleCreateJob}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed right-6 top-6 z-[9999] flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 shadow-lg">
+          <span className="material-symbols-outlined text-success">
+            check_circle
+          </span>
+          <div>
+            <p className="font-display text-sm font-semibold text-text-primary">
+              Offre publiée avec succès
+            </p>
+            <p className="text-xs text-text-secondary">
+              "{toast}" a été ajoutée à vos offres actives.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

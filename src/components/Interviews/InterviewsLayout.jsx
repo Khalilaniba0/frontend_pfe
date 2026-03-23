@@ -22,8 +22,9 @@ export default function InterviewsLayout({
   children,
 }) {
   return (
-    <div className="flex min-h-[600px] overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-      <div className="w-64 flex-shrink-0 border-r border-border bg-bg-soft/30 p-4">
+    <div className="flex items-start gap-6 rounded-2xl border border-border bg-white shadow-sm">
+      {/* Colonne gauche - Navigation sticky */}
+      <div className="sticky top-6 w-64 flex-shrink-0 self-start bg-bg-soft/30 p-4">
         <p className="mb-4 px-3 font-body text-[10px] font-semibold uppercase tracking-wider text-text-muted">
           Entretiens
         </p>
@@ -83,7 +84,8 @@ export default function InterviewsLayout({
         </nav>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">{children}</div>
+      {/* Colonne droite - Contenu */}
+      <div className="min-w-0 flex-1 border-l border-border p-6">{children}</div>
     </div>
   );
 }

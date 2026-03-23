@@ -83,7 +83,6 @@ export default function IntegrationsTab() {
         "Êtes-vous sûr de vouloir régénérer votre clé API ? L'ancienne clé ne fonctionnera plus."
       )
     ) {
-      console.log("Regenerating API key...");
     }
   };
 

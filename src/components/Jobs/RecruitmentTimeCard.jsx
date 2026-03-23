@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-export default function RecruitmentTimeCard({ days, improvement }) {
+export default function RecruitmentTimeCard({ days = 22, improvement = 5 }) {
   const progressPercent = Math.min((improvement / days) * 100, 100);
 
   return (
@@ -66,9 +66,4 @@ export default function RecruitmentTimeCard({ days, improvement }) {
 RecruitmentTimeCard.propTypes = {
   days: PropTypes.number,
   improvement: PropTypes.number,
-};
-
-RecruitmentTimeCard.defaultProps = {
-  days: 22,
-  improvement: 5,
 };
