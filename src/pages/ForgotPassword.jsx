@@ -8,96 +8,119 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = function (e) {
     e.preventDefault();
-    console.log("Password reset requested for:", email);
     setSubmitted(true);
   };
 
   return (
     <AuthLayout>
-      <div className="w-full flex flex-col overflow-y-auto">
-        <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex w-full flex-col overflow-y-auto">
+        <div className="flex flex-1 items-center justify-center p-6">
           <div className="w-full max-w-[480px]">
             <div className="flex flex-col gap-8">
-              {/* Hero Header Section */}
               <div className="flex flex-col gap-3">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary/10 text-primary mb-2">
-                  <span className="material-symbols-outlined text-[30px]">lock_reset</span>
+                <div className="mb-2 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary-light text-primary">
+                  <span className="material-symbols-outlined text-3xl">
+                    lock_reset
+                  </span>
                 </div>
-                <h1 className="text-4xl font-black tracking-tight text-slate-900 m-0">
+                <h1 className="m-0 font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
                   Mot de passe oublié ?
                 </h1>
-                <p className="text-slate-500 text-lg m-0">
-                  Pas d'inquiétude, nous vous enverrons des instructions de réinitialisation pour retrouver l'accès à votre tableau de bord RH.
+                <p className="m-0 font-body text-base text-text-secondary">
+                  Pas d'inquiétude, nous vous enverrons des instructions de
+                  réinitialisation pour retrouver l'accès à votre tableau de
+                  bord RH.
                 </p>
               </div>
 
-              {/* Form Container */}
-              <div className="bg-white border border-primary/10 rounded-xl p-8 shadow-sm">
+              <div className="rounded-2xl border border-border bg-white p-6 shadow-sm md:p-8">
                 {submitted ? (
-                  <div className="text-center flex flex-col gap-4">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-green-100 text-green-600 mb-2 mx-auto">
-                      <span className="material-symbols-outlined text-[30px]">mark_email_read</span>
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="mb-2 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                      <span className="material-symbols-outlined text-3xl">
+                        mark_email_read
+                      </span>
                     </div>
-                    <h2 className="text-xl font-bold text-slate-900 m-0">Vérifiez votre boîte de réception</h2>
-                    <p className="text-slate-500 m-0">
-                      Nous avons envoyé les instructions de réinitialisation à <strong>{email}</strong>.
+                    <h2 className="m-0 font-display text-xl font-bold text-text-primary">
+                      Vérifiez votre boîte de réception
+                    </h2>
+                    <p className="m-0 font-body text-sm text-text-secondary">
+                      Nous avons envoyé les instructions de réinitialisation à{" "}
+                      <strong className="text-text-primary">{email}</strong>.
                     </p>
                     <button
-                      onClick={() => setSubmitted(false)}
-                      className="bg-transparent border-none text-primary font-semibold cursor-pointer text-sm"
+                      type="button"
+                      onClick={function () {
+                        setSubmitted(false);
+                      }}
+                      className="cursor-pointer border-none bg-transparent font-body text-sm font-semibold text-primary transition-colors hover:text-primary-dark"
                     >
                       Vous ne l'avez pas reçu ? Réessayez
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-slate-700 text-sm font-semibold" htmlFor="email">
+                  <form
+                    onSubmit={handleSubmit}
+                    className="flex flex-col gap-5"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        className="font-body text-sm font-medium text-text-primary"
+                        htmlFor="email"
+                      >
                         Adresse e-mail professionnelle
                       </label>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
+                        <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-text-muted">
                           mail
                         </span>
                         <input
-                          className="w-full pl-12 pr-4 py-4 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+                          className="h-12 w-full rounded-xl border border-border bg-white pl-12 pr-4 font-body text-sm text-text-primary outline-none transition-all duration-150 placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/20"
                           id="email"
                           placeholder="name@company.com"
                           required
                           type="email"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={function (e) {
+                            setEmail(e.target.value);
+                          }}
                         />
                       </div>
                     </div>
                     <button
-                      className="w-full bg-primary text-slate-900 font-bold py-4 rounded-lg border-none cursor-pointer shadow-[0_8px_12px_-3px_rgba(19,200,236,0.2)] transition-all flex items-center justify-center gap-2 text-sm hover:brightness-105"
+                      className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-none bg-primary font-body text-sm font-semibold text-white shadow-md shadow-primary/25 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg"
                       type="submit"
                     >
                       <span>Envoyer les instructions</span>
-                      <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                      <span className="material-symbols-outlined text-lg">
+                        arrow_forward
+                      </span>
                     </button>
                   </form>
                 )}
 
-                <div className="mt-8 pt-6 border-t border-primary/10">
+                <div className="mt-6 border-t border-border pt-6">
                   <Link
                     to={ROUTES.LOGIN}
-                    className="flex items-center justify-center gap-2 text-slate-600 font-semibold no-underline transition-colors hover:text-slate-900"
+                    className="flex items-center justify-center gap-2 font-body text-sm font-medium text-text-secondary no-underline transition-colors hover:text-text-primary"
                   >
-                    <span className="material-symbols-outlined text-xl">arrow_back</span>
+                    <span className="material-symbols-outlined text-lg">
+                      arrow_back
+                    </span>
                     <span>Retour à la connexion</span>
                   </Link>
                 </div>
               </div>
 
-              {/* Footer Help */}
               <div className="text-center">
-                <p className="text-sm text-slate-500 m-0">
+                <p className="m-0 font-body text-sm text-text-secondary">
                   Besoin d'aide supplémentaire ?{" "}
-                  <a className="text-primary font-medium underline-offset-4" href="#">
+                  <a
+                    className="font-medium text-primary no-underline transition-colors hover:text-primary-dark"
+                    href="#"
+                  >
                     Contacter le support
                   </a>
                 </p>

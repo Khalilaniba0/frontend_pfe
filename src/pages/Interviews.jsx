@@ -4,24 +4,16 @@ import InterviewsLayout from "components/Interviews/InterviewsLayout";
 import InterviewCalendar from "components/Interviews/InterviewCalendar";
 import EntretiensEnLigneTab from "components/Interviews/EntretiensEnLigneTab";
 import CreateInterviewModal from "components/Interviews/CreateInterviewModal";
-import {
-  CALENDAR_EVENTS,
-} from "constants/interviewsData";
+import { CALENDAR_EVENTS } from "constants/interviewsData";
 
-// Composant pour l'onglet Calendrier
 function CalendrierTab() {
   return (
     <div className="w-full">
-      {/* Calendrier */}
-      <div className="col-span-8">
-        <InterviewCalendar
-          events={CALENDAR_EVENTS}
-          currentMonth={8}
-          currentYear={2024}
-        />
-      </div>
-
-      
+      <InterviewCalendar
+        events={CALENDAR_EVENTS}
+        currentMonth={8}
+        currentYear={2024}
+      />
     </div>
   );
 }
@@ -37,76 +29,78 @@ export default function Interviews() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
 
-  const handleCreateInterview = (newInterviewData) => {
-    console.log("Nouvel entretien créé:", newInterviewData);
+  const handleCreateInterview = function (newInterviewData) {
     setLastCreated(newInterviewData.candidat);
     setShowModal(false);
     setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 4000);
+    setTimeout(function () {
+      setShowSuccess(false);
+    }, 4000);
   };
 
   return (
     <>
-      <div>
-        {/* Header de page */}
-        <div className="flex justify-between items-end mb-6">
+      <div className="animate-fade-in">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            {/* Titre */}
-            <h1 className="text-2xl font-display font-semibold text-text-primary">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
               Centre de planification
             </h1>
+            <p className="mt-1 font-body text-sm text-text-secondary">
+              Gérez et planifiez vos entretiens de recrutement
+            </p>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-4">
-            {/* Bouton Programmer un entretien */}
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary font-display font-semibold text-sm text-white hover:bg-primary-dark transition-colors shadow-md"
-            >
-              <span className="material-symbols-outlined text-lg">add</span>
-              Programmer un entretien
-            </button>
-          </div>
-        </div>
+          <button
+            type="button"
+            onClick={function () {
+              setShowModal(true);
+            }}
+            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg"
+          >
+            <span className="material-symbols-outlined text-lg">add</span>
+            Programmer un entretien
+          </button>
+        </header>
 
-        {/* Toast succès */}
         {showSuccess && (
-          <div className="mb-5 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-            <span className="material-symbols-outlined text-success text-xl flex-shrink-0">
+          <div className="mb-5 flex animate-slide-up items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <span className="material-symbols-outlined flex-shrink-0 text-xl text-emerald-600">
               check_circle
             </span>
-            <div>
-              <p className="text-sm font-body font-semibold text-green-800">
+            <div className="flex-1">
+              <p className="font-body text-sm font-semibold text-emerald-800">
                 Entretien programmé avec succès
               </p>
-              <p className="text-xs text-green-700 font-body">
+              <p className="font-body text-xs text-emerald-700">
                 L'entretien avec {lastCreated} a été ajouté au calendrier.
               </p>
             </div>
             <button
-              onClick={() => setShowSuccess(false)}
-              className="ml-auto text-green-500 hover:text-green-700 transition-colors"
+              type="button"
+              onClick={function () {
+                setShowSuccess(false);
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-emerald-500 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
             >
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
         )}
 
-        {/* Layout à deux colonnes avec navigation par onglets */}
         <InterviewsLayout activeTab={activeTab} onTabChange={setActiveTab}>
           {TABS[activeTab]}
         </InterviewsLayout>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <CreateInterviewModal
-          onClose={() => setShowModal(false)}
+          onClose={function () {
+            setShowModal(false);
+          }}
           onSubmit={handleCreateInterview}
         />
       )}
     </>
   );
 }
-

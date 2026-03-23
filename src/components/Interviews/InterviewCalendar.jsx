@@ -1,35 +1,43 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 
-const DAYS_OF_WEEK = ["DIM", "LUN", "MAR", "MER", "JEU", "VEN", "SAM"];
+const DAYS_OF_WEEK = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 const MONTHS = [
   "Janvier",
-  "Fevrier",
+  "Février",
   "Mars",
   "Avril",
   "Mai",
   "Juin",
   "Juillet",
-  "Aout",
+  "Août",
   "Septembre",
   "Octobre",
   "Novembre",
-  "Decembre",
+  "Décembre",
 ];
 
-export default function InterviewCalendar({ events, currentMonth, currentYear }) {
+export default function InterviewCalendar({
+  events,
+  currentMonth,
+  currentYear,
+}) {
   const [month, setMonth] = useState(currentMonth);
   const [year, setYear] = useState(currentYear);
-  const [viewMode, setViewMode] = useState("Mois");
 
-  const getDaysInMonth = (m, y) => new Date(y, m + 1, 0).getDate();
-  const getFirstDayOfMonth = (m, y) => new Date(y, m, 1).getDay();
+  const getDaysInMonth = function (m, y) {
+    return new Date(y, m + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = function (m, y) {
+    return new Date(y, m, 1).getDay();
+  };
 
   const daysInMonth = getDaysInMonth(month, year);
   const firstDay = getFirstDayOfMonth(month, year);
   const daysInPrevMonth = getDaysInMonth(month - 1, year);
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = function () {
     if (month === 0) {
       setMonth(11);
       setYear(year - 1);
@@ -38,7 +46,7 @@ export default function InterviewCalendar({ events, currentMonth, currentYear })
     }
   };
 
-  const handleNextMonth = () => {
+  const handleNextMonth = function () {
     if (month === 11) {
       setMonth(0);
       setYear(year + 1);
@@ -47,26 +55,28 @@ export default function InterviewCalendar({ events, currentMonth, currentYear })
     }
   };
 
-  const getEventForDay = (day) => events.find((e) => e.day === day);
+  const getEventForDay = function (day) {
+    return events.find(function (e) {
+      return e.day === day;
+    });
+  };
 
-  const renderCalendarDays = () => {
+  const renderCalendarDays = function () {
     const cells = [];
 
-    // Jours du mois precedent
     for (let i = firstDay - 1; i >= 0; i--) {
       cells.push(
         <div
-          key={`prev-${i}`}
-          className="min-h-[110px] p-2 border-t border-border opacity-40"
+          key={"prev-" + i}
+          className="min-h-[100px] border-t border-border p-2 opacity-30"
         >
-          <span className="text-sm font-body text-text-secondary">
+          <span className="font-body text-sm text-text-muted">
             {daysInPrevMonth - i}
           </span>
         </div>
       );
     }
 
-    // Jours du mois courant
     for (let day = 1; day <= daysInMonth; day++) {
       const event = getEventForDay(day);
       const isToday = event?.isToday;
@@ -74,32 +84,42 @@ export default function InterviewCalendar({ events, currentMonth, currentYear })
       cells.push(
         <div
           key={day}
-          className={`min-h-[110px] p-2 border-t border-border ${
-            isToday ? "bg-primary/5" : ""
-          }`}
+          className={
+            "min-h-[100px] border-t border-border p-2 transition-colors duration-150 hover:bg-bg-soft/50 " +
+            (isToday ? "bg-primary/5" : "")
+          }
         >
           <span
-            className={`text-sm font-body ${
-              isToday
-                ? "text-primary font-extrabold"
-                : "text-text-primary font-medium"
-            }`}
+            className={
+              "inline-flex h-7 w-7 items-center justify-center rounded-lg font-body text-sm " +
+              (isToday
+                ? "bg-primary font-bold text-white"
+                : "font-medium text-text-primary")
+            }
           >
             {day}
           </span>
 
           {event && (
             <div
-              className={`mt-2 p-2 rounded-lg text-xs font-body ${
-                event.isToday
-                  ? "bg-primary text-white shadow-md"
+              className={
+                "group mt-2 cursor-pointer rounded-lg p-2 transition-all duration-150 hover:scale-[1.02] " +
+                (event.isToday
+                  ? "bg-primary text-white shadow-md shadow-primary/20"
                   : event.color === "primary"
-                  ? "bg-primary/10 border-l-4 border-primary text-primary"
-                  : "bg-secondary/10 border-l-4 border-secondary text-secondary"
-              }`}
+                    ? "border-l-2 border-primary bg-primary-light text-primary"
+                    : "border-l-2 border-secondary bg-secondary-light text-secondary")
+              }
             >
-              <p className="font-semibold truncate">{event.title}</p>
-              <p className={event.isToday ? "opacity-80" : "opacity-70"}>
+              <p className="truncate font-body text-xs font-semibold">
+                {event.title}
+              </p>
+              <p
+                className={
+                  "font-body text-[10px] " +
+                  (event.isToday ? "opacity-80" : "opacity-70")
+                }
+              >
                 {event.time}
               </p>
             </div>
@@ -108,15 +128,14 @@ export default function InterviewCalendar({ events, currentMonth, currentYear })
       );
     }
 
-    // Jours du mois suivant pour completer la grille
     const remainingCells = 42 - cells.length;
     for (let i = 1; i <= remainingCells; i++) {
       cells.push(
         <div
-          key={`next-${i}`}
-          className="min-h-[110px] p-2 border-t border-border opacity-40"
+          key={"next-" + i}
+          className="min-h-[100px] border-t border-border p-2 opacity-30"
         >
-          <span className="text-sm font-body text-text-secondary">{i}</span>
+          <span className="font-body text-sm text-text-muted">{i}</span>
         </div>
       );
     }
@@ -125,49 +144,52 @@ export default function InterviewCalendar({ events, currentMonth, currentYear })
   };
 
   return (
-    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-border">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        {/* Navigation mois */}
-        <div className="flex items-center gap-4">
+    <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handlePrevMonth}
-            className="p-2 rounded-xl hover:bg-bg-soft transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-bg-soft hover:text-text-primary"
           >
-            <span className="material-symbols-outlined text-text-secondary">
+            <span className="material-symbols-outlined text-xl">
               chevron_left
             </span>
           </button>
-          <h2 className="font-display text-xl font-bold text-text-primary min-w-[180px] text-center">
+          <h2 className="min-w-[180px] text-center font-display text-xl font-bold tracking-tight text-text-primary">
             {MONTHS[month]} {year}
           </h2>
           <button
+            type="button"
             onClick={handleNextMonth}
-            className="p-2 rounded-xl hover:bg-bg-soft transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-bg-soft hover:text-text-primary"
           >
-            <span className="material-symbols-outlined text-text-secondary">
+            <span className="material-symbols-outlined text-xl">
               chevron_right
             </span>
           </button>
         </div>
 
-        {/* Toggle vue */}
-        
+        <button
+          type="button"
+          className="flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 font-body text-xs font-medium text-text-secondary transition-colors hover:border-primary hover:text-primary"
+        >
+          <span className="material-symbols-outlined text-base">today</span>
+          Aujourd'hui
+        </button>
       </div>
 
-      {/* Grille calendrier */}
-      <div className="grid grid-cols-7">
-        {/* En-tetes jours */}
-        {DAYS_OF_WEEK.map((day) => (
-          <div
-            key={day}
-            className="py-3 text-center text-xs font-body font-semibold text-text-secondary uppercase tracking-wider"
-          >
-            {day}
-          </div>
-        ))}
-
-        {/* Cellules calendrier */}
+      <div className="grid grid-cols-7 overflow-hidden rounded-xl border border-border">
+        {DAYS_OF_WEEK.map(function (day) {
+          return (
+            <div
+              key={day}
+              className="bg-bg-soft py-3 text-center font-body text-xs font-semibold uppercase tracking-wider text-text-muted"
+            >
+              {day}
+            </div>
+          );
+        })}
         {renderCalendarDays()}
       </div>
     </div>

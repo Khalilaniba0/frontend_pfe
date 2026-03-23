@@ -3,140 +3,144 @@ import CandidateFilters from "components/Candidates/CandidateFilters";
 import CandidateTable from "components/Candidates/CandidateTable";
 import PipelineStatCard from "components/Candidates/PipelineStatCard";
 
-// ── Données fictives (à remplacer par un appel API) ──────────────────────────
 const ALL_CANDIDATES = [
   {
-    name: "Alexia Chambers",
-    email: "alexia.ch@example.com",
+    name: "Amira Benali",
+    email: "amira.b@example.com",
     avatar: null,
     role: "Senior UX Designer",
     score: 92,
     status: "Entretien",
-    appliedDate: "Oct 12, 2023",
+    appliedDate: "12 Oct 2023",
   },
   {
-    name: "Marcus Thorne",
-    email: "m.thorne@example.com",
+    name: "Lucas Ferreira",
+    email: "l.ferreira@example.com",
     avatar: null,
     role: "Software Engineer",
     score: 88,
     status: "Présélection",
-    appliedDate: "Oct 14, 2023",
+    appliedDate: "14 Oct 2023",
   },
   {
-    name: "Julianne Vogt",
-    email: "j.vogt@talent.ai",
+    name: "Sophie Durand",
+    email: "s.durand@talent.ai",
     avatar: null,
     role: "Senior UX Designer",
     score: 74,
     status: "Liste d'attente",
-    appliedDate: "Oct 15, 2023",
+    appliedDate: "15 Oct 2023",
   },
   {
-    name: "Leo Richards",
-    email: "leo.r@devspace.io",
+    name: "Youssef Khoury",
+    email: "y.khoury@devspace.io",
     avatar: null,
     role: "Software Engineer",
     score: 95,
     status: "Recruté",
-    appliedDate: "Oct 10, 2023",
+    appliedDate: "10 Oct 2023",
   },
 ];
 
 const PIPELINE_STATS = [
   {
-    title: "Pipeline Velocity",
+    title: "Vélocité du pipeline",
     value: "4.2",
-    unit: "Days to screening",
-    trend: "12% slower than last month",
+    unit: "jours de présélection",
+    trend: "+12% vs mois dernier",
     trendIcon: "trending_up",
-    trendColor: "text-red-500",
+    trendColor: "text-amber-600",
+    iconBg: "bg-amber-50",
   },
   {
-    title: "Top Sourcing Channel",
+    title: "Canal principal",
     value: "LinkedIn",
     unit: null,
-    trend: "64% of High-Score candidates",
+    trend: "64% des meilleurs profils",
     trendIcon: "verified",
-    trendColor: "text-indigo-600",
+    trendColor: "text-primary",
+    iconBg: "bg-primary-light",
   },
   {
-    title: "Talent Availability",
+    title: "Disponibilité talents",
     value: "82%",
     unit: null,
-    trend: "In-market pool is growing",
-    trendIcon: "info",
-    trendColor: "text-text-secondary",
+    trend: "Vivier en croissance",
+    trendIcon: "trending_up",
+    trendColor: "text-emerald-600",
+    iconBg: "bg-emerald-50",
   },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default function Candidates() {
-  const [position, setPosition]       = useState("");
+  const [position, setPosition] = useState("");
   const [scoreFilter, setScoreFilter] = useState("");
   const [activeStatus, setActiveStatus] = useState("Tous");
 
-  // Filtrage côté client
-  const filtered = useMemo(() => {
-    return ALL_CANDIDATES.filter((c) => {
-      const matchPos    = !position || c.role === position;
-      const matchStatus = activeStatus === "Tous" || c.status === activeStatus;
-      const matchScore  =
-        !scoreFilter ||
-        (scoreFilter === "80" && c.score > 80) ||
-        (scoreFilter === "90" && c.score > 90) ||
-        (scoreFilter === "top5"); // simplifié — à gérer côté API
-      return matchPos && matchStatus && matchScore;
-    });
-  }, [position, scoreFilter, activeStatus]);
+  const filtered = useMemo(
+    function () {
+      return ALL_CANDIDATES.filter(function (c) {
+        const matchPos = !position || c.role === position;
+        const matchStatus =
+          activeStatus === "Tous" || c.status === activeStatus;
+        const matchScore =
+          !scoreFilter ||
+          (scoreFilter === "80" && c.score > 80) ||
+          (scoreFilter === "90" && c.score > 90) ||
+          scoreFilter === "top5";
+        return matchPos && matchStatus && matchScore;
+      });
+    },
+    [position, scoreFilter, activeStatus]
+  );
 
-  const handleClearAll = () => {
+  const handleClearAll = function () {
     setPosition("");
     setScoreFilter("");
     setActiveStatus("Tous");
   };
 
   return (
-    <div className="space-y-6">
-
-        {/* ── En-tête ── */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-          <div>
-            <h1 className="text-2xl font-display font-semibold text-text-primary">
-              Candidatures
-            </h1>
-            <p className="text-sm text-text-secondary mt-1">
-              Gérez et évaluez votre pipeline de talents.
-            </p>
-          </div>
-          <button className="flex items-center gap-2 bg-white border border-border text-text-primary px-4 py-2 rounded-xl font-body text-sm font-medium hover:bg-gray-50 transition-colors">
-            <span className="material-symbols-outlined text-sm">download</span>
-            Exporter
-          </button>
+    <div className="animate-fade-in space-y-6">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
+            Candidatures
+          </h1>
+          <p className="mt-1 font-body text-sm text-text-secondary">
+            Gérez et évaluez votre pipeline de{" "}
+            <span className="font-semibold tabular-nums text-primary">248</span>{" "}
+            talents
+          </p>
         </div>
+        <button
+          type="button"
+          className="flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 font-body text-sm font-medium text-text-primary shadow-sm transition-all duration-150 hover:border-primary/30 hover:shadow-md"
+        >
+          <span className="material-symbols-outlined text-lg text-text-muted">
+            download
+          </span>
+          Exporter
+        </button>
+      </header>
 
-        {/* ── Filtres ── */}
-        <CandidateFilters
-          position={position}
-          onPositionChange={setPosition}
-          scoreFilter={scoreFilter}
-          onScoreChange={setScoreFilter}
-          activeStatus={activeStatus}
-          onStatusChange={setActiveStatus}
-          onClearAll={handleClearAll}
-        />
+      <CandidateFilters
+        position={position}
+        onPositionChange={setPosition}
+        scoreFilter={scoreFilter}
+        onScoreChange={setScoreFilter}
+        activeStatus={activeStatus}
+        onStatusChange={setActiveStatus}
+        onClearAll={handleClearAll}
+      />
 
-        {/* ── Tableau ── */}
-        <CandidateTable candidates={filtered} total={248} />
+      <CandidateTable candidates={filtered} total={248} />
 
-        {/* ── Bento Stats ── */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PIPELINE_STATS.map((stat) => (
-            <PipelineStatCard key={stat.title} {...stat} />
-          ))}
-        </section>
-
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {PIPELINE_STATS.map(function (stat) {
+          return <PipelineStatCard key={stat.title} {...stat} />;
+        })}
+      </section>
     </div>
   );
 }

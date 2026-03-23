@@ -1,268 +1,284 @@
-// src/components/Settings/tabs/IntegrationsTab.jsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-// Integration data
 const INTEGRATIONS_DATA = [
   {
-    id: 'google-calendar',
-    name: 'Google Calendar',
-    description: 'Synchronisez vos entretiens avec Google Calendar.',
-    icon: 'calendar_month',
-    connected: true
+    id: "google-calendar",
+    name: "Google Calendar",
+    description: "Synchronisez vos entretiens avec Google Calendar.",
+    icon: "calendar_month",
+    color: "bg-red-50 text-red-500",
+    connected: true,
   },
   {
-    id: 'linkedin',
-    name: 'LinkedIn Recruiter',
-    description: 'Importez des profils directement depuis LinkedIn.',
-    icon: 'person_search',
+    id: "linkedin",
+    name: "LinkedIn Recruiter",
+    description: "Importez des profils directement depuis LinkedIn.",
+    icon: "person_search",
+    color: "bg-blue-50 text-blue-600",
     connected: false,
-    note: 'Nécessite une licence Enterprise'
+    note: "Nécessite une licence Enterprise",
   },
   {
-    id: 'slack',
-    name: 'Slack',
-    description: 'Recevez des notifications instantanées pour les nouveaux candidats.',
-    icon: 'forum',
-    connected: false
+    id: "slack",
+    name: "Slack",
+    description: "Recevez des notifications instantanées pour les nouveaux candidats.",
+    icon: "forum",
+    color: "bg-purple-50 text-purple-500",
+    connected: false,
   },
   {
-    id: 'teams',
-    name: 'Microsoft Teams',
-    description: 'Générez des liens de réunion Teams pour vos entretiens.',
-    icon: 'video_chat',
-    connected: false
+    id: "teams",
+    name: "Microsoft Teams",
+    description: "Générez des liens de réunion Teams pour vos entretiens.",
+    icon: "video_chat",
+    color: "bg-indigo-50 text-indigo-500",
+    connected: false,
   },
   {
-    id: 'indeed',
-    name: 'Indeed',
-    description: 'Publiez vos offres en un clic et suivez les retours.',
-    icon: 'work',
-    connected: false
+    id: "indeed",
+    name: "Indeed",
+    description: "Publiez vos offres en un clic et suivez les retours.",
+    icon: "work",
+    color: "bg-sky-50 text-sky-500",
+    connected: false,
   },
   {
-    id: 'smtp',
-    name: 'SMTP Custom',
-    description: 'Envoyez depuis votre propre domaine email.',
-    icon: 'alternate_email',
-    connected: false
-  }
+    id: "smtp",
+    name: "SMTP Custom",
+    description: "Envoyez depuis votre propre domaine email.",
+    icon: "alternate_email",
+    color: "bg-emerald-50 text-emerald-500",
+    connected: false,
+  },
 ];
 
 export default function IntegrationsTab() {
   const [integrations, setIntegrations] = useState(INTEGRATIONS_DATA);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState("");
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
 
-  const toggleIntegration = (id) => {
-    setIntegrations(prev =>
-      prev.map(integration =>
-        integration.id === id
-          ? { ...integration, connected: !integration.connected }
-          : integration
-      )
-    );
+  const toggleIntegration = function (id) {
+    setIntegrations(function (prev) {
+      return prev.map(function (integration) {
+        if (integration.id === id) {
+          return { ...integration, connected: !integration.connected };
+        }
+        return integration;
+      });
+    });
   };
 
-  const handleCopyApiKey = () => {
-    navigator.clipboard.writeText('sk-tal-••••••••••••');
+  const handleCopyApiKey = function () {
+    navigator.clipboard.writeText("sk-tal-xxxxxxxxxxxx");
     setApiKeyCopied(true);
-    setTimeout(() => setApiKeyCopied(false), 2000);
+    setTimeout(function () {
+      setApiKeyCopied(false);
+    }, 2000);
   };
 
-  const handleRegenerateApiKey = () => {
-    if (window.confirm('Êtes-vous sûr de vouloir régénérer votre clé API ? L\'ancienne clé ne fonctionnera plus.')) {
-      console.log('Regenerating API key...');
+  const handleRegenerateApiKey = function () {
+    if (
+      window.confirm(
+        "Êtes-vous sûr de vouloir régénérer votre clé API ? L'ancienne clé ne fonctionnera plus."
+      )
+    ) {
+      console.log("Regenerating API key...");
     }
   };
 
-  const handleTestWebhook = () => {
+  const handleTestWebhook = function () {
     if (!webhookUrl) {
-      alert('Veuillez entrer une URL de webhook');
+      alert("Veuillez entrer une URL de webhook");
       return;
     }
-    console.log('Testing webhook:', webhookUrl);
-    alert('Test du webhook envoyé !');
+    alert("Test du webhook envoyé !");
   };
+
+  const inputClasses =
+    "w-full rounded-xl border border-border bg-white px-4 py-2.5 font-body text-sm text-text-primary placeholder:text-text-muted outline-none transition-all duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20";
 
   return (
     <div>
-      {/* Header */}
-      <h2 className="text-lg font-display font-semibold text-text-primary mb-1">
-        Intégrations & Connexions
-      </h2>
-      <p className="text-sm text-text-secondary mb-6">
-        Connectez Talentia à vos outils existants pour automatiser votre flux de travail.
-      </p>
+      <header className="mb-6">
+        <h2 className="font-display text-lg font-semibold text-text-primary">
+          Intégrations & Connexions
+        </h2>
+        <p className="mt-1 font-body text-sm text-text-secondary">
+          Connectez Talentia à vos outils existants pour automatiser votre flux
+          de travail.
+        </p>
+      </header>
 
-      {/* Integrations grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        {integrations.map((integration) => (
-          <div
-            key={integration.id}
-            className="bg-white rounded-2xl border border-border p-5 hover:border-primary/40 hover:shadow-sm transition-all"
-          >
-            {/* Top row: icon + badge */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-bg-soft flex items-center justify-center">
-                <span className="material-symbols-outlined text-2xl text-text-secondary">
-                  {integration.icon}
+      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {integrations.map(function (integration) {
+          return (
+            <div
+              key={integration.id}
+              className="group rounded-2xl border border-border bg-white p-5 shadow-sm transition-all duration-150 hover:border-primary/30 hover:shadow-md"
+            >
+              <div className="mb-4 flex items-start justify-between">
+                <div
+                  className={
+                    "flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-150 group-hover:scale-105 " +
+                    integration.color
+                  }
+                >
+                  <span className="material-symbols-outlined text-2xl">
+                    {integration.icon}
+                  </span>
+                </div>
+                <span
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-body text-xs font-medium " +
+                    (integration.connected
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-bg-soft text-text-muted")
+                  }
+                >
+                  {integration.connected && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  )}
+                  {integration.connected ? "Connecté" : "Non connecté"}
                 </span>
               </div>
-              <span
-                className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                  integration.connected
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-bg-soft text-text-muted'
-                }`}
-              >
-                {integration.connected ? 'Connecté' : 'Non connecté'}
-              </span>
-            </div>
 
-            {/* Name */}
-            <h3 className="text-sm font-display font-semibold text-text-primary mt-3">
-              {integration.name}
-            </h3>
-
-            {/* Description */}
-            <p className="text-xs text-text-muted mt-1 mb-4">
-              {integration.description}
-            </p>
-
-            {/* Optional note */}
-            {integration.note && (
-              <p className="text-xs text-text-muted italic mb-4">
-                {integration.note}
+              <h3 className="font-display text-sm font-semibold text-text-primary">
+                {integration.name}
+              </h3>
+              <p className="mb-4 mt-1 font-body text-xs text-text-muted">
+                {integration.description}
               </p>
-            )}
 
-            {/* Action button */}
-            <div className="mt-auto">
-              {integration.connected ? (
-                <button
-                  onClick={() => toggleIntegration(integration.id)}
-                  className="w-full px-5 py-2.5 rounded-xl border border-primary bg-white font-body font-medium text-sm text-primary hover:bg-primary/5 transition-colors"
-                >
-                  Configurer
-                </button>
-              ) : (
-                <button
-                  onClick={() => toggleIntegration(integration.id)}
-                  className="w-full px-5 py-2.5 rounded-xl bg-primary font-display font-semibold text-sm text-white hover:bg-primary-dark transition-colors shadow-md"
-                >
-                  Connecter
-                </button>
+              {integration.note && (
+                <p className="mb-4 flex items-center gap-1 font-body text-xs italic text-text-muted">
+                  <span className="material-symbols-outlined text-xs">
+                    info
+                  </span>
+                  {integration.note}
+                </p>
               )}
+
+              <button
+                type="button"
+                onClick={function () {
+                  toggleIntegration(integration.id);
+                }}
+                className={
+                  "w-full rounded-xl px-5 py-2.5 font-body text-sm font-medium transition-all duration-150 " +
+                  (integration.connected
+                    ? "border border-primary bg-white text-primary hover:bg-primary-light"
+                    : "bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary-dark hover:shadow-lg")
+                }
+              >
+                {integration.connected ? "Configurer" : "Connecter"}
+              </button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Divider with label */}
-      <div className="relative border-t border-border my-8">
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg-page px-3 text-xs text-text-muted font-medium">
+      <div className="relative my-8 border-t border-border">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg-page px-3 font-body text-xs font-medium text-text-muted">
           API & Webhooks
         </span>
       </div>
 
-      {/* API & Webhooks section */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left: API Key */}
+      <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <div className="space-y-4">
-            <label className="block text-sm font-body font-medium text-text-primary">
+            <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
               Clé API active
             </label>
 
-            {/* API Key input with buttons */}
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
                 <input
-                  type={showApiKey ? 'text' : 'password'}
-                  value="sk-tal-••••••••••••"
+                  type={showApiKey ? "text" : "password"}
+                  value="sk-tal-xxxxxxxxxxxx"
                   readOnly
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-white font-mono text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors pr-10"
+                  className={inputClasses + " pr-10 font-mono"}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                  onClick={function () {
+                    setShowApiKey(!showApiKey);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text-secondary"
                 >
                   <span className="material-symbols-outlined text-lg">
-                    {showApiKey ? 'visibility_off' : 'visibility'}
+                    {showApiKey ? "visibility_off" : "visibility"}
                   </span>
                 </button>
               </div>
 
-              {/* Copy button */}
               <button
                 type="button"
                 onClick={handleCopyApiKey}
-                title={apiKeyCopied ? 'Copié !' : 'Copier'}
-                className="p-2.5 border border-border rounded-xl bg-white hover:bg-bg-soft transition-colors"
+                title={apiKeyCopied ? "Copié !" : "Copier"}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white transition-colors hover:bg-bg-soft"
               >
-                <span className="material-symbols-outlined text-text-secondary">
-                  {apiKeyCopied ? 'check' : 'content_copy'}
+                <span className="material-symbols-outlined text-lg text-text-secondary">
+                  {apiKeyCopied ? "check" : "content_copy"}
                 </span>
               </button>
 
-              {/* Regenerate button */}
               <button
                 type="button"
                 onClick={handleRegenerateApiKey}
                 title="Régénérer"
-                className="p-2.5 border border-border rounded-xl bg-white hover:border-red-200 hover:text-red-500 transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white transition-colors hover:border-red-200 hover:bg-red-50"
               >
-                <span className="material-symbols-outlined text-text-secondary hover:text-red-500">
+                <span className="material-symbols-outlined text-lg text-text-secondary hover:text-red-500">
                   refresh
                 </span>
               </button>
             </div>
 
-            {/* Helper text */}
-            <p className="text-xs text-text-muted">
+            <p className="flex items-center gap-1.5 font-body text-xs text-text-muted">
+              <span className="material-symbols-outlined text-sm">
+                schedule
+              </span>
               Dernière utilisation il y a 2 heures
             </p>
           </div>
 
-          {/* Right: Webhook */}
           <div className="space-y-4">
-            <label className="block text-sm font-body font-medium text-text-primary">
+            <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
               URL du Webhook
             </label>
 
-            {/* Webhook input */}
             <input
               type="url"
               value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
+              onChange={function (e) {
+                setWebhookUrl(e.target.value);
+              }}
               placeholder="https://votre-domaine.com/webhook"
-              className="w-full px-4 py-2.5 rounded-xl border border-border bg-white font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+              className={inputClasses}
             />
 
-            {/* Test button */}
             <button
               type="button"
               onClick={handleTestWebhook}
-              className="px-5 py-2.5 rounded-xl border border-border bg-white font-body font-medium text-sm text-text-primary hover:bg-bg-soft transition-colors"
+              className="rounded-xl border border-border bg-white px-5 py-2.5 font-body text-sm font-medium text-text-primary transition-colors hover:bg-bg-soft"
             >
               Tester le webhook
             </button>
 
-            {/* Status row */}
             <div className="flex items-center gap-4 pt-2">
-              <span className="flex items-center gap-2 text-xs text-text-muted">
-                <span className="w-2 h-2 rounded-full bg-success"></span>
+              <span className="flex items-center gap-2 font-body text-xs text-text-muted">
+                <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                 12 événements actifs
               </span>
               <a
-                href="https://docs.example.com/api"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-medium text-primary hover:underline"
+                href="#"
+                className="font-body text-xs font-medium text-primary no-underline transition-colors hover:text-primary-dark"
               >
-                Documentation API →
+                Documentation API
+                <span className="material-symbols-outlined ml-0.5 align-middle text-xs">
+                  arrow_forward
+                </span>
               </a>
             </div>
           </div>

@@ -9,77 +9,140 @@ export default function JobsTable({ jobs, total }) {
   const totalPages = Math.ceil(total / JOBS_PER_PAGE);
 
   return (
-    <section className="bg-gray-50 rounded-2xl overflow-hidden border border-border">
-      {/* En-tête du tableau */}
-      <div className="px-6 py-5 flex justify-between items-center bg-gray-50 border-b border-border">
-        <h3 className="font-display text-lg font-semibold text-text-primary">Postes Ouverts</h3>
-        <div className="flex space-x-1">
-          <button className="text-text-secondary hover:bg-gray-200 p-2 rounded-lg transition-colors">
-            <span className="material-symbols-outlined text-xl">filter_list</span>
+    <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-border bg-bg-soft/50 px-6 py-4">
+        <div className="flex items-center gap-3">
+          <h3 className="font-display text-lg font-semibold text-text-primary">
+            Postes Ouverts
+          </h3>
+          <span className="flex h-6 items-center rounded-full bg-primary/10 px-2.5 font-body text-xs font-semibold tabular-nums text-primary">
+            {total}
+          </span>
+        </div>
+        <div className="flex gap-1">
+          <button
+            type="button"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-white hover:text-text-primary hover:shadow-sm"
+          >
+            <span className="material-symbols-outlined text-xl">
+              filter_list
+            </span>
           </button>
-          <button className="text-text-secondary hover:bg-gray-200 p-2 rounded-lg transition-colors">
+          <button
+            type="button"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-white hover:text-text-primary hover:shadow-sm"
+          >
             <span className="material-symbols-outlined text-xl">sort</span>
           </button>
         </div>
       </div>
 
-      {/* Tableau */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="bg-white border-b border-border">
-              <th className="px-8 py-4 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">Titre du Poste</th>
-              <th className="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">Statut</th>
-              <th className="px-6 py-4 text-center font-body text-xs font-semibold uppercase tracking-wider text-text-muted">Candidats</th>
-              <th className="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">Équipe</th>
-              <th className="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">Date de Création</th>
-              <th className="px-8 py-4 text-right font-body text-xs font-semibold uppercase tracking-wider text-text-muted">Actions</th>
+            <tr className="border-b border-border bg-bg-soft/30">
+              <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Titre du Poste
+              </th>
+              <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Statut
+              </th>
+              <th className="px-6 py-3.5 text-center font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Candidats
+              </th>
+              <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Équipe
+              </th>
+              <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Date
+              </th>
+              <th className="px-6 py-3.5 text-right font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {jobs.map((job, i) => (
-              <JobRow key={i} {...job} />
-            ))}
+          <tbody className="divide-y divide-border">
+            {jobs.length > 0 ? (
+              jobs.map(function (job, i) {
+                return <JobRow key={i} {...job} />;
+              })
+            ) : (
+              <tr>
+                <td colSpan={6} className="px-6 py-12 text-center">
+                  <span className="material-symbols-outlined mb-2 text-4xl text-text-muted">
+                    search_off
+                  </span>
+                  <p className="font-body text-sm text-text-secondary">
+                    Aucune offre ne correspond à votre recherche
+                  </p>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="px-6 py-4 bg-white border-t border-border flex justify-between items-center">
-        <p className="text-xs text-text-secondary font-body">
-          Affichage de {(page - 1) * JOBS_PER_PAGE + 1}–{Math.min(page * JOBS_PER_PAGE, total)} sur{" "}
-          {total} offres d'emploi
+      <div className="flex items-center justify-between border-t border-border bg-bg-soft/30 px-6 py-3">
+        <p className="font-body text-xs text-text-secondary">
+          Affichage de{" "}
+          <span className="font-semibold tabular-nums text-text-primary">
+            {(page - 1) * JOBS_PER_PAGE + 1}–
+            {Math.min(page * JOBS_PER_PAGE, total)}
+          </span>{" "}
+          sur <span className="font-semibold tabular-nums">{total}</span> offres
         </p>
 
-        <div className="flex space-x-1 items-center">
+        <div className="flex items-center gap-1">
           <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            type="button"
+            onClick={function () {
+              setPage(function (p) {
+                return Math.max(1, p - 1);
+              });
+            }}
             disabled={page === 1}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 hover:bg-white disabled:opacity-30"
           >
-            <span className="material-symbols-outlined text-sm">chevron_left</span>
+            <span className="material-symbols-outlined text-sm">
+              chevron_left
+            </span>
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg font-body font-semibold text-xs transition-colors ${
-                p === page
-                  ? "bg-indigo-600 text-white"
-                  : "hover:bg-gray-100 text-text-secondary"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+          {Array.from({ length: totalPages }, function (_, i) {
+            return i + 1;
+          }).map(function (p) {
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={function () {
+                  setPage(p);
+                }}
+                className={
+                  "flex h-8 w-8 items-center justify-center rounded-lg font-body text-xs font-semibold tabular-nums transition-all duration-150 " +
+                  (p === page
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-text-secondary hover:bg-white")
+                }
+              >
+                {p}
+              </button>
+            );
+          })}
 
           <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            type="button"
+            onClick={function () {
+              setPage(function (p) {
+                return Math.min(totalPages, p + 1);
+              });
+            }}
             disabled={page === totalPages}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 hover:bg-white disabled:opacity-30"
           >
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
+            <span className="material-symbols-outlined text-sm">
+              chevron_right
+            </span>
           </button>
         </div>
       </div>

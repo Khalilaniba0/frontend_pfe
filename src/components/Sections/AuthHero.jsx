@@ -1,65 +1,64 @@
 import React from "react";
 
 export default function AuthHero() {
-  const avatars = [
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuAJs1lAPnXKfVljfGTFxo9WjjCgLRtUYDVm9jYwSkTeO0K3m-2TUuGU2b55gQAD8dqSpMZOQgkEZj-BX3iRMwLSASyCHyyiBBa3EWgZSHFvvqByZ-v0kneioFHzJ8RguA7ctGKd-f3miiu0UVwiyrL9IITzmk6Lc2tM0KEi2i_xGut20ZuKvE3KuXzh6vpnmVKX5-796hyr2CjBSxK_lHHHKY81W64PJl8RcMZhQwNUPh-re9VBlJClOD6oUd8us02BRgs_bdIZrw69",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuBVRUFLZPVV8-EHMykDKN-JNU6J7mjerP-rMo7xVg0XwIod1tJpSrrHMtG3UZS4LOKc9gmFypOuT_K1PDA_PQOuTB3w863x4lmWPfEIcp1wsgTQcOmivCw-7enbpr5-WS0mesAsltUaMyl5xkdA4qiiCEYg8usVycRhnMPW7UbGKyoMr9We5KVi1exLCeDwDhYwz60TebNCyg-TdTx1ncxvSQZSqVy5RMqcHcR3SinU9BKnQPZIyyu1EZwOplIHPqcvSCCpRgn5QkHb",
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuCfEuP_Qfp6bIzqGk7STsWtbsyoli1koQpMjhPB5T2zjkIZQmu0t0M0queQf7ImWCn8MAaoq_RhggRILTI-8TPsW59s1ROz_m34QJMU4oYkhk0BVYEnGktoLbfnlulwuslo_UXGGonXAZHULxEHZ1kQ8DtZkDULt47Y5bvpLtq-6oejES3pSlwgYNVdLzdoARaZdMgPw7cp8N5bdG7lQYMhEUmdb8xKyjEKMf3Q3uNa_Rr-nAQSmLBjeQq-cF7IzJZmKtovTDxaEDyL",
+  const avatars = ["NB", "LF", "PS"];
+  const gradients = [
+    "from-pink-400 to-rose-500",
+    "from-sky-400 to-blue-500",
+    "from-amber-400 to-orange-500",
   ];
 
   return (
-    <div className="hidden lg:flex relative w-1/2 bg-primary/10 items-center justify-center overflow-hidden">
-      {/* Background Image */}
+    <div className="relative hidden w-1/2 items-center justify-center overflow-hidden bg-gradient-to-br from-primary/10 via-bg-page to-secondary/10 lg:flex">
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-80 z-0"
+        className="absolute inset-0 z-0 bg-cover bg-center opacity-80"
         style={{
           backgroundImage:
-            "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDA3UQ3BM4p3Ri62fqQsLQ3Fk_LQPYn9r7RZBqZuNpJ4V6Oud6e4S9f0VG1tpqCc60Hw7tBo4wwoQimZ3e4X8vsWfQQv6u1hJ6ZP09A5YngR0XWVqVyNme6D78JT5uDHF8Uvyyfjr0EHXoBT16UG2LlsfpJb2RplgR1gz9lROv5Wwfi3lEjScV43Y9_Ka-WnQ7bbXl_-FvClcsWJmW1DmocFMF8IvXVzDQtXpUeM7i4CJnl8lnEOpyLxPvCGF6fZkchS96OkydhUZlJ')",
+            "url('https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1200&q=80')",
         }}
-      />
+      ></div>
 
-      {/* Gradient Overlay */}
       <div
         className="absolute inset-0 z-[1]"
         style={{
           background:
-            "linear-gradient(to top right, rgba(16, 31, 34, 0.8), rgba(16, 31, 34, 0.4), transparent)",
+            "linear-gradient(to top right, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.5), transparent)",
         }}
-      />
+      ></div>
 
-      {/* Content */}
-      <div className="relative z-10 px-12 py-10 max-w-[520px]">
-        {/* Badge */}
-        <span className="inline-block px-2.5 py-[3px] rounded-full bg-primary/20 border border-primary/30 text-primary text-[10px] font-bold uppercase tracking-widest mb-[18px]">
+      <div className="relative z-10 max-w-[480px] px-12 py-10">
+        <span className="mb-5 inline-block rounded-full border border-primary/30 bg-primary/20 px-3 py-1 font-body text-[10px] font-bold uppercase tracking-widest text-primary">
           Prêt pour l'entreprise
         </span>
 
-        {/* Title */}
-        <h1 className="text-4xl font-black text-white leading-tight mb-4">
+        <h1 className="mb-4 font-display text-4xl font-bold leading-tight tracking-tight text-white">
           Donnez de l'intelligence à votre gestion des effectifs.
         </h1>
 
-        {/* Description */}
-        <p className="text-slate-200 text-[15px] leading-relaxed m-0">
-          Rejoignez des milliers d'organisations qui simplifient leurs opérations RH, du
-          recrutement à la gestion de la performance.
+        <p className="m-0 font-body text-base leading-relaxed text-slate-200">
+          Rejoignez des milliers d'organisations qui simplifient leurs
+          opérations RH, du recrutement à la gestion de la performance.
         </p>
 
-        {/* Avatars + trust */}
         <div className="mt-8 flex items-center gap-4">
           <div className="flex">
-            {avatars.map((src, i) => (
-              <img
-                key={i}
-                alt="User"
-                src={src}
-                className="w-[34px] h-[34px] rounded-full border-2 border-white object-cover"
-                style={{ marginLeft: i === 0 ? 0 : -10 }}
-              />
-            ))}
+            {avatars.map(function (initials, i) {
+              return (
+                <div
+                  key={i}
+                  className={
+                    "flex h-9 w-9 items-center justify-center rounded-xl border-2 border-white bg-gradient-to-br font-body text-xs font-bold text-white shadow-sm " +
+                    gradients[i]
+                  }
+                  style={{ marginLeft: i === 0 ? 0 : "-8px" }}
+                >
+                  {initials}
+                </div>
+              );
+            })}
           </div>
-          <span className="text-white text-[13px] font-medium">
-            Approuvé par plus de 500 entreprises internationales
+          <span className="font-body text-sm font-medium text-white">
+            Approuvé par +500 entreprises
           </span>
         </div>
       </div>

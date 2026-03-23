@@ -16,26 +16,20 @@ import Settings from "pages/Settings";
 export default function AdminLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-bg-page">
-      {/* Sidebar gauche fixe */}
       <Sidebar />
 
-      {/* Zone droite */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Navbar haut fixe */}
+      <div className="flex flex-1 flex-col overflow-hidden">
         <AdminNavbar />
 
-        {/* Contenu scrollable */}
-        <main className="flex-1 overflow-y-auto bg-bg-page px-6 py-6">
-          <div className="max-w-screen-2xl mx-auto">
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-screen-2xl px-4 py-6 md:px-6 lg:px-8">
             <Routes>
-              {/* Routes accessibles à tous les rôles */}
               <Route index element={<Dashboard />} />
               <Route path="recruitment" element={<Recruitment />} />
               <Route path="jobs" element={<Jobs />} />
               <Route path="interviews" element={<Interviews />} />
               <Route path="candidates" element={<Candidates />} />
 
-              {/* Routes admin uniquement */}
               <Route
                 path="users"
                 element={
@@ -53,7 +47,6 @@ export default function AdminLayout() {
                 }
               />
 
-              {/* Redirection par défaut */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </div>

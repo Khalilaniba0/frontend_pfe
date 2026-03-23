@@ -9,75 +9,110 @@ export default function CandidateTable({ candidates, total }) {
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
-      {/* Tableau */}
+    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="bg-gray-50 border-b border-border">
+            <tr className="border-b border-border bg-bg-soft/50">
               {["Candidat", "Poste", "Score", "Statut", "Date", "Actions"].map(
-                (col, i) => (
-                  <th
-                    key={col}
-                    className={`px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-text-muted ${
-                      i === 5 ? "text-right" : ""
-                    }`}
-                  >
-                    {col}
-                  </th>
-                )
+                function (col, i) {
+                  return (
+                    <th
+                      key={col}
+                      className={
+                        "px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted " +
+                        (i === 5 ? "text-right" : "")
+                      }
+                    >
+                      {col}
+                    </th>
+                  );
+                }
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border">
             {candidates.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-text-secondary font-body text-sm">
-                  Aucun candidat ne correspond aux filtres sélectionnés.
+                <td colSpan={6} className="px-6 py-12 text-center">
+                  <span className="material-symbols-outlined mb-2 text-4xl text-text-muted">
+                    person_search
+                  </span>
+                  <p className="font-body text-sm text-text-secondary">
+                    Aucun candidat ne correspond aux filtres sélectionnés
+                  </p>
                 </td>
               </tr>
             ) : (
-              candidates.map((c, i) => <CandidateRow key={i} {...c} />)
+              candidates.map(function (c, i) {
+                return <CandidateRow key={i} {...c} />;
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-border flex items-center justify-between">
+      <div className="flex items-center justify-between border-t border-border bg-bg-soft/30 px-6 py-3">
         <p className="font-body text-xs text-text-secondary">
-          Affichage de {Math.min(candidates.length, PER_PAGE)} sur {total} candidats
+          Affichage de{" "}
+          <span className="font-semibold tabular-nums text-text-primary">
+            {Math.min(candidates.length, PER_PAGE)}
+          </span>{" "}
+          sur <span className="font-semibold tabular-nums">{total}</span>{" "}
+          candidats
         </p>
 
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            type="button"
+            onClick={function () {
+              setPage(function (p) {
+                return Math.max(1, p - 1);
+              });
+            }}
             disabled={page === 1}
-            className="p-2 rounded-lg hover:bg-gray-200 text-text-secondary transition-colors disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 hover:bg-white disabled:opacity-30"
           >
-            <span className="material-symbols-outlined text-sm">chevron_left</span>
+            <span className="material-symbols-outlined text-sm">
+              chevron_left
+            </span>
           </button>
 
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`w-8 h-8 rounded-lg font-body text-xs font-semibold transition-colors ${
-                p === page
-                  ? "bg-indigo-600 text-white"
-                  : "hover:bg-gray-200 text-text-primary"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+          {Array.from({ length: Math.min(totalPages, 5) }, function (_, i) {
+            return i + 1;
+          }).map(function (p) {
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={function () {
+                  setPage(p);
+                }}
+                className={
+                  "flex h-8 w-8 items-center justify-center rounded-lg font-body text-xs font-semibold tabular-nums transition-all duration-150 " +
+                  (p === page
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-text-secondary hover:bg-white")
+                }
+              >
+                {p}
+              </button>
+            );
+          })}
 
           <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            type="button"
+            onClick={function () {
+              setPage(function (p) {
+                return Math.min(totalPages, p + 1);
+              });
+            }}
             disabled={page === totalPages}
-            className="p-2 rounded-lg hover:bg-gray-200 text-text-secondary transition-colors disabled:opacity-30"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 hover:bg-white disabled:opacity-30"
           >
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
+            <span className="material-symbols-outlined text-sm">
+              chevron_right
+            </span>
           </button>
         </div>
       </div>
@@ -87,5 +122,5 @@ export default function CandidateTable({ candidates, total }) {
 
 CandidateTable.propTypes = {
   candidates: PropTypes.array.isRequired,
-  total:      PropTypes.number.isRequired,
+  total: PropTypes.number.isRequired,
 };

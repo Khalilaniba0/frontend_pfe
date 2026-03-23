@@ -6,10 +6,14 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+  useEffect(function () {
+    const onScroll = function () {
+      setScrolled(window.scrollY > 20);
+    };
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    return function () {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const navLinks = [
@@ -19,16 +23,16 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 px-8 py-4 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/[0.97] backdrop-blur-xl border-b border-primary/15 shadow-sm"
-          : "bg-transparent"
-      }`}
+      className={
+        "fixed left-0 right-0 top-0 z-50 px-6 py-4 transition-all duration-300 md:px-8 " +
+        (scrolled
+          ? "border-b border-primary/15 bg-white/95 shadow-sm backdrop-blur-xl"
+          : "bg-transparent")
+      }
     >
-      <div className="max-w-[1200px] mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-[0_0_16px_rgba(19,200,236,0.3)]">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/25">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 2L4 7v10l8 5 8-5V7L12 2z"
@@ -45,44 +49,46 @@ export default function Navbar() {
               />
             </svg>
           </div>
-          <span className="font-display font-bold text-xl text-slate-900 tracking-tight">
+          <span className="font-display text-xl font-bold tracking-tight text-text-primary">
             Talen<span className="text-primary">tia</span>
           </span>
         </div>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="text-slate-500 text-sm font-medium font-body hover:text-primary transition-colors"
-            >
-              {item.label}
-            </a>
-          ))}
+        <div className="hidden items-center gap-8 md:flex">
+          {navLinks.map(function (item) {
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                className="font-body text-sm font-medium text-text-secondary transition-colors duration-150 hover:text-primary"
+              >
+                {item.label}
+              </a>
+            );
+          })}
         </div>
 
-        {/* CTA Buttons */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden items-center gap-3 md:flex">
           <Link
             to={ROUTES.LOGIN}
-            className="bg-transparent border border-slate-200 text-slate-600 px-5 py-2 rounded-lg text-sm font-medium font-body hover:border-primary hover:text-primary transition-all no-underline"
+            className="rounded-xl border border-border bg-white px-5 py-2.5 font-body text-sm font-medium text-text-primary no-underline transition-all duration-150 hover:border-primary hover:text-primary"
           >
             Se connecter
           </Link>
           <Link
             to={ROUTES.SIGNUP}
-            className="bg-gradient-to-br from-primary to-primary-dark text-white px-5 py-2 rounded-lg text-sm font-semibold font-body shadow-[0_4px_15px_rgba(19,200,236,0.35)] hover:opacity-90 transition-opacity no-underline"
+            className="rounded-xl bg-gradient-to-br from-primary to-primary-dark px-5 py-2.5 font-body text-sm font-semibold text-white no-underline shadow-md shadow-primary/30 transition-all duration-150 hover:shadow-lg"
           >
             S'inscrire gratuitement
           </Link>
         </div>
 
-        {/* Mobile burger */}
         <button
-          className="md:hidden bg-transparent border-none text-slate-900 p-1"
-          onClick={() => setMenuOpen(!menuOpen)}
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border-none bg-transparent text-text-primary transition-colors hover:bg-bg-soft md:hidden"
+          onClick={function () {
+            setMenuOpen(!menuOpen);
+          }}
         >
           <svg
             width="22"
@@ -108,30 +114,37 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white/[0.98] backdrop-blur-xl px-8 py-6 flex flex-col gap-5 border-t border-primary/10 shadow-lg">
-          {navLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              onClick={() => setMenuOpen(false)}
-              className="text-slate-600 text-base font-body hover:text-primary transition-colors"
-            >
-              {item.label}
-            </a>
-          ))}
+        <div className="flex flex-col gap-4 border-t border-primary/10 bg-white/98 px-6 py-6 shadow-lg backdrop-blur-xl md:hidden">
+          {navLinks.map(function (item) {
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                onClick={function () {
+                  setMenuOpen(false);
+                }}
+                className="font-body text-base text-text-secondary transition-colors hover:text-primary"
+              >
+                {item.label}
+              </a>
+            );
+          })}
           <Link
             to={ROUTES.LOGIN}
-            onClick={() => setMenuOpen(false)}
-            className="bg-transparent border border-slate-200 text-slate-600 px-5 py-3 rounded-lg text-sm font-medium font-body hover:border-primary hover:text-primary transition-all text-center no-underline"
+            onClick={function () {
+              setMenuOpen(false);
+            }}
+            className="rounded-xl border border-border bg-white px-5 py-3 text-center font-body text-sm font-medium text-text-primary no-underline transition-all hover:border-primary hover:text-primary"
           >
             Se connecter
           </Link>
           <Link
             to={ROUTES.SIGNUP}
-            onClick={() => setMenuOpen(false)}
-            className="bg-gradient-to-br from-primary to-primary-dark text-white py-3 rounded-lg text-sm font-semibold font-body text-center no-underline"
+            onClick={function () {
+              setMenuOpen(false);
+            }}
+            className="rounded-xl bg-gradient-to-br from-primary to-primary-dark py-3 text-center font-body text-sm font-semibold text-white no-underline shadow-md"
           >
             S'inscrire gratuitement
           </Link>

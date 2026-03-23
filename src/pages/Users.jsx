@@ -1,4 +1,3 @@
-// src/pages/Users.jsx
 import React, { useState } from "react";
 import UserStatsCard from "components/Users/UserStatsCard";
 import UserTable from "components/Users/UserTable";
@@ -7,16 +6,16 @@ import CreateUserModal from "components/Users/CreateUserModal";
 const INITIAL_USERS = [
   {
     id: 1,
-    name: "Jane Doe",
-    email: "jane.doe@company.com",
+    name: "Marie Dupont",
+    email: "marie.d@company.com",
     role: "Admin",
     status: "Actif",
     lastLogin: "Aujourd'hui",
   },
   {
     id: 2,
-    name: "Marc Dupont",
-    email: "marc.dupont@company.com",
+    name: "Lucas Bernard",
+    email: "lucas.b@company.com",
     role: "RH",
     status: "Actif",
     lastLogin: "Hier",
@@ -31,8 +30,8 @@ const INITIAL_USERS = [
   },
   {
     id: 4,
-    name: "Lucas Bernard",
-    email: "l.bernard@company.com",
+    name: "Thomas Petit",
+    email: "t.petit@company.com",
     role: "RH",
     status: "Actif",
     lastLogin: "Il y a 2 jours",
@@ -46,79 +45,98 @@ export default function Users() {
   const [lastCreated, setLastCreated] = useState(null);
 
   const totalUsers = users.length;
-  const totalAdmins = users.filter((u) => u.role === "Admin").length;
-  const totalRH = users.filter((u) => u.role === "RH").length;
-  const totalActifs = users.filter((u) => u.status === "Actif").length;
+  const totalAdmins = users.filter(function (u) {
+    return u.role === "Admin";
+  }).length;
+  const totalRH = users.filter(function (u) {
+    return u.role === "RH";
+  }).length;
+  const totalActifs = users.filter(function (u) {
+    return u.status === "Actif";
+  }).length;
 
-  const handleCreateUser = (newUserData) => {
+  const handleCreateUser = function (newUserData) {
     const newUser = {
       id: Date.now(),
       ...newUserData,
     };
-    setUsers((prev) => [...prev, newUser]);
+    setUsers(function (prev) {
+      return [...prev, newUser];
+    });
     setLastCreated(newUserData.name);
     setShowModal(false);
     setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 4000);
+    setTimeout(function () {
+      setShowSuccess(false);
+    }, 4000);
   };
 
-  const handleEdit = (userId) => {
+  const handleEdit = function (userId) {
     console.log("Edit user:", userId);
   };
 
-  const handleDelete = (userId) => {
+  const handleDelete = function (userId) {
     if (window.confirm("Supprimer cet utilisateur ?")) {
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      setUsers(function (prev) {
+        return prev.filter(function (u) {
+          return u.id !== userId;
+        });
+      });
     }
   };
 
   return (
     <>
-      <div>
-        {/* Page header */}
-        <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="animate-fade-in">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-display font-semibold text-text-primary">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
               Gestion des utilisateurs
             </h1>
-            <p className="text-sm text-text-secondary mt-1">
-              Gérez les accès et les rôles de votre équipe.
+            <p className="mt-1 font-body text-sm text-text-secondary">
+              Gérez les accès et les rôles de votre équipe
             </p>
           </div>
           <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary font-display font-semibold text-sm text-white hover:bg-primary-dark transition-colors shadow-md flex-shrink-0"
+            type="button"
+            onClick={function () {
+              setShowModal(true);
+            }}
+            className="flex flex-shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg"
           >
-            <span className="material-symbols-outlined text-base">person_add</span>
+            <span className="material-symbols-outlined text-base">
+              person_add
+            </span>
             Créer un compte RH
           </button>
-        </div>
+        </header>
 
-        {/* Toast succès */}
         {showSuccess && (
-          <div className="mb-5 flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-            <span className="material-symbols-outlined text-success text-xl flex-shrink-0">
+          <div className="mb-5 flex animate-slide-up items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <span className="material-symbols-outlined flex-shrink-0 text-xl text-emerald-600">
               check_circle
             </span>
-            <div>
-              <p className="text-sm font-body font-semibold text-green-800">
+            <div className="flex-1">
+              <p className="font-body text-sm font-semibold text-emerald-800">
                 Compte créé avec succès
               </p>
-              <p className="text-xs text-green-700 font-body">
+              <p className="font-body text-xs text-emerald-700">
                 {lastCreated} peut maintenant se connecter à la plateforme.
               </p>
             </div>
             <button
-              onClick={() => setShowSuccess(false)}
-              className="ml-auto text-green-500 hover:text-green-700 transition-colors"
+              type="button"
+              onClick={function () {
+                setShowSuccess(false);
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-emerald-500 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
             >
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
         )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
           <UserStatsCard
             icon="group"
             label="Total utilisateurs"
@@ -145,18 +163,14 @@ export default function Users() {
           />
         </div>
 
-        {/* Table */}
-        <UserTable
-          users={users}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <UserTable users={users} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
 
-      {/* Modal */}
       {showModal && (
         <CreateUserModal
-          onClose={() => setShowModal(false)}
+          onClose={function () {
+            setShowModal(false);
+          }}
           onSubmit={handleCreateUser}
         />
       )}

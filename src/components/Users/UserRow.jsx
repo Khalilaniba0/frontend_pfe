@@ -2,102 +2,124 @@ import React from "react";
 import PropTypes from "prop-types";
 
 export default function UserRow({ user, onEdit, onDelete }) {
-  const getInitials = (name) => {
+  const getInitials = function (name) {
     return name
       .split(" ")
-      .map((n) => n[0])
+      .map(function (n) {
+        return n[0];
+      })
       .join("")
       .toUpperCase();
   };
 
-  const getRoleBadgeClasses = (role) => {
+  const gradients = [
+    "from-pink-400 to-rose-500",
+    "from-sky-400 to-blue-500",
+    "from-amber-400 to-orange-500",
+    "from-emerald-400 to-teal-500",
+    "from-violet-400 to-purple-500",
+  ];
+
+  const gradientIndex =
+    user.name.split("").reduce(function (acc, char) {
+      return acc + char.charCodeAt(0);
+    }, 0) % gradients.length;
+
+  const getRoleBadgeClasses = function (role) {
     if (role === "Admin") {
-      return "bg-primary/10 text-primary";
+      return "bg-primary-light text-primary border-primary/20";
     }
-    return "bg-bg-soft text-text-secondary";
+    return "bg-secondary-light text-secondary border-secondary/20";
   };
 
-  const getStatusClasses = (status) => {
+  const getStatusClasses = function (status) {
     if (status === "Actif") {
-      return "bg-[#dcfce7] text-[#16a34a]";
+      return "bg-emerald-50 text-emerald-600";
     }
-    return "bg-gray-100 text-text-secondary";
+    return "bg-gray-100 text-text-muted";
   };
 
   return (
-    <tr className="border-b border-border hover:bg-bg-soft/50 transition-colors">
-      {/* Utilisateur */}
-      <td className="py-4 px-4">
+    <tr className="group border-b border-border transition-colors duration-150 hover:bg-bg-soft/50">
+      <td className="px-4 py-4">
         <div className="flex items-center gap-3">
           {user.avatar ? (
             <img
               src={user.avatar}
               alt={user.name}
-              className="w-10 h-10 rounded-full object-cover"
+              className="h-10 w-10 rounded-xl object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-display font-semibold text-sm">
+            <div
+              className={
+                "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-body text-xs font-bold text-white shadow-sm " +
+                gradients[gradientIndex]
+              }
+            >
               {getInitials(user.name)}
             </div>
           )}
-          <div>
-            <p className="font-body font-semibold text-text-primary text-sm">
+          <div className="min-w-0">
+            <p className="truncate font-body text-sm font-semibold text-text-primary">
               {user.name}
             </p>
-            <p className="font-body text-text-secondary text-xs">
+            <p className="truncate font-body text-xs text-text-secondary">
               {user.email}
             </p>
           </div>
         </div>
       </td>
 
-      {/* Role */}
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         <span
-          className={`inline-flex px-3 py-1 rounded-full text-xs font-body font-medium ${getRoleBadgeClasses(
-            user.role
-          )}`}
+          className={
+            "inline-flex rounded-lg border px-2.5 py-1 font-body text-xs font-medium " +
+            getRoleBadgeClasses(user.role)
+          }
         >
           {user.role}
         </span>
       </td>
 
-      {/* Statut */}
-      <td className="py-4 px-4">
+      <td className="px-4 py-4">
         <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-body font-medium ${getStatusClasses(
-            user.status
-          )}`}
+          className={
+            "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-body text-xs font-medium " +
+            getStatusClasses(user.status)
+          }
         >
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              user.status === "Actif" ? "bg-[#16a34a]" : "bg-text-muted"
-            }`}
-          />
+            className={
+              "h-1.5 w-1.5 rounded-full " +
+              (user.status === "Actif" ? "bg-emerald-500" : "bg-text-muted")
+            }
+          ></span>
           {user.status}
         </span>
       </td>
 
-      {/* Derniere connexion */}
-      <td className="py-4 px-4">
-        <p className="font-body text-text-secondary text-sm">
-          {user.lastLogin}
-        </p>
+      <td className="px-4 py-4">
+        <p className="font-body text-sm text-text-secondary">{user.lastLogin}</p>
       </td>
 
-      {/* Actions */}
-      <td className="py-4 px-4">
-        <div className="flex items-center gap-2">
+      <td className="px-4 py-4">
+        <div className="flex items-center gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
           <button
-            onClick={() => onEdit && onEdit(user.id)}
-            className="p-2 rounded-lg hover:bg-bg-soft text-text-secondary hover:text-text-primary transition-colors"
+            type="button"
+            onClick={function () {
+              onEdit && onEdit(user.id);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-primary-light hover:text-primary"
             title="Modifier"
           >
             <span className="material-symbols-outlined text-lg">edit</span>
           </button>
           <button
-            onClick={() => onDelete && onDelete(user.id)}
-            className="p-2 rounded-lg hover:bg-red-50 text-text-secondary hover:text-red-500 transition-colors"
+            type="button"
+            onClick={function () {
+              onDelete && onDelete(user.id);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-red-50 hover:text-red-500"
             title="Supprimer"
           >
             <span className="material-symbols-outlined text-lg">delete</span>

@@ -16,46 +16,63 @@ const INTERVIEWS_TABS = [
   },
 ];
 
-export default function InterviewsLayout({ activeTab, onTabChange, children }) {
+export default function InterviewsLayout({
+  activeTab,
+  onTabChange,
+  children,
+}) {
   return (
-    <div className="bg-white rounded-xl border border-border shadow-sm flex min-h-[600px]">
-      {/* Colonne gauche - Navigation */}
-      <div className="w-64 border-r border-border p-4 flex-shrink-0">
-        <p className="text-xs font-display font-semibold text-text-muted uppercase tracking-wider mb-4 px-2">
+    <div className="flex min-h-[600px] overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+      <div className="w-64 flex-shrink-0 border-r border-border bg-bg-soft/30 p-4">
+        <p className="mb-4 px-3 font-body text-[10px] font-semibold uppercase tracking-wider text-text-muted">
           Entretiens
         </p>
-        <nav className="space-y-1">
-          {INTERVIEWS_TABS.map((tab) => {
+        <nav className="flex flex-col gap-1">
+          {INTERVIEWS_TABS.map(function (tab) {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                  isActive
-                    ? "bg-primary-light border-l-2 border-primary"
-                    : "text-text-secondary hover:bg-bg-soft"
-                }`}
+                type="button"
+                onClick={function () {
+                  onTabChange(tab.id);
+                }}
+                className={
+                  "group relative flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 " +
+                  (isActive
+                    ? "bg-white shadow-sm"
+                    : "text-text-secondary hover:bg-white/50")
+                }
               >
-                <span
-                  className={`material-symbols-outlined text-[20px] ${
-                    isActive ? "text-primary" : ""
-                  }`}
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-primary"></span>
+                )}
+                <div
+                  className={
+                    "flex h-9 w-9 items-center justify-center rounded-lg transition-colors " +
+                    (isActive
+                      ? "bg-primary-light text-primary"
+                      : "bg-bg-soft text-text-muted group-hover:text-text-primary")
+                  }
                 >
-                  {tab.icon}
-                </span>
+                  <span className="material-symbols-outlined text-xl">
+                    {tab.icon}
+                  </span>
+                </div>
                 <div>
                   <p
-                    className={`text-sm font-display font-medium ${
-                      isActive ? "text-primary" : ""
-                    }`}
+                    className={
+                      "font-body text-sm font-semibold " +
+                      (isActive ? "text-text-primary" : "")
+                    }
                   >
                     {tab.label}
                   </p>
                   <p
-                    className={`text-xs ${
-                      isActive ? "text-primary/70" : "text-text-muted"
-                    }`}
+                    className={
+                      "font-body text-xs " +
+                      (isActive ? "text-primary" : "text-text-muted")
+                    }
                   >
                     {tab.subtitle}
                   </p>
@@ -66,8 +83,7 @@ export default function InterviewsLayout({ activeTab, onTabChange, children }) {
         </nav>
       </div>
 
-      {/* Colonne droite - Contenu */}
-      <div className="flex-1 p-8">{children}</div>
+      <div className="flex-1 overflow-auto p-6">{children}</div>
     </div>
   );
 }

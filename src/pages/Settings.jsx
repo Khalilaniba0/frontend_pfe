@@ -18,18 +18,16 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("entreprise");
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-display font-semibold text-text-primary">
+    <div className="animate-fade-in">
+      <header className="mb-6">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
           Paramètres
         </h1>
-        <p className="text-sm text-text-secondary mt-1">
-          Configurez les préférences de votre plateforme.
+        <p className="mt-1 font-body text-sm text-text-secondary">
+          Configurez les préférences de votre plateforme
         </p>
-      </div>
+      </header>
 
-      {/* Layout paramètres */}
       <SettingsLayout activeTab={activeTab} onTabChange={setActiveTab}>
         {TABS[activeTab]}
       </SettingsLayout>

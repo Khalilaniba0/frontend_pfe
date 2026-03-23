@@ -1,4 +1,3 @@
-// src/components/Users/CreateUserModal.jsx
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 
@@ -27,15 +26,15 @@ const STRENGTH_TEXT_COLOR = [
   "",
   "text-red-500",
   "text-amber-500",
-  "text-yellow-600",
-  "text-green-600",
+  "text-amber-600",
+  "text-emerald-600",
 ];
 const STRENGTH_BAR_COLOR = [
   "",
   "bg-red-400",
   "bg-amber-400",
-  "bg-yellow-400",
-  "bg-green-500",
+  "bg-amber-500",
+  "bg-emerald-500",
 ];
 
 export default function CreateUserModal({ onClose, onSubmit }) {
@@ -47,13 +46,17 @@ export default function CreateUserModal({ onClose, onSubmit }) {
 
   const strength = getPasswordStrength(form.password);
 
-  const handleChange = (e) => {
+  const handleChange = function (e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    setForm(function (prev) {
+      return { ...prev, [name]: value };
+    });
+    setErrors(function (prev) {
+      return { ...prev, [name]: "" };
+    });
   };
 
-  const validate = () => {
+  const validate = function () {
     const errs = {};
     if (!form.firstName.trim()) errs.firstName = "Prénom requis";
     if (!form.lastName.trim()) errs.lastName = "Nom requis";
@@ -70,7 +73,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
     return errs;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = function (e) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
@@ -78,53 +81,50 @@ export default function CreateUserModal({ onClose, onSubmit }) {
       return;
     }
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    onSubmit({
-      name: `${form.firstName} ${form.lastName}`,
-      email: form.email,
-      phone: form.phone,
-      department: form.department,
-      role: "RH",
-      status: "Actif",
-      lastLogin: "Jamais",
-    });
-    setSubmitting(false);
+    setTimeout(function () {
+      onSubmit({
+        name: form.firstName + " " + form.lastName,
+        email: form.email,
+        phone: form.phone,
+        department: form.department,
+        role: "RH",
+        status: "Actif",
+        lastLogin: "Jamais",
+      });
+      setSubmitting(false);
+    }, 600);
   };
 
   const inputBase =
-    "w-full px-4 py-2.5 rounded-xl border font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white";
+    "w-full rounded-xl border bg-white px-4 py-2.5 font-body text-sm text-text-primary placeholder:text-text-muted outline-none transition-all duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20";
 
-  const inputClass = (field) =>
-    `${inputBase} ${errors[field] ? "border-red-300" : "border-border"}`;
+  const inputClass = function (field) {
+    return inputBase + " " + (errors[field] ? "border-red-300" : "border-border");
+  };
 
   const passwordsMatch =
-    form.confirmPassword.length > 0 &&
-    form.password === form.confirmPassword;
-  const passwordsMismatch =
-    form.confirmPassword.length > 0 &&
-    form.password !== form.confirmPassword;
+    form.confirmPassword.length > 0 && form.password === form.confirmPassword;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(15,23,42,0.45)" }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+      onClick={function (e) {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="bg-white rounded-2xl border border-border w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
-
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border flex-shrink-0">
+      <div className="flex max-h-[90vh] w-full max-w-lg animate-scale-in flex-col rounded-2xl border border-border bg-white shadow-2xl">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light">
               <span className="material-symbols-outlined text-xl text-primary">
                 person_add
               </span>
             </div>
             <div>
-              <h2 className="font-display font-semibold text-text-primary text-base leading-tight">
+              <h2 className="font-display text-base font-semibold leading-tight text-text-primary">
                 Créer un compte RH
               </h2>
-              <p className="text-xs text-text-muted font-body">
+              <p className="font-body text-xs text-text-muted">
                 Le membre pourra se connecter immédiatement
               </p>
             </div>
@@ -132,24 +132,21 @@ export default function CreateUserModal({ onClose, onSubmit }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg hover:bg-bg-soft flex items-center justify-center text-text-muted hover:text-text-primary transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-bg-soft hover:text-text-primary"
           >
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
         </div>
 
-        {/* ── Body (scrollable) ── */}
         <form
           onSubmit={handleSubmit}
-          className="px-6 py-5 space-y-4 overflow-y-auto flex-1"
+          className="flex-1 space-y-4 overflow-y-auto px-6 py-5"
         >
-
-          {/* Info rôle */}
-          <div className="flex items-start gap-2 bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
-            <span className="material-symbols-outlined text-base text-primary mt-0.5 flex-shrink-0">
+          <div className="flex items-start gap-2 rounded-xl border border-primary/20 bg-primary-light px-4 py-3">
+            <span className="material-symbols-outlined mt-0.5 flex-shrink-0 text-base text-primary">
               info
             </span>
-            <p className="text-xs font-body text-text-secondary leading-relaxed">
+            <p className="font-body text-xs leading-relaxed text-text-secondary">
               Ce compte aura le rôle{" "}
               <span className="font-semibold text-primary">
                 Responsable RH
@@ -158,10 +155,9 @@ export default function CreateUserModal({ onClose, onSubmit }) {
             </p>
           </div>
 
-          {/* Prénom + Nom */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+              <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Prénom <span className="text-red-400">*</span>
               </label>
               <input
@@ -173,14 +169,16 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                 className={inputClass("firstName")}
               />
               {errors.firstName && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs">error</span>
+                <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
+                  <span className="material-symbols-outlined text-xs">
+                    error
+                  </span>
                   {errors.firstName}
                 </p>
               )}
             </div>
             <div>
-              <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+              <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Nom <span className="text-red-400">*</span>
               </label>
               <input
@@ -192,22 +190,23 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                 className={inputClass("lastName")}
               />
               {errors.lastName && (
-                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-xs">error</span>
+                <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
+                  <span className="material-symbols-outlined text-xs">
+                    error
+                  </span>
                   {errors.lastName}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Email */}
           <div>
-            <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+            <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
               Adresse email <span className="text-red-400">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
-                <span className="material-symbols-outlined text-lg">mail</span>
+              <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-text-muted">
+                mail
               </span>
               <input
                 type="email"
@@ -215,26 +214,25 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="rh@entreprise.com"
-                className={`${inputClass("email")} pl-10`}
+                className={inputClass("email") + " pl-10"}
               />
             </div>
             {errors.email && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
                 <span className="material-symbols-outlined text-xs">error</span>
                 {errors.email}
               </p>
             )}
           </div>
 
-          {/* Téléphone + Département */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+              <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Téléphone
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
-                  <span className="material-symbols-outlined text-lg">phone</span>
+                <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-text-muted">
+                  phone
                 </span>
                 <input
                   type="tel"
@@ -242,17 +240,17 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                   value={form.phone}
                   onChange={handleChange}
                   placeholder="+216 XX XXX XXX"
-                  className={`${inputClass("phone")} pl-10`}
+                  className={inputClass("phone") + " pl-10"}
                 />
               </div>
             </div>
             <div>
-              <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+              <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Département
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
-                  <span className="material-symbols-outlined text-lg">apartment</span>
+                <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-text-muted">
+                  apartment
                 </span>
                 <input
                   type="text"
@@ -260,17 +258,16 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                   value={form.department}
                   onChange={handleChange}
                   placeholder="Ex : RH, Finance..."
-                  className={`${inputClass("department")} pl-10`}
+                  className={inputClass("department") + " pl-10"}
                 />
               </div>
             </div>
           </div>
 
-          <div className="border-t border-border" />
+          <div className="border-t border-border"></div>
 
-          {/* Mot de passe */}
           <div>
-            <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+            <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
               Mot de passe <span className="text-red-400">*</span>
             </label>
             <div className="relative">
@@ -280,12 +277,14 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="Minimum 8 caractères"
-                className={`${inputClass("password")} pr-11`}
+                className={inputClass("password") + " pr-11"}
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                onClick={function () {
+                  setShowPassword(!showPassword);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text-primary"
               >
                 <span className="material-symbols-outlined text-lg">
                   {showPassword ? "visibility_off" : "visibility"}
@@ -293,42 +292,41 @@ export default function CreateUserModal({ onClose, onSubmit }) {
               </button>
             </div>
 
-            {/* Strength bar */}
             {form.password && (
               <div className="mt-2 space-y-1">
                 <div className="flex gap-1">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                        i <= strength
-                          ? STRENGTH_BAR_COLOR[strength]
-                          : "bg-border"
-                      }`}
-                    />
-                  ))}
+                  {[1, 2, 3, 4].map(function (i) {
+                    return (
+                      <div
+                        key={i}
+                        className={
+                          "h-1.5 flex-1 rounded-full transition-all duration-300 " +
+                          (i <= strength
+                            ? STRENGTH_BAR_COLOR[strength]
+                            : "bg-border")
+                        }
+                      ></div>
+                    );
+                  })}
                 </div>
-                <p className="text-xs text-text-muted">
+                <p className="font-body text-xs text-text-muted">
                   Force :{" "}
-                  <span
-                    className={`font-medium ${STRENGTH_TEXT_COLOR[strength]}`}
-                  >
+                  <span className={"font-medium " + STRENGTH_TEXT_COLOR[strength]}>
                     {STRENGTH_LABEL[strength]}
                   </span>
                 </p>
               </div>
             )}
             {errors.password && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
                 <span className="material-symbols-outlined text-xs">error</span>
                 {errors.password}
               </p>
             )}
           </div>
 
-          {/* Confirmer mot de passe */}
           <div>
-            <label className="block font-body text-sm font-medium text-text-primary mb-1.5">
+            <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
               Confirmer le mot de passe <span className="text-red-400">*</span>
             </label>
             <div className="relative">
@@ -338,24 +336,26 @@ export default function CreateUserModal({ onClose, onSubmit }) {
                 value={form.confirmPassword}
                 onChange={handleChange}
                 placeholder="Répétez le mot de passe"
-                className={`${inputClass("confirmPassword")} pr-11`}
+                className={inputClass("confirmPassword") + " pr-11"}
               />
               <button
                 type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+                onClick={function () {
+                  setShowConfirm(!showConfirm);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text-primary"
               >
                 <span className="material-symbols-outlined text-lg">
                   {showConfirm ? "visibility_off" : "visibility"}
                 </span>
               </button>
             </div>
-            {/* Match feedback */}
             {form.confirmPassword && (
               <p
-                className={`text-xs mt-1 flex items-center gap-1 ${
-                  passwordsMatch ? "text-success" : "text-red-500"
-                }`}
+                className={
+                  "mt-1 flex items-center gap-1 font-body text-xs " +
+                  (passwordsMatch ? "text-emerald-600" : "text-red-500")
+                }
               >
                 <span className="material-symbols-outlined text-sm">
                   {passwordsMatch ? "check_circle" : "cancel"}
@@ -366,7 +366,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
               </p>
             )}
             {errors.confirmPassword && !form.confirmPassword && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
                 <span className="material-symbols-outlined text-xs">error</span>
                 {errors.confirmPassword}
               </p>
@@ -374,9 +374,8 @@ export default function CreateUserModal({ onClose, onSubmit }) {
           </div>
         </form>
 
-        {/* ── Footer ── */}
-        <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-border bg-bg-soft flex-shrink-0">
-          <p className="text-xs text-text-muted font-body">
+        <div className="flex flex-shrink-0 items-center justify-between gap-3 border-t border-border bg-bg-soft px-6 py-4">
+          <p className="font-body text-xs text-text-muted">
             <span className="text-red-400">*</span> Champs obligatoires
           </p>
           <div className="flex gap-3">
@@ -384,7 +383,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2.5 rounded-xl border border-border bg-white font-body font-medium text-sm text-text-primary hover:bg-bg-soft transition-colors disabled:opacity-50"
+              className="rounded-xl border border-border bg-white px-5 py-2.5 font-body text-sm font-medium text-text-primary transition-colors hover:bg-bg-soft disabled:opacity-50"
             >
               Annuler
             </button>
@@ -392,11 +391,11 @@ export default function CreateUserModal({ onClose, onSubmit }) {
               type="submit"
               disabled={submitting}
               onClick={handleSubmit}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary font-display font-semibold text-sm text-white hover:bg-primary-dark transition-colors shadow-md disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg disabled:opacity-60"
             >
               {submitting ? (
                 <>
-                  <span className="material-symbols-outlined text-base animate-spin">
+                  <span className="material-symbols-outlined animate-spin text-base">
                     progress_activity
                   </span>
                   Création...

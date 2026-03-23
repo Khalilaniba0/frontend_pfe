@@ -1,4 +1,3 @@
-// src/components/Settings/tabs/SecuriteTab.jsx
 import React, { useState, useMemo } from "react";
 
 const INITIAL_SESSIONS = [
@@ -33,345 +32,413 @@ export default function SecuriteTab() {
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [sessions, setSessions] = useState(INITIAL_SESSIONS);
+  const [saving, setSaving] = useState(false);
 
-  // Calculate password strength (0-4)
-  const passwordStrength = useMemo(() => {
-    const pwd = passwords.new;
-    if (!pwd) return 0;
-    let strength = 0;
-    if (pwd.length >= 8) strength++;
-    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength++;
-    if (/\d/.test(pwd)) strength++;
-    if (/[^a-zA-Z0-9]/.test(pwd)) strength++;
-    return strength;
-  }, [passwords.new]);
+  const passwordStrength = useMemo(
+    function () {
+      const pwd = passwords.new;
+      if (!pwd) return 0;
+      let strength = 0;
+      if (pwd.length >= 8) strength++;
+      if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength++;
+      if (/\d/.test(pwd)) strength++;
+      if (/[^a-zA-Z0-9]/.test(pwd)) strength++;
+      return strength;
+    },
+    [passwords.new]
+  );
 
   const strengthLabels = ["", "Faible", "Moyen", "Bon", "Excellent"];
-  const strengthColors = ["bg-gray-200", "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"];
+  const strengthColors = [
+    "bg-gray-200",
+    "bg-red-500",
+    "bg-orange-500",
+    "bg-amber-500",
+    "bg-emerald-500",
+  ];
 
-  const handlePasswordChange = (field, value) => {
-    setPasswords((prev) => ({ ...prev, [field]: value }));
+  const handlePasswordChange = function (field, value) {
+    setPasswords(function (prev) {
+      return { ...prev, [field]: value };
+    });
   };
 
-  const togglePasswordVisibility = (field) => {
-    setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
+  const togglePasswordVisibility = function (field) {
+    setShowPasswords(function (prev) {
+      return { ...prev, [field]: !prev[field] };
+    });
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = function (e) {
     e.preventDefault();
-    console.log("Password change submitted:", passwords);
+    setSaving(true);
+    setTimeout(function () {
+      setSaving(false);
+      setPasswords({ current: "", new: "", confirm: "" });
+    }, 800);
   };
 
-  const handleRevokeSession = (sessionId) => {
-    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+  const handleRevokeSession = function (sessionId) {
+    setSessions(function (prev) {
+      return prev.filter(function (s) {
+        return s.id !== sessionId;
+      });
+    });
   };
+
+  const inputClasses =
+    "w-full rounded-xl border border-border bg-white px-4 py-2.5 pr-10 font-body text-sm text-text-primary placeholder:text-text-muted outline-none transition-all duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20";
 
   return (
     <div>
-      {/* Header */}
-      <h2 className="text-lg font-display font-semibold text-text-primary mb-1">
-        Sécurité du compte
-      </h2>
-      <p className="text-sm text-text-secondary mb-6">
-        Gérez vos accès, mots de passe et sessions actives.
-      </p>
+      <header className="mb-6">
+        <h2 className="font-display text-lg font-semibold text-text-primary">
+          Sécurité du compte
+        </h2>
+        <p className="mt-1 font-body text-sm text-text-secondary">
+          Gérez vos accès, mots de passe et sessions actives.
+        </p>
+      </header>
 
-      {/* Section: Modifier le mot de passe */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-xl text-text-secondary">lock</span>
-          <div>
-            <h3 className="text-sm font-display font-semibold text-text-primary">
-              Modifier le mot de passe
-            </h3>
-            <p className="text-xs text-text-muted">
-              Choisissez un mot de passe fort et unique
-            </p>
-          </div>
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
+            <span className="material-symbols-outlined text-lg text-primary">
+              lock
+            </span>
+            Modifier le mot de passe
+          </h3>
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div className="max-w-md">
+              <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
+                Mot de passe actuel
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.current ? "text" : "password"}
+                  value={passwords.current}
+                  onChange={function (e) {
+                    handlePasswordChange("current", e.target.value);
+                  }}
+                  className={inputClasses}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={function () {
+                    togglePasswordVisibility("current");
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text-secondary"
+                >
+                  <span className="material-symbols-outlined text-lg">
+                    {showPasswords.current ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="grid max-w-2xl grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
+                  Nouveau mot de passe
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.new ? "text" : "password"}
+                    value={passwords.new}
+                    onChange={function (e) {
+                      handlePasswordChange("new", e.target.value);
+                    }}
+                    className={inputClasses}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={function () {
+                      togglePasswordVisibility("new");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text-secondary"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {showPasswords.new ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
+                  Confirmer le mot de passe
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords.confirm ? "text" : "password"}
+                    value={passwords.confirm}
+                    onChange={function (e) {
+                      handlePasswordChange("confirm", e.target.value);
+                    }}
+                    className={inputClasses}
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={function () {
+                      togglePasswordVisibility("confirm");
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted transition-colors hover:text-text-secondary"
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {showPasswords.confirm ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {passwords.new && (
+              <div className="max-w-md">
+                <div className="mb-1.5 flex gap-1">
+                  {[1, 2, 3, 4].map(function (level) {
+                    return (
+                      <div
+                        key={level}
+                        className={
+                          "h-1.5 flex-1 rounded-full transition-colors " +
+                          (level <= passwordStrength
+                            ? strengthColors[passwordStrength]
+                            : "bg-gray-200")
+                        }
+                      ></div>
+                    );
+                  })}
+                </div>
+                <p className="font-body text-xs text-text-muted">
+                  Force du mot de passe :{" "}
+                  <span
+                    className={
+                      "font-medium " +
+                      (passwordStrength >= 3
+                        ? "text-emerald-600"
+                        : passwordStrength >= 2
+                          ? "text-amber-600"
+                          : "text-red-500")
+                    }
+                  >
+                    {strengthLabels[passwordStrength]}
+                  </span>
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg disabled:opacity-60"
+              >
+                {saving ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-base">
+                      progress_activity
+                    </span>
+                    Mise à jour...
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-base">
+                      check
+                    </span>
+                    Mettre à jour
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
 
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          {/* Current password */}
-          <div className="max-w-md">
-            <label className="text-sm font-body font-medium text-text-primary mb-1 block">
-              Mot de passe actuel
-            </label>
-            <div className="relative">
-              <input
-                type={showPasswords.current ? "text" : "password"}
-                value={passwords.current}
-                onChange={(e) => handlePasswordChange("current", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-border bg-white font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors pr-10"
-                placeholder="••••••••"
-              />
+        <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
+            <span className="material-symbols-outlined text-lg text-primary">
+              shield
+            </span>
+            Double authentification (2FA)
+          </h3>
+
+          <div className="flex items-center justify-between rounded-xl bg-bg-soft p-4">
+            <div>
+              <p className="font-body text-sm font-medium text-text-primary">
+                Authentification à deux facteurs
+              </p>
+              <p className="mt-0.5 font-body text-xs text-text-muted">
+                Recevez un code de vérification sur votre téléphone lors de la
+                connexion.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span
+                className={
+                  "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-body text-xs font-medium " +
+                  (twoFactorEnabled
+                    ? "bg-emerald-50 text-emerald-600"
+                    : "bg-gray-100 text-text-muted")
+                }
+              >
+                {twoFactorEnabled && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                )}
+                {twoFactorEnabled ? "Activé" : "Désactivé"}
+              </span>
               <button
                 type="button"
-                onClick={() => togglePasswordVisibility("current")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                role="switch"
+                aria-checked={twoFactorEnabled}
+                onClick={function () {
+                  setTwoFactorEnabled(!twoFactorEnabled);
+                }}
+                className={
+                  "relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 " +
+                  (twoFactorEnabled ? "bg-primary" : "bg-gray-200")
+                }
               >
-                <span className="material-symbols-outlined text-xl">
-                  {showPasswords.current ? "visibility_off" : "visibility"}
-                </span>
+                <span
+                  className={
+                    "inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 " +
+                    (twoFactorEnabled ? "translate-x-6" : "translate-x-1")
+                  }
+                />
               </button>
             </div>
           </div>
+        </div>
 
-          {/* New password + Confirm */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-            <div>
-              <label className="text-sm font-body font-medium text-text-primary mb-1 block">
-                Nouveau mot de passe
-              </label>
-              <div className="relative">
-                <input
-                  type={showPasswords.new ? "text" : "password"}
-                  value={passwords.new}
-                  onChange={(e) => handlePasswordChange("new", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-white font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors pr-10"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => togglePasswordVisibility("new")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-                >
-                  <span className="material-symbols-outlined text-xl">
-                    {showPasswords.new ? "visibility_off" : "visibility"}
-                  </span>
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-body font-medium text-text-primary mb-1 block">
-                Confirmer le mot de passe
-              </label>
-              <div className="relative">
-                <input
-                  type={showPasswords.confirm ? "text" : "password"}
-                  value={passwords.confirm}
-                  onChange={(e) => handlePasswordChange("confirm", e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-white font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors pr-10"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => togglePasswordVisibility("confirm")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
-                >
-                  <span className="material-symbols-outlined text-xl">
-                    {showPasswords.confirm ? "visibility_off" : "visibility"}
-                  </span>
-                </button>
-              </div>
-            </div>
+        <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
+            <span className="material-symbols-outlined text-lg text-primary">
+              devices
+            </span>
+            Sessions actives
+          </h3>
+
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full">
+              <thead className="bg-bg-soft">
+                <tr>
+                  <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Appareil
+                  </th>
+                  <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Localisation
+                  </th>
+                  <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {sessions.map(function (session) {
+                  return (
+                    <tr
+                      key={session.id}
+                      className="transition-colors duration-150 hover:bg-bg-soft/50"
+                    >
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <span className="material-symbols-outlined text-lg text-text-secondary">
+                            {session.icon}
+                          </span>
+                          <span className="font-body text-sm text-text-primary">
+                            {session.device}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 font-body text-sm text-text-secondary">
+                        {session.location}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        {session.current ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary-light px-2.5 py-1 font-body text-xs font-medium text-primary">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary"></span>
+                            {session.date}
+                          </span>
+                        ) : (
+                          <span className="font-body text-sm text-text-secondary">
+                            {session.date}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-right">
+                        {!session.current && (
+                          <button
+                            type="button"
+                            onClick={function () {
+                              handleRevokeSession(session.id);
+                            }}
+                            className="font-body text-sm font-medium text-red-500 transition-colors hover:text-red-600"
+                          >
+                            Révoquer
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
+        </div>
 
-          {/* Password strength bar */}
-          {passwords.new && (
-            <div className="max-w-md">
-              <div className="flex gap-1 mb-1">
-                {[1, 2, 3, 4].map((level) => (
-                  <div
-                    key={level}
-                    className={`h-1 flex-1 rounded-full transition-colors ${
-                      level <= passwordStrength ? strengthColors[passwordStrength] : "bg-gray-200"
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="text-xs text-text-muted">
-                Force du mot de passe : {strengthLabels[passwordStrength]}
+        <div className="rounded-2xl border border-primary/20 bg-primary-light p-4">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined flex-shrink-0 text-xl text-primary">
+              info
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-body text-sm font-medium text-text-primary">
+                Besoin de gérer les permissions des utilisateurs ?
+              </p>
+              <p className="mt-0.5 font-body text-xs text-text-muted">
+                Accédez à la page Utilisateurs pour attribuer des rôles et gérer
+                les accès.
               </p>
             </div>
-          )}
-
-          {/* Submit button */}
-          <div className="flex justify-end pt-2">
-            <button
-              type="submit"
-              className="px-5 py-2.5 rounded-xl bg-primary font-display font-semibold text-sm text-white hover:bg-primary-dark transition-colors shadow-md"
+            <a
+              href="/dashboard/users"
+              className="flex items-center gap-1 whitespace-nowrap font-body text-sm font-semibold text-primary no-underline transition-colors hover:text-primary-dark"
             >
-              Mettre à jour le mot de passe
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="border-t border-border my-6" />
-
-      {/* Section: Double authentification */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-xl text-text-secondary">shield</span>
-          <div>
-            <h3 className="text-sm font-display font-semibold text-text-primary">
-              Double authentification (2FA)
-            </h3>
-            <p className="text-xs text-text-muted">
-              Ajoutez une couche de sécurité supplémentaire
-            </p>
+              Gérer les rôles
+              <span className="material-symbols-outlined text-base">
+                arrow_forward
+              </span>
+            </a>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-body text-text-primary">
-              Authentification à deux facteurs
-            </p>
-            <p className="text-xs text-text-muted mt-0.5">
-              Recevez un code de vérification sur votre téléphone lors de la connexion.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span
-              className={`px-2 py-1 rounded-lg text-xs font-medium ${
-                twoFactorEnabled
-                  ? "bg-green-100 text-green-700"
-                  : "bg-bg-soft text-text-muted"
-              }`}
-            >
-              {twoFactorEnabled ? "Activé" : "Désactivé"}
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+          <div className="flex items-start gap-3">
+            <span className="material-symbols-outlined flex-shrink-0 text-xl text-red-500">
+              warning
             </span>
+            <div className="flex-1">
+              <h3 className="font-display text-sm font-semibold text-red-600">
+                Zone dangereuse
+              </h3>
+              <p className="mt-1 font-body text-sm text-red-600/80">
+                La suppression du compte est irréversible. Toutes vos données,
+                candidatures et historiques seront définitivement supprimés.
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
             <button
               type="button"
-              role="switch"
-              aria-checked={twoFactorEnabled}
-              onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 ${
-                twoFactorEnabled ? "bg-primary" : "bg-gray-200"
-              }`}
+              className="rounded-xl border border-red-200 bg-white px-5 py-2.5 font-body text-sm font-medium text-red-500 transition-colors hover:bg-red-50"
             >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${
-                  twoFactorEnabled ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
+              Supprimer le compte
             </button>
           </div>
-        </div>
-      </div>
-
-      <div className="border-t border-border my-6" />
-
-      {/* Section: Sessions actives */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="material-symbols-outlined text-xl text-text-secondary">devices</span>
-          <div>
-            <h3 className="text-sm font-display font-semibold text-text-primary">
-              Sessions actives
-            </h3>
-            <p className="text-xs text-text-muted">
-              Gérez les appareils connectés à votre compte
-            </p>
-          </div>
-        </div>
-
-        <div className="border border-border rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-bg-soft">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-display font-semibold text-text-muted uppercase tracking-wider">
-                  Appareil
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-display font-semibold text-text-muted uppercase tracking-wider">
-                  Localisation
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-display font-semibold text-text-muted uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-display font-semibold text-text-muted uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {sessions.map((session) => (
-                <tr key={session.id}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-xl text-text-secondary">
-                        {session.icon}
-                      </span>
-                      <span className="text-sm font-body text-text-primary">
-                        {session.device}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-body text-text-secondary">
-                    {session.location}
-                  </td>
-                  <td className="px-4 py-3">
-                    {session.current ? (
-                      <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium">
-                        {session.date}
-                      </span>
-                    ) : (
-                      <span className="text-sm font-body text-text-secondary">
-                        {session.date}
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {!session.current && (
-                      <button
-                        onClick={() => handleRevokeSession(session.id)}
-                        className="text-sm font-body font-medium text-red-500 hover:text-red-600 transition-colors"
-                      >
-                        Révoquer
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="border-t border-border my-6" />
-
-      {/* Section: Gestion des rôles (info card) */}
-      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4">
-        <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-xl text-primary">info</span>
-          <div className="flex-1">
-            <p className="text-sm font-body text-text-primary">
-              Besoin de gérer les permissions des utilisateurs ?
-            </p>
-            <p className="text-xs text-text-muted mt-0.5">
-              Accédez à la page Utilisateurs pour attribuer des rôles et gérer les accès.
-            </p>
-          </div>
-          <a
-            href="/dashboard/users"
-            className="text-sm font-display font-semibold text-primary hover:text-primary-dark transition-colors"
-          >
-            Gérer les rôles →
-          </a>
-        </div>
-      </div>
-
-      <div className="border-t border-border my-6" />
-
-      {/* Section: Zone de danger */}
-      <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
-        <div className="flex items-start gap-3">
-          <span className="material-symbols-outlined text-xl text-red-500">warning</span>
-          <div className="flex-1">
-            <h3 className="text-sm font-display font-semibold text-red-600">
-              Supprimer le compte entreprise
-            </h3>
-            <p className="text-sm font-body text-red-500 mt-1">
-              Cette action est irréversible. Toutes vos données, candidatures, offres d'emploi
-              et historiques seront définitivement supprimés.
-            </p>
-          </div>
-        </div>
-        <div className="flex justify-end mt-4">
-          <button className="px-5 py-2.5 rounded-xl border border-red-200 bg-white font-body font-medium text-sm text-red-500 hover:bg-red-50 transition-colors">
-            Supprimer le compte
-          </button>
         </div>
       </div>
     </div>

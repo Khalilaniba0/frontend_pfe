@@ -1,67 +1,121 @@
 import React from "react";
 
 export default function UpcomingInterviews() {
-  var interviews = [
+  const interviews = [
     {
-      name: "Sarah Chen",
-      role: "Ingénieur senior",
-      time: "10:00 AM",
-      initials: "SC",
-      color: "bg-pink-200 text-pink-700",
+      name: "Amira Khoury",
+      role: "Ingénieure senior",
+      time: "10:00",
+      type: "Technique",
+      initials: "AK",
+      gradient: "from-pink-400 to-rose-500",
     },
     {
-      name: "Mike Ross",
+      name: "Thomas Petit",
       role: "Responsable marketing",
-      time: "1:30 PM",
-      initials: "MR",
-      color: "bg-lightBlue-200 text-lightBlue-700",
+      time: "13:30",
+      type: "RH",
+      initials: "TP",
+      gradient: "from-sky-400 to-blue-500",
     },
     {
-      name: "Emily Davis",
+      name: "Fatou Diallo",
       role: "Designer produit",
-      time: "3:45 PM",
-      initials: "ED",
-      color: "bg-amber-200 text-amber-700",
+      time: "15:45",
+      type: "Final",
+      initials: "FD",
+      gradient: "from-amber-400 to-orange-500",
     },
   ];
 
+  const getTypeStyle = function (type) {
+    switch (type) {
+      case "Technique":
+        return "bg-indigo-50 text-indigo-600";
+      case "RH":
+        return "bg-secondary-light text-secondary";
+      case "Final":
+        return "bg-primary-light text-primary";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-border p-5">
-      <h3 className="font-display text-lg font-semibold text-text-primary mb-4">
-        Entretiens à venir
-      </h3>
-      <div className="flex flex-col" style={{ gap: "0px" }}>
-        {interviews.map(function (iv, i) {
+    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
+      <header className="mb-4 flex items-center justify-between">
+        <div>
+          <h3 className="font-display text-lg font-semibold tracking-tight text-text-primary">
+            Entretiens à venir
+          </h3>
+          <p className="mt-0.5 font-body text-xs text-text-muted">
+            Aujourd'hui — {interviews.length} programmés
+          </p>
+        </div>
+        <button
+          type="button"
+          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 font-body text-xs font-medium text-text-secondary transition-colors duration-150 hover:border-primary hover:text-primary"
+        >
+          <i className="fas fa-calendar-alt text-[10px]"></i>
+          Calendrier
+        </button>
+      </header>
+
+      <ul className="flex flex-col">
+        {interviews.map(function (interview, index) {
           return (
-            <div
-              key={i}
+            <li
+              key={index}
               className={
-                "flex items-center py-3 " +
-                (i < interviews.length - 1 ? "border-b border-border" : "")
+                "group flex items-center gap-4 py-3.5 transition-colors duration-150 " +
+                (index < interviews.length - 1 ? "border-b border-border" : "")
               }
-              style={{ gap: "12px" }}
             >
               <div
                 className={
-                  "w-8 h-8 rounded-full flex items-center justify-center font-body text-xs font-semibold flex-shrink-0 " +
-                  iv.color
+                  "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-body text-xs font-bold text-white shadow-sm " +
+                  interview.gradient
                 }
               >
-                {iv.initials}
+                {interview.initials}
               </div>
-              <span className="font-body text-sm font-medium text-text-primary" style={{ flex: 1 }}>
-                {iv.name}
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-body text-sm font-semibold text-text-primary">
+                  {interview.name}
+                </p>
+                <p className="truncate font-body text-xs text-text-secondary">
+                  {interview.role}
+                </p>
+              </div>
+
+              <span
+                className={
+                  "hidden rounded-md px-2 py-1 font-body text-xs font-medium sm:inline-block " +
+                  getTypeStyle(interview.type)
+                }
+              >
+                {interview.type}
               </span>
-              <span className="font-body text-xs text-text-secondary" style={{ flex: 1 }}>
-                {iv.role}
-              </span>
-              <span className="font-body text-sm font-medium text-text-primary">
-                {iv.time}
-              </span>
-            </div>
+
+              <div className="flex items-center gap-1.5 text-text-primary">
+                <i className="fas fa-clock text-xs text-text-muted"></i>
+                <span className="font-body text-sm font-semibold tabular-nums">
+                  {interview.time}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted opacity-0 transition-all duration-150 hover:bg-primary-light hover:text-primary group-hover:opacity-100"
+                title="Voir les détails"
+              >
+                <i className="fas fa-chevron-right text-xs"></i>
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }

@@ -1,16 +1,40 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const STATUS_STYLES = {
-  Ouverte: "bg-indigo-100 text-indigo-700",
-  "En pause": "bg-orange-100 text-orange-700",
-  Fermée: "bg-gray-200 text-gray-500",
+const STATUS_CONFIG = {
+  Ouverte: {
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    dot: "bg-emerald-500",
+  },
+  "En pause": {
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    dot: "bg-amber-500",
+  },
+  Fermée: {
+    bg: "bg-slate-100",
+    text: "text-slate-500",
+    dot: "bg-slate-400",
+  },
 };
 
 export default function StatusBadge({ status }) {
-  const style = STATUS_STYLES[status] || "bg-gray-100 text-gray-500";
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG["Fermée"];
+
   return (
-    <span className={`inline-flex items-center px-2 py-1 rounded-full font-body text-xs font-semibold uppercase ${style}`}>
+    <span
+      className={
+        "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-body text-xs font-semibold " +
+        config.bg +
+        " " +
+        config.text
+      }
+    >
+      <span
+        className={"h-1.5 w-1.5 rounded-full " + config.dot}
+        aria-hidden="true"
+      ></span>
       {status}
     </span>
   );
