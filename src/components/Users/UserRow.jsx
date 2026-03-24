@@ -2,6 +2,10 @@ import React from "react";
 import PropTypes from "prop-types";
 
 export default function UserRow({ user, onEdit }) {
+  const userName = user.name || "Utilisateur";
+  const userStatus = user.status || "Actif";
+  const userLastLogin = user.lastLogin || "N/A";
+
   const getInitials = function (name) {
     return name
       .split(" ")
@@ -21,7 +25,7 @@ export default function UserRow({ user, onEdit }) {
   ];
 
   const gradientIndex =
-    user.name.split("").reduce(function (acc, char) {
+    userName.split("").reduce(function (acc, char) {
       return acc + char.charCodeAt(0);
     }, 0) % gradients.length;
 
@@ -46,7 +50,7 @@ export default function UserRow({ user, onEdit }) {
           {user.avatar ? (
             <img
               src={user.avatar}
-              alt={user.name}
+              alt={userName}
               className="h-10 w-10 rounded-xl object-cover"
             />
           ) : (
@@ -56,12 +60,12 @@ export default function UserRow({ user, onEdit }) {
                 gradients[gradientIndex]
               }
             >
-              {getInitials(user.name)}
+              {getInitials(userName)}
             </div>
           )}
           <div className="min-w-0">
             <p className="truncate font-body text-sm font-semibold text-text-primary">
-              {user.name}
+              {userName}
             </p>
             <p className="truncate font-body text-xs text-text-secondary">
               {user.email}
@@ -85,21 +89,21 @@ export default function UserRow({ user, onEdit }) {
         <span
           className={
             "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-body text-xs font-medium " +
-            getStatusClasses(user.status)
+            getStatusClasses(userStatus)
           }
         >
           <span
             className={
               "h-1.5 w-1.5 rounded-full " +
-              (user.status === "Actif" ? "bg-emerald-500" : "bg-text-muted")
+              (userStatus === "Actif" ? "bg-emerald-500" : "bg-text-muted")
             }
           ></span>
-          {user.status}
+          {userStatus}
         </span>
       </td>
 
       <td className="px-4 py-4">
-        <p className="font-body text-sm text-text-secondary">{user.lastLogin}</p>
+        <p className="font-body text-sm text-text-secondary">{userLastLogin}</p>
       </td>
 
       <td className="px-4 py-4">
@@ -107,7 +111,7 @@ export default function UserRow({ user, onEdit }) {
           <button
             type="button"
             onClick={function () {
-              onEdit && onEdit(user.id);
+              onEdit && onEdit(user._id);
             }}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-primary-light hover:text-primary"
             title="Modifier"

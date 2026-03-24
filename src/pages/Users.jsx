@@ -3,66 +3,20 @@ import UserStatsCard from "components/Users/UserStatsCard";
 import UserTable from "components/Users/UserTable";
 import CreateUserModal from "components/Users/CreateUserModal";
 
-const INITIAL_USERS = [
-  {
-    id: 1,
-    name: "Marie Dupont",
-    email: "marie.d@company.com",
-    role: "Admin",
-    status: "Actif",
-    lastLogin: "Aujourd'hui",
-  },
-  {
-    id: 2,
-    name: "Lucas Bernard",
-    email: "lucas.b@company.com",
-    role: "RH",
-    status: "Actif",
-    lastLogin: "Hier",
-  },
-  {
-    id: 3,
-    name: "Sophie Martin",
-    email: "s.martin@company.com",
-    role: "RH",
-    status: "Inactif",
-    lastLogin: "Il y a 7 jours",
-  },
-  {
-    id: 4,
-    name: "Thomas Petit",
-    email: "t.petit@company.com",
-    role: "RH",
-    status: "Actif",
-    lastLogin: "Il y a 2 jours",
-  },
-];
+
 
 export default function Users() {
-  const [users, setUsers] = useState(INITIAL_USERS);
   const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
 
-  const totalUsers = users.length;
-  const totalAdmins = users.filter(function (u) {
-    return u.role === "Admin";
-  }).length;
-  const totalRH = users.filter(function (u) {
-    return u.role === "RH";
-  }).length;
-  const totalActifs = users.filter(function (u) {
-    return u.status === "Actif";
-  }).length;
+  
 
   const handleCreateUser = function (newUserData) {
     const newUser = {
       id: Date.now(),
       ...newUserData,
     };
-    setUsers(function (prev) {
-      return [...prev, newUser];
-    });
     setLastCreated(newUserData.name);
     setShowModal(false);
     setShowSuccess(true);
@@ -74,15 +28,7 @@ export default function Users() {
   const handleEdit = function (userId) {
   };
 
-  const handleDelete = function (userId) {
-    if (window.confirm("Supprimer cet utilisateur ?")) {
-      setUsers(function (prev) {
-        return prev.filter(function (u) {
-          return u.id !== userId;
-        });
-      });
-    }
-  };
+
 
   return (
     <>
@@ -135,34 +81,9 @@ export default function Users() {
           </div>
         )}
 
-        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <UserStatsCard
-            icon="group"
-            label="Total utilisateurs"
-            value={totalUsers}
-            color="primary"
-          />
-          <UserStatsCard
-            icon="admin_panel_settings"
-            label="Administrateurs"
-            value={totalAdmins}
-            color="secondary"
-          />
-          <UserStatsCard
-            icon="badge"
-            label="Responsables RH"
-            value={totalRH}
-            color="warning"
-          />
-          <UserStatsCard
-            icon="verified"
-            label="Utilisateurs actifs"
-            value={totalActifs}
-            color="success"
-          />
-        </div>
+        
 
-        <UserTable users={users} onEdit={handleEdit} onDelete={handleDelete} />
+        <UserTable  onEdit={handleEdit}  />
       </div>
 
       {showModal && (

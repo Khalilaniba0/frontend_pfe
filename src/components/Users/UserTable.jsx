@@ -1,16 +1,25 @@
-import React, { useState  } from "react";
+import React, { useCallback, useState  } from "react";
 import PropTypes from "prop-types";
 import UserRow from "components/Users/UserRow";
+import { getAllUsers } from "../../service/restApiUser";
 
-export default function UserTable({ users, onEdit, onDelete }) {
+
+export default function UserTable({  onEdit, onDelete }) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  
+  const [users, setUsers] = useState([]);
+  const getUsers = useCallback(async () => {
+    try {
+      const res = await getAllUsers();
+      setUsers(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  }, []);
+  React.useEffect(() => {
+    getUsers();
+  }, [getUsers]);
   return (
     <div className="bg-white rounded-2xl border border-border overflow-hidden">
       {/* Header avec recherche */}
@@ -55,27 +64,14 @@ export default function UserTable({ users, onEdit, onDelete }) {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <UserRow
-                  key={user.id}
-                  user={user}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="py-12 text-center">
-                  <span className="material-symbols-outlined text-4xl text-text-muted mb-2">
-                    person_search
-                  </span>
-                  <p className="font-body text-text-secondary text-sm">
-                    Aucun utilisateur trouve
-                  </p>
-                </td>
-              </tr>
-            )}
+            {users?.map((user) => (
+              <UserRow
+                key={user._id}
+                user={user}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
           </tbody>
         </table>
       </div>

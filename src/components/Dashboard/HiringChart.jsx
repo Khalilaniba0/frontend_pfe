@@ -2,7 +2,11 @@ import React, { useEffect, useRef } from "react";
 import {
   Chart,
   BarController,
+  LineController,
   BarElement,
+  LineElement,
+  PointElement,
+  Filler,
   CategoryScale,
   LinearScale,
   Tooltip,
@@ -11,16 +15,43 @@ import {
 
 Chart.register(
   BarController,
+  LineController,
   BarElement,
+  LineElement,
+  PointElement,
+  Filler,
   CategoryScale,
   LinearScale,
   Tooltip,
   Legend
 );
 
+// Données mock — facilement remplaçables par un appel API
+// Pour connecter au backend : const [chartData, setChartData] = useState(null);
+// useEffect(() => { fetch("/api/dashboard/hiring-stats").then(...) }, []);
+const chartData = {
+  labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
+  candidatures: [45, 62, 38, 71, 58, 83],
+  pourvus: [8, 12, 7, 15, 11, 18],
+  tauxConversion: [18, 19, 18, 21, 19, 22],
+};
+
 export default function HiringChart() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+
+  // KPI calculés
+  const totalCandidatures = chartData.candidatures.reduce(function (a, b) {
+    return a + b;
+  }, 0);
+  const totalPourvus = chartData.pourvus.reduce(function (a, b) {
+    return a + b;
+  }, 0);
+  const tauxMoyen = Math.round(
+    chartData.tauxConversion.reduce(function (a, b) {
+      return a + b;
+    }, 0) / chartData.tauxConversion.length
+  );
 
   useEffect(function () {
     if (chartRef.current) {
@@ -33,27 +64,49 @@ export default function HiringChart() {
       chartInstance.current = new Chart(ctx, {
         type: "bar",
         data: {
-          labels: ["Avr", "Mai", "Juin"],
+          labels: chartData.labels,
           datasets: [
             {
-              label: "Pourvus",
-              backgroundColor: "#13c8ec",
+              type: "bar",
+              label: "Candidatures reçues",
+              data: chartData.candidatures,
+              backgroundColor: "#13c8ec26",
               borderColor: "#13c8ec",
-              data: [58, 72, 91],
-              barPercentage: 0.6,
-              categoryPercentage: 0.55,
-              borderRadius: 6,
+              borderWidth: 2,
+              borderRadius: 8,
               borderSkipped: false,
+              yAxisID: "y",
+              barPercentage: 0.55,
+              categoryPercentage: 0.6,
             },
             {
-              label: "Ouverts",
-              backgroundColor: "#36d1bc",
+              type: "bar",
+              label: "Postes pourvus",
+              data: chartData.pourvus,
+              backgroundColor: "#36d1bc26",
               borderColor: "#36d1bc",
-              data: [42, 48, 63],
-              barPercentage: 0.6,
-              categoryPercentage: 0.55,
-              borderRadius: 6,
+              borderWidth: 2,
+              borderRadius: 8,
               borderSkipped: false,
+              yAxisID: "y",
+              barPercentage: 0.55,
+              categoryPercentage: 0.6,
+            },
+            {
+              type: "line",
+              label: "Taux de conversion %",
+              data: chartData.tauxConversion,
+              borderColor: "#0b61f5",
+              backgroundColor: "#0b61f515",
+              borderWidth: 2.5,
+              pointBackgroundColor: "#0b61f5",
+              pointBorderColor: "#fff",
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              fill: true,
+              tension: 0.4,
+              yAxisID: "y2",
             },
           ],
         },
@@ -83,6 +136,14 @@ export default function HiringChart() {
               boxWidth: 8,
               boxHeight: 8,
               boxPadding: 4,
+              callbacks: {
+                label: function (context) {
+                  if (context.dataset.label === "Taux de conversion %") {
+                    return " Taux de conversion : " + context.parsed.y + "%";
+                  }
+                  return " " + context.dataset.label + " : " + context.parsed.y;
+                },
+              },
             },
           },
           scales: {
@@ -99,22 +160,33 @@ export default function HiringChart() {
               border: { display: false },
             },
             y: {
-              grid: {
-                color: "#f1f5f9",
-                drawBorder: false,
-              },
+              type: "linear",
+              position: "left",
+              beginAtZero: true,
+              max: 100,
+              grid: { color: "#f1f5f9" },
               border: { display: false },
               ticks: {
                 color: "#94a3b8",
-                font: {
-                  family: "DM Sans",
-                  size: 11,
-                },
+                font: { family: "DM Sans", size: 11 },
+                stepSize: 20,
                 padding: 8,
-                stepSize: 25,
               },
+            },
+            y2: {
+              type: "linear",
+              position: "right",
               beginAtZero: true,
-              max: 100,
+              max: 40,
+              grid: { drawOnChartArea: false },
+              border: { display: false },
+              ticks: {
+                color: "#0b61f5",
+                font: { family: "DM Sans", size: 11 },
+                callback: function (value) {
+                  return value + "%";
+                },
+              },
             },
           },
         },
@@ -129,31 +201,54 @@ export default function HiringChart() {
   }, []);
 
   return (
-    <div className="flex h-[300px] flex-col rounded-2xl border border-border bg-white p-5 shadow-sm">
+    <div className="flex h-[380px] flex-col rounded-2xl border border-border bg-white p-5 shadow-sm">
       <header className="mb-4 flex items-start justify-between">
         <div>
           <h3 className="font-display text-lg font-semibold tracking-tight text-text-primary">
             Aperçu des recrutements
           </h3>
           <p className="mt-0.5 font-body text-xs text-text-muted">
-            Trimestre 2 — Avril à Juin
+            6 derniers mois
           </p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-sm bg-primary"></span>
             <span className="font-body text-xs font-medium text-text-secondary">
-              Pourvus
+              Candidatures
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-sm bg-secondary"></span>
             <span className="font-body text-xs font-medium text-text-secondary">
-              Ouverts
+              Pourvus
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-sm bg-blue-500"></span>
+            <span className="font-body text-xs font-medium text-text-secondary">
+              Conversion
             </span>
           </div>
         </div>
       </header>
+
+      {/* KPI Pills */}
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1.5 font-display text-xs font-semibold text-primary">
+          <span className="material-symbols-outlined text-sm">inbox</span>
+          {totalCandidatures} Candidatures
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary-light px-3 py-1.5 font-display text-xs font-semibold text-secondary">
+          <span className="material-symbols-outlined text-sm">check_circle</span>
+          {totalPourvus} Pourvus
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 font-display text-xs font-semibold text-blue-600">
+          <span className="material-symbols-outlined text-sm">trending_up</span>
+          {tauxMoyen}% Conversion
+        </span>
+      </div>
+
       <div className="relative min-h-0 flex-1">
         <canvas ref={chartRef}></canvas>
       </div>

@@ -1,17 +1,61 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import StatCard from "components/Dashboard/StatCard.jsx";
 import HiringChart from "components/Dashboard/HiringChart.jsx";
 import RecentActivity from "components/Dashboard/RecentActivity.jsx";
 import UpcomingInterviews from "components/Dashboard/UpcomingInterviews.jsx";
 
+// Données mock pour développement local
+const MOCK_STATS = {
+  candidatures_en_attente: { total: 128, nouvelles_aujourd_hui: 23 },
+  postes_ouverts: { total: 47, en_cloture_cette_semaine: 8 },
+  entretiens_cette_semaine: { total: 12, aujourd_hui: 3, demain: 4 },
+  offres_en_attente: { total: 6, delai_moyen_reponse_jours: 3 },
+};
+
 export default function Dashboard() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const today = new Date();
   const formattedDate = today.toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
+
+  useEffect(function () {
+    // Simuler un appel API avec les données mock
+    // Remplacer par fetch("/api/dashboard/stats") quand le backend est prêt
+    const fetchStats = function () {
+      setLoading(true);
+      setError(null);
+
+      // Simulation d'un délai réseau
+      setTimeout(function () {
+        try {
+          // TODO: Remplacer par un vrai appel API
+          // fetch("/api/dashboard/stats")
+          //   .then((res) => {
+          //     if (!res.ok) throw new Error("Erreur serveur");
+          //     return res.json();
+          //   })
+          //   .then((data) => setStats(data))
+          //   .catch((err) => setError(err.message))
+          //   .finally(() => setLoading(false));
+
+          setStats(MOCK_STATS);
+          setLoading(false);
+        } catch (err) {
+          setError(err.message);
+          setLoading(false);
+        }
+      }, 300);
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="animate-fade-in">
@@ -29,42 +73,92 @@ export default function Dashboard() {
         </p>
       </header>
 
-      <section className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          statTitle="Total employés"
-          statValue="1 254"
-          statTrend="+2,5%"
-          trendLabel="vs mois dernier"
-          iconClass="fas fa-users"
-          iconBgColor="bg-primary-light"
-          iconTextColor="text-primary"
-          variant="highlight"
-        />
-        <StatCard
-          statTitle="Recrutements actifs"
-          statValue="47"
-          statSubtext="8 postes en clôture"
-          iconClass="fas fa-briefcase"
-          iconBgColor="bg-secondary-light"
-          iconTextColor="text-secondary"
-        />
-        <StatCard
-          statTitle="Congés en attente"
-          statValue="12"
-          statSubtext="À examiner"
-          iconClass="fas fa-calendar-alt"
-          iconBgColor="bg-orange-50"
-          iconTextColor="text-orange-500"
-        />
-        <StatCard
-          statTitle="Entretiens ce mois"
-          statValue="34"
-          statTrend="+18%"
-          trendLabel="vs mois dernier"
-          iconClass="fas fa-video"
-          iconBgColor="bg-indigo-50"
-          iconTextColor="text-indigo-500"
-        />
+      <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {loading ? (
+          // Skeleton loading state
+          <>
+            {[1, 2, 3, 4].map(function (i) {
+              return (
+                <div
+                  key={i}
+                  className="animate-pulse rounded-2xl border border-border bg-white p-5"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="mb-2 h-4 w-24 rounded bg-gray-200"></div>
+                      <div className="mb-2 h-8 w-16 rounded bg-gray-200"></div>
+                      <div className="h-3 w-32 rounded bg-gray-200"></div>
+                    </div>
+                    <div className="h-11 w-11 rounded-xl bg-gray-200"></div>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        ) : error ? (
+          // Error state
+          <div className="col-span-full rounded-2xl border border-red-200 bg-red-50 p-5">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-red-500">
+                error
+              </span>
+              <div>
+                <p className="font-display text-sm font-semibold text-red-700">
+                  Erreur de chargement
+                </p>
+                <p className="font-body text-xs text-red-600">{error}</p>
+              </div>
+            </div>
+          </div>
+        ) : stats ? (
+          // Loaded state
+          <>
+            <StatCard
+              icon="inbox"
+              label="Candidatures en attente"
+              value={stats.candidatures_en_attente.total}
+              subLabel={
+                "+" +
+                stats.candidatures_en_attente.nouvelles_aujourd_hui +
+                " nouvelles aujourd'hui"
+              }
+              color="primary"
+            />
+            <StatCard
+              icon="folder_open"
+              label="Postes ouverts"
+              value={stats.postes_ouverts.total}
+              subLabel={
+                stats.postes_ouverts.en_cloture_cette_semaine +
+                " postes en clôture cette semaine"
+              }
+              color="secondary"
+            />
+            <StatCard
+              icon="videocam"
+              label="Entretiens cette semaine"
+              value={stats.entretiens_cette_semaine.total}
+              subLabel={
+                stats.entretiens_cette_semaine.aujourd_hui +
+                " auj. · " +
+                stats.entretiens_cette_semaine.demain +
+                " demain"
+              }
+              color="warning"
+            />
+            <StatCard
+              icon="description"
+              label="Offres en attente"
+              value={stats.offres_en_attente.total}
+              subLabel={
+                "Délai moyen de réponse : " +
+                stats.offres_en_attente.delai_moyen_reponse_jours +
+                " jours"
+              }
+              color="success"
+            />
+          </>
+        ) : null}
       </section>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
