@@ -16,7 +16,7 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg-page">
+    <div className="flex h-[100dvh] overflow-hidden bg-bg-page">
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Overlay for mobile sidebar */}

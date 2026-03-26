@@ -163,7 +163,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Candidat <span className="text-red-400">*</span>
@@ -256,7 +256,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Heure de début <span className="text-red-400">*</span>

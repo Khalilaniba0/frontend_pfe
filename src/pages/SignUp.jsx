@@ -185,7 +185,7 @@ export default function SignUp() {
                   </div>
 
                   {/* OAuth Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <button
                       className="flex items-center justify-center gap-2 border border-slate-200 rounded-lg py-2.5 bg-white cursor-pointer transition-colors hover:bg-slate-50"
                       type="button"

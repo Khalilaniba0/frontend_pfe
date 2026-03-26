@@ -159,7 +159,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Prénom <span className="text-red-400">*</span>
@@ -229,7 +229,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Téléphone

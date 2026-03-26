@@ -837,7 +837,7 @@ export default function Recruitment() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center gap-3 sm:w-auto">
           <div className="relative">
             <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-text-muted">
               filter_list
@@ -898,11 +898,11 @@ export default function Recruitment() {
       />
 
       {lastMove && (
-        <div className="fixed bottom-4 left-4 z-50 flex items-center gap-3 rounded-xl bg-text-primary px-4 py-3 text-white shadow-lg animate-fade-in">
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-text-primary px-4 py-3 text-white shadow-lg animate-fade-in sm:right-auto sm:max-w-md">
           <span className="material-symbols-outlined text-lg text-secondary">
             check_circle
           </span>
-          <span className="font-body text-sm font-medium">
+          <span className="min-w-0 flex-1 truncate font-body text-sm font-medium">
             {lastMove.candidate.name} → {lastMove.toColumn}
           </span>
           <button
@@ -916,8 +916,8 @@ export default function Recruitment() {
       )}
 
       {errorToast && (
-        <div className="fixed bottom-4 left-4 z-50 flex items-center gap-3 rounded-xl bg-red-500 px-4 py-3 text-white shadow-lg animate-fade-in">
-          <span className="font-body text-sm font-medium">{errorToast}</span>
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-red-500 px-4 py-3 text-white shadow-lg animate-fade-in sm:right-auto sm:max-w-md">
+          <span className="break-words font-body text-sm font-medium">{errorToast}</span>
         </div>
       )}
     </div>

@@ -138,7 +138,7 @@ export default function Jobs() {
             recrutements actifs
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
             className="flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 font-body text-sm font-medium text-text-primary shadow-sm transition-all duration-150 hover:border-primary/30 hover:shadow-md"
@@ -199,15 +199,15 @@ export default function Jobs() {
       )}
 
       {toast && (
-        <div className="fixed right-6 top-6 z-[9999] flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 shadow-lg">
+        <div className="fixed left-4 right-4 top-4 z-[9999] flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 shadow-lg sm:left-auto sm:right-6 sm:top-6 sm:max-w-md">
           <span className="material-symbols-outlined text-success">
             check_circle
           </span>
-          <div>
+          <div className="min-w-0">
             <p className="font-display text-sm font-semibold text-text-primary">
               Offre publiée avec succès
             </p>
-            <p className="text-xs text-text-secondary">
+            <p className="break-words text-xs text-text-secondary">
               "{toast}" a été ajoutée à vos offres actives.
             </p>
           </div>

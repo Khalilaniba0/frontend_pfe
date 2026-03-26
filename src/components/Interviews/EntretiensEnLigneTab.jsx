@@ -67,7 +67,7 @@ export default function EntretiensEnLigneTab() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-display text-lg font-semibold text-text-primary">
             Entretiens vidéo programmés
@@ -124,7 +124,7 @@ export default function EntretiensEnLigneTab() {
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-2 gap-4">
+              <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex items-center gap-2.5 rounded-lg bg-bg-soft px-3 py-2">
                   <span className="material-symbols-outlined text-lg text-primary">
                     calendar_today
@@ -143,7 +143,7 @@ export default function EntretiensEnLigneTab() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 border-t border-border pt-4">
+              <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center">
                 <div className="flex flex-1 items-center gap-2 overflow-hidden rounded-lg bg-bg-soft px-3 py-2">
                   <span className="material-symbols-outlined text-lg text-text-muted">
                     link
@@ -160,7 +160,7 @@ export default function EntretiensEnLigneTab() {
                       candidat: entretien.candidat,
                     });
                   }}
-                  className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark hover:shadow-md"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 font-body text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-primary-dark hover:shadow-md sm:w-auto"
                 >
                   <span className="material-symbols-outlined text-lg">
                     video_call
