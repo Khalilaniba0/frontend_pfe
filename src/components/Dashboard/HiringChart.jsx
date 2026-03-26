@@ -201,7 +201,7 @@ export default function HiringChart() {
   }, []);
 
   return (
-    <div className="flex h-[380px] flex-col rounded-2xl border border-border bg-white p-5 shadow-sm">
+    <div className="flex h-64 sm:h-80 lg:h-[380px] flex-col rounded-2xl border border-border bg-white p-5 shadow-sm">
       <header className="mb-4 flex items-start justify-between">
         <div>
           <h3 className="font-display text-lg font-semibold tracking-tight text-text-primary">

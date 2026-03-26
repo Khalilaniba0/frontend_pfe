@@ -20,7 +20,7 @@ export default function Settings() {
   return (
     <div className="animate-fade-in">
       <header className="mb-6">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
+        <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
           Paramètres
         </h1>
         <p className="mt-1 font-body text-sm text-text-secondary">
