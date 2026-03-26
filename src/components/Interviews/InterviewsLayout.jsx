@@ -22,9 +22,9 @@ export default function InterviewsLayout({
   children,
 }) {
   return (
-    <div className="flex items-start gap-6 rounded-2xl border border-border bg-white shadow-sm">
+    <div className="flex flex-col lg:flex-row items-start gap-6 rounded-2xl border border-border bg-white shadow-sm">
       {/* Colonne gauche - Navigation sticky */}
-      <div className="sticky top-6 w-64 flex-shrink-0 self-start bg-bg-soft/30 p-4">
+      <div className="w-full lg:sticky lg:top-6 lg:w-64 flex-shrink-0 lg:self-start bg-bg-soft/30 p-4">
         <p className="mb-4 px-3 font-body text-[10px] font-semibold uppercase tracking-wider text-text-muted">
           Entretiens
         </p>
@@ -85,7 +85,7 @@ export default function InterviewsLayout({
       </div>
 
       {/* Colonne droite - Contenu */}
-      <div className="min-w-0 flex-1 border-l border-border p-6">{children}</div>
+      <div className="min-w-0 flex-1 border-t lg:border-t-0 lg:border-l border-border p-6">{children}</div>
     </div>
   );
 }

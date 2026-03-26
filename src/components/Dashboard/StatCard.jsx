@@ -51,7 +51,7 @@ export default function StatCard({
         <p className="font-body text-sm font-medium text-text-secondary">
           {label}
         </p>
-        <p className="font-display text-3xl font-bold tabular-nums tracking-tight text-text-primary">
+        <p className="font-display text-2xl font-bold tabular-nums tracking-tight text-text-primary lg:text-3xl">
           {typeof value === "number" ? value.toLocaleString("fr-FR") : value}
         </p>
         {subLabel && (

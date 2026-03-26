@@ -59,7 +59,7 @@ export default function PipelineColumn({
 
   return (
     <div
-      className="w-64 flex-shrink-0 md:w-auto md:flex-1"
+      className="min-w-[280px] flex-shrink-0 md:w-auto md:flex-1"
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
