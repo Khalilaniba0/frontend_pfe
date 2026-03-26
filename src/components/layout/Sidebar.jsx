@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "context/AuthContext";
 import { NAV_ITEMS } from "constants/navigation";
 
-export default function Sidebar() {
+export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const [activeNav, setActiveNav] = React.useState("Tableau de bord");
   const location = useLocation();
   const { user } = useAuth();
@@ -28,8 +28,17 @@ export default function Sidebar() {
   );
 
   return (
-    <nav className="hidden flex-shrink-0 flex-col overflow-y-auto border-r border-border bg-white md:flex md:w-60">
+    <nav className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 flex-shrink-0 flex-col overflow-y-auto border-r border-border bg-white ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0 lg:flex`}>
       <div className="flex items-center gap-3 px-5 py-5">
+        {/* Close button for mobile */}
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(false)}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-bg-soft hover:text-text-primary lg:hidden"
+          aria-label="Fermer le menu"
+        >
+          <span className="material-symbols-outlined text-xl">close</span>
+        </button>
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20">
           <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
             <path
@@ -65,6 +74,7 @@ export default function Sidebar() {
                   to={item.path}
                   onClick={function () {
                     setActiveNav(item.label);
+                    setSidebarOpen(false); // Close sidebar on mobile after navigation
                   }}
                 >
                   {isActive && (

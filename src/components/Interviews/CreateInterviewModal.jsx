@@ -123,7 +123,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
 
   return (
     <ModalBackdrop>
-      <div className="flex max-h-[90vh] w-full max-w-2xl animate-scale-in flex-col rounded-2xl border border-border bg-white shadow-2xl">
+      <div className="flex max-h-[90vh] w-full max-w-2xl mx-4 lg:mx-auto animate-scale-in flex-col rounded-2xl border border-border bg-white shadow-2xl overflow-y-auto">
         <div className="flex flex-shrink-0 items-center justify-between border-b border-border px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light">

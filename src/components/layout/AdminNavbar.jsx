@@ -1,7 +1,7 @@
 import React from "react";
 import { useAuth } from "context/AuthContext";
 
-export default function AdminNavbar() {
+export default function AdminNavbar({ sidebarOpen, setSidebarOpen }) {
   const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = React.useState(false);
 
@@ -21,12 +21,13 @@ export default function AdminNavbar() {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-bg-soft hover:text-text-primary md:hidden"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-text-secondary transition-colors duration-150 hover:bg-bg-soft hover:text-text-primary lg:hidden"
           aria-label="Menu"
         >
           <span className="material-symbols-outlined text-xl">menu</span>
         </button>
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <span className="font-body text-sm text-text-muted">Bienvenue,</span>
           <span className="font-body text-sm font-semibold text-text-primary">
             {user?.name?.split(" ")[0] || "Utilisateur"}

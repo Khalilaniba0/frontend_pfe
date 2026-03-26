@@ -35,7 +35,7 @@ export default function Users() {
       <div className="animate-fade-in">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-text-primary md:text-4xl">
+            <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
               Gestion des utilisateurs
             </h1>
             <p className="mt-1 font-body text-sm text-text-secondary">
