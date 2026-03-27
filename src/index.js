@@ -13,6 +13,9 @@ import ProfileForm from "pages/ProfileForm.jsx";
 import Login from "pages/Login.jsx";
 import ForgotPassword from "pages/ForgotPassword.jsx";
 import SignUp from "pages/SignUp.jsx";
+import JobList from "pages/Candidate/JobList.jsx";
+import CandidateLogin from "pages/Candidate/CandidateLogin.jsx";
+import CandidateSignup from "pages/Candidate/CandidateSignup.jsx";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
@@ -24,6 +27,11 @@ root.render(
 
         {/* Landing entreprise */}
         <Route path={ROUTES.LANDING} element={<LandingPage />} />
+
+        {/* Espace candidat */}
+        <Route path={ROUTES.CANDIDATE_OFFRES} element={<JobList />} />
+        <Route path={ROUTES.CANDIDATE_LOGIN} element={<CandidateLogin />} />
+        <Route path={ROUTES.CANDIDATE_SIGNUP} element={<CandidateSignup />} />
 
         {/* Formulaire profil */}
         <Route path={ROUTES.PROFILE_FORM} element={<ProfileForm />} />

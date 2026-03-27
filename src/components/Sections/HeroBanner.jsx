@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { ROUTES } from "constants/routes";
 
 export default function HeroBanner() {
   const canvasRef = useRef(null);
@@ -113,6 +115,21 @@ export default function HeroBanner() {
               décisions d'embauche en un seul espace de travail. Plus clair.
               Plus rapide. <span className="text-slate-700 font-medium">Vraiment efficace.</span>
             </p>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-2">
+               <Link
+                to={ROUTES.SIGNUP}
+                className="rounded-xl bg-gradient-to-br from-primary to-primary-dark px-7 py-3.5 font-body text-base font-semibold text-white shadow-lg shadow-primary/30 transition-all hover:scale-[1.02] hover:shadow-xl w-full sm:w-auto text-center"
+              >
+                Démarrez gratuitement
+              </Link>
+              <Link
+                to={ROUTES.CANDIDATE_OFFRES}
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-7 py-3.5 font-body text-base font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 w-full sm:w-auto text-center"
+              >
+                Vous êtes candidat ? <span className="text-primary">Parcourir les offres</span>
+              </Link>
+            </div>
 
             {/* Social proof */}
             <div className="flex items-center gap-3.5">

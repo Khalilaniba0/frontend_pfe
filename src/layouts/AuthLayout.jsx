@@ -1,13 +1,11 @@
 import React from "react";
-import AuthFooter from "components/layout/AuthFooter.jsx";
 
 export default function AuthLayout({ children }) {
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-bg-page font-body">
-      <main className="flex min-h-0 flex-1 items-stretch overflow-hidden">
+    <div className="flex min-h-[100dvh] flex-col bg-bg-page font-body">
+      <main className="flex min-h-[100dvh] flex-1 items-stretch">
         {children}
       </main>
-      <AuthFooter />
     </div>
   );
 }

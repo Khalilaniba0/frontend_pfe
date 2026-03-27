@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { ROUTES } from "constants/routes";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isLandingPage =
+    location.pathname === ROUTES.LANDING || location.pathname === "/";
+  const isOffresPage = location.pathname.startsWith(ROUTES.CANDIDATE_OFFRES);
+  const isCandidateMenu = isOffresPage && !isLandingPage;
 
   useEffect(function () {
     const onScroll = function () {
@@ -55,29 +61,46 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-8 md:flex">
-          {navLinks.map(function (item) {
-            return (
-              <a
-                key={item.label}
-                href={item.href}
+          {isCandidateMenu ? (
+            <Link
+              to={ROUTES.LANDING}
+              className="font-body text-sm font-medium text-text-secondary transition-colors duration-150 hover:text-primary"
+            >
+              Espace Entreprise
+            </Link>
+          ) : (
+            <>
+              <Link
+                to={ROUTES.CANDIDATE_OFFRES}
                 className="font-body text-sm font-medium text-text-secondary transition-colors duration-150 hover:text-primary"
               >
-                {item.label}
-              </a>
-            );
-          })}
+                Trouver un job
+              </Link>
+              {navLinks.map(function (item) {
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="font-body text-sm font-medium text-text-secondary transition-colors duration-150 hover:text-primary"
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
+            </>
+          )}
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
           <Link
-            to={ROUTES.LOGIN}
+            to={isCandidateMenu ? ROUTES.CANDIDATE_LOGIN : ROUTES.LOGIN}
             className="rounded-xl border border-border bg-white px-5 py-2.5 font-body text-sm font-medium text-text-primary no-underline transition-all duration-150 hover:border-primary hover:text-primary"
           >
             Se connecter
           </Link>
           <Link
             to={ROUTES.SIGNUP}
-            className="rounded-xl bg-gradient-to-br from-primary to-primary-dark px-5 py-2.5 font-body text-sm font-semibold text-white no-underline shadow-md shadow-primary/30 transition-all duration-150 hover:shadow-lg"
+            className="rounded-xl bg-gradient-to-r from-[#00D2FF] to-[#3a7bd5] px-5 py-2.5 font-body text-sm font-semibold text-white no-underline shadow-md shadow-primary/30 transition-all duration-150 hover:shadow-lg"
           >
             S'inscrire gratuitement
           </Link>
@@ -116,22 +139,45 @@ export default function Navbar() {
 
       {menuOpen && (
         <div className="flex flex-col gap-4 border-t border-primary/10 bg-white/98 px-6 py-6 shadow-lg backdrop-blur-xl md:hidden">
-          {navLinks.map(function (item) {
-            return (
-              <a
-                key={item.label}
-                href={item.href}
+          {isCandidateMenu ? (
+            <Link
+              to={ROUTES.LANDING}
+              onClick={function () {
+                setMenuOpen(false);
+              }}
+              className="font-body text-base text-text-secondary transition-colors hover:text-primary"
+            >
+              Espace Entreprise
+            </Link>
+          ) : (
+            <>
+              <Link
+                to={ROUTES.CANDIDATE_OFFRES}
                 onClick={function () {
                   setMenuOpen(false);
                 }}
                 className="font-body text-base text-text-secondary transition-colors hover:text-primary"
               >
-                {item.label}
-              </a>
-            );
-          })}
+                Trouver un job
+              </Link>
+              {navLinks.map(function (item) {
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={function () {
+                      setMenuOpen(false);
+                    }}
+                    className="font-body text-base text-text-secondary transition-colors hover:text-primary"
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
+            </>
+          )}
           <Link
-            to={ROUTES.LOGIN}
+            to={isCandidateMenu ? ROUTES.CANDIDATE_LOGIN : ROUTES.LOGIN}
             onClick={function () {
               setMenuOpen(false);
             }}
@@ -144,7 +190,7 @@ export default function Navbar() {
             onClick={function () {
               setMenuOpen(false);
             }}
-            className="rounded-xl bg-gradient-to-br from-primary to-primary-dark py-3 text-center font-body text-sm font-semibold text-white no-underline shadow-md"
+            className="rounded-xl bg-gradient-to-r from-[#00D2FF] to-[#3a7bd5] py-3 text-center font-body text-sm font-semibold text-white no-underline shadow-md"
           >
             S'inscrire gratuitement
           </Link>

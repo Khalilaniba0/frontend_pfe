@@ -1,83 +1,123 @@
 # Talentia ATS Frontend
 
-Interface web de Talentia ATS (Applicant Tracking System) construite avec React et Tailwind CSS.
+Application web de Talentia ATS (Applicant Tracking System), une plateforme de gestion des ressources humaines dédiée au recrutement de bout en bout : sourcing, pipeline, entretiens, suivi des utilisateurs et administration de plateforme hybride (B2B pour les entreprises, B2C pour les candidats).
 
-## 1) Objectif du projet
+## 🚀 À propos de Talentia
 
-Cette application couvre:
-- un espace public (landing, formulaire candidat)
-- un espace authentification (login, signup, mot de passe oublié)
-- un dashboard RH/Admin (recrutement, offres, entretiens, utilisateurs, paramètres)
+Talentia aide les entreprises modernes à centraliser leur processus d'embauche et offre aux candidats une expérience fluide pour postuler et suivre leurs candidatures.
 
-## 2) État actuel de l'intégration backend
+**Pour les entreprises (Dashboard RH) :**
+- Gestion des offres d'emploi
+- Pipeline de recrutement sous forme de tableau Kanban
+- Programmation et gestion des entretiens (dont intégration visio)
+- Gestion de l'équipe (utilisateurs, rôles)
+- Analytics et rapports de performance d'embauche
 
-Le projet contient du mock data sur plusieurs écrans, mais la consommation API réelle est déjà en place pour la gestion des utilisateurs.
+**Pour les candidats (Portail public & privé) :**
+- Explorateur d'offres avec filtres (teletravail, CDI, etc.)
+- Espace personnel sécurisé
+- Suivi de candidature simplifié
 
-Intégré au backend:
-- liste des utilisateurs via API
-- suppression d'utilisateur via API (fonction service prête)
+## 🏗️ Architecture et Espaces
 
-Encore basé sur des données locales/mock:
-- dashboard analytics
-- pipeline recrutement
-- offres
-- entretiens
-- une partie des paramètres
+Le frontend est divisé en quatre grands espaces avec leurs propres layouts et logiques d'accès :
 
-## 3) Stack technique
+- **Espace vitrine public** (`/landing`) : Page de présentation du produit pour la prospection B2B.
+- **Espace authentification RH** (`/login`, `/signup`) : Inscription et connexion pour les recruteurs et administrateurs.
+- **Espace Candidat** (`/offres`, `/candidat/login`) : Plateforme de recherche d'offres et d'authentification pour les postulants.
+- **Espace Dashboard RH/Admin** (`/dashboard/*`) : Le cœur logiciel de l'ATS, un portail complet pour gérer le recrutement.
 
-- React 19
-- React Router DOM 6
-- Tailwind CSS 3 + @tailwindcss/forms
-- Axios
-- Chart.js
-- react-scripts (CRA)
+## 🛠️ État d'avancement (Intégration API)
 
-## 4) Structure utile (résumé)
+Le projet combine des écrans déjà connectés au backend et des écrans encore alimentés par des données mock.
+
+### Déjà intégré au backend
+
+- Récupération de la liste des utilisateurs
+- Suppression d'un utilisateur
+- Récupération des offres candidat via l'endpoint /offre/getAllOffres
+
+### Encore en mock/local
+
+- Dashboard analytics
+- Pipeline de recrutement
+- Entretiens
+- Une partie des paramètres
+
+## 💻 Stack technique
+
+- **Framework :** React 19
+- **Routage :** React Router DOM 6
+- **Style :** Tailwind CSS 3 (avec `@tailwindcss/forms`)
+- **Icônes :** Lucide React, FontAwesome, Material Symbols
+- **Appels HTTP :** Axios
+- **Graphiques :** Chart.js
+- **Build Tool :** react-scripts (Create React App)
+
+## Structure du projet
 
 ```text
 src/
   components/
+    Candidate/
+      JobCard.jsx
   constants/
   context/
   layouts/
   pages/
+    Candidate/
+      JobList.jsx
+      CandidateLogin.jsx
   service/
     restApiUser.js
+    restApiJobs.js
   index.js
 ```
 
-Fichiers clés:
-- src/index.js: routes principales et montage de l'app
-- src/layouts/AdminLayout.jsx: layout dashboard
-- src/context/AuthContext.jsx: gestion utilisateur/role côté front
-- src/service/restApiUser.js: couche d'appel HTTP utilisateurs
-- src/components/Users/UserTable.jsx: consommation du service getAllUsers
+Fichiers importants:
 
-## 5) Installation et lancement
+- src/index.js: définition des routes et montage de l'application
+- src/layouts/AdminLayout.jsx: structure globale du dashboard
+- src/context/AuthContext.jsx: contexte d'authentification et gestion des rôles
+- src/service/restApiUser.js: appels HTTP liés aux utilisateurs
+- src/service/restApiJobs.js: appels HTTP liés aux offres candidat
+- src/components/Users/UserTable.jsx: récupération et affichage des utilisateurs
+- src/pages/Candidate/JobList.jsx: page liste des offres candidat
+- src/pages/Candidate/CandidateLogin.jsx: page de connexion candidat
+- src/components/Candidate/JobCard.jsx: carte d'offre côté candidat
+
+## Installation et lancement
 
 Prérequis recommandés:
-- Node.js 20+ (npm récent)
 
-Commandes:
+- Node.js 20+
+
+Installation des dépendances:
 
 ```bash
 npm install
+```
+
+Lancement en développement:
+
+```bash
 npm start
 ```
 
-Build production:
+Build de production:
 
 ```bash
 npm run build
 ```
 
-## 6) Configuration API
+## Configuration API
 
-Le front lit une URL de backend depuis:
+Les services API lisent l'URL backend depuis:
+
 - VITE_API_URL
 
-Fallback actuel si la variable est absente:
+Si la variable n'est pas définie, la valeur de fallback est:
+
 - http://localhost:5000
 
 Créer un fichier .env à la racine:
@@ -86,34 +126,50 @@ Créer un fichier .env à la racine:
 VITE_API_URL=http://localhost:5000
 ```
 
-## 7) Partie Service: comment le front consomme le backend
+## Routes principales
 
-### 7.1 Fichier service
+| Zone | Route |
+|---|---|
+| Landing | /landing |
+| Connexion RH/Entreprise | /login |
+| Connexion Candidat | /candidat/login |
+| Liste des offres Candidat | /offres |
+| Dashboard RH/Admin | /dashboard/* |
 
-Le fichier src/service/restApiUser.js centralise les appels HTTP utilisateurs via Axios.
+## Intégration backend actuelle (utilisateurs)
 
-Fonctions exposées:
+Le fichier src/service/restApiUser.js centralise les appels Axios.
 
-| Fonction | Méthode HTTP | Endpoint appelé |
+| Fonction | Méthode HTTP | Endpoint |
 |---|---|---|
 | getAllUsers() | GET | /user/getAllUsers |
 | deleteUser(id) | DELETE | /user/deleteUser/:id |
 
-Base URL utilisée:
-- API_URL = VITE_API_URL ou http://localhost:5000
+## Intégration backend actuelle (offres candidat)
 
-### 7.2 Flux front -> backend (cas réel actuel)
+Le fichier src/service/restApiJobs.js centralise l'appel Axios des offres.
+
+| Fonction | Méthode HTTP | Endpoint |
+|---|---|---|
+| getAllOffres() | GET | /offre/getAllOffres |
+
+Notes d'implémentation côté candidat:
+
+- Le token candidat est lu depuis le cookie jwt_candidat
+- Le token est envoyé en Bearer (Authorization) lorsque présent
+- withCredentials est activé pour permettre les échanges basés cookie
+- La page src/pages/Candidate/JobList.jsx charge les données en useEffect puis les affiche via map() sur src/components/Candidate/JobCard.jsx
+
+### Flux front -> backend
 
 1. Le composant src/components/Users/UserTable.jsx se monte.
 2. useEffect déclenche getUsers().
-3. getUsers() appelle getAllUsers() depuis src/service/restApiUser.js.
-4. Axios envoie GET {API_URL}/user/getAllUsers.
-5. La réponse est lue via res.data.data puis injectée dans le state users.
-6. Le tableau affiche chaque entrée avec src/components/Users/UserRow.jsx.
+3. getUsers() appelle getAllUsers() dans src/service/restApiUser.js.
+4. Axios envoie GET vers {API_URL}/user/getAllUsers.
+5. La réponse est lue via res.data.data.
+6. Le tableau rend les lignes avec src/components/Users/UserRow.jsx.
 
-### 7.3 Contrat de réponse attendu par le front
-
-Le front attend actuellement ce shape:
+### Contrat de réponse attendu (Utilisateurs)
 
 ```json
 {
@@ -131,24 +187,42 @@ Le front attend actuellement ce shape:
 }
 ```
 
-Note:
-- le code lit res.data.data dans UserTable
-- l'identifiant utilisé dans le rendu/action est _id
+### Contrat de réponse attendu (Offres Candidat - `/offre/getAllOffres`)
 
-### 7.4 Gestion d'erreur côté front
+```json
+{
+  "data": [
+    {
+      "_id": "offre_1",
+      "poste": "Développeur Fullstack React & Node.js",
+      "entreprise": {
+        "nom": "TECH CORP"
+      },
+      "localisation": "Paris (Hybride)",
+      "typeContrat": "CDI",
+      "salaire": "55k - 70k€",
+      "createdAt": "2026-03-27T10:00:00.000Z"
+    }
+  ]
+}
+```
 
-Dans UserTable:
-- les erreurs API sont capturées dans un try/catch
-- en cas d'échec, une erreur est loggée dans la console
+Notes générales d'implémentation frontend :
 
-## 8) Exigences backend pour fonctionner avec ce front
+- Le front lit généralement `res.data.data` ou s'adapte selon la racine (il gère `payload.data`, `payload.offres` en fallback).
+- L'identifiant utilisé pour les actions/rendus est principalement `_id`.
 
-Le backend doit:
-- exposer les routes /user/getAllUsers et /user/deleteUser/:id
-- répondre en JSON avec un tableau disponible dans data
-- autoriser CORS depuis l'origine du front (ex: http://localhost:3000)
+## Exigences backend minimales
 
-## 9) Scripts npm
+Pour que cette version du front fonctionne, le backend doit:
+
+- Exposer les routes /user/getAllUsers et /user/deleteUser/:id
+- Exposer la route /offre/getAllOffres
+- Retourner un JSON contenant le tableau dans la propriété data
+- Autoriser CORS depuis l'origine du frontend (exemple: http://localhost:3000)
+- Autoriser les credentials (cookies) pour les flux candidat
+
+## Scripts npm
 
 | Script | Description |
 |---|---|
@@ -156,12 +230,12 @@ Le backend doit:
 | npm run build | Génère le build de production |
 | npm test | Lance les tests |
 
-## 10) Prochaine étape recommandée
+## Roadmap recommandée
 
-Pour industrialiser la connexion front/backend, ajouter progressivement un service par domaine:
-- src/service/restApiJobs.js
-- src/service/restApiRecruitment.js
-- src/service/restApiInterviews.js
+Pour généraliser l'intégration API sur tout le produit:
 
-
-Puis remplacer les données mock page par page par les appels API correspondants.
+1. Ajouter les services par domaine:
+   - src/service/restApiRecruitment.js
+   - src/service/restApiInterviews.js
+2. Remplacer les données mock écran par écran.
+3. Harmoniser la gestion des erreurs et des états de chargement sur toutes les pages.

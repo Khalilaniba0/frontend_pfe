@@ -1,16 +1,26 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import AuthLayout from "layouts/AuthLayout.jsx";
 import { ROUTES } from "constants/routes";
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = function (e) {
     e.preventDefault();
     setSubmitted(true);
+  };
+
+  const handleBack = function () {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(ROUTES.LANDING, { replace: true });
   };
 
   return (
@@ -102,15 +112,16 @@ export default function ForgotPassword() {
                 )}
 
                 <div className="mt-6 border-t border-border pt-6">
-                  <Link
-                    to={ROUTES.LOGIN}
+                  <button
+                    type="button"
+                    onClick={handleBack}
                     className="flex items-center justify-center gap-2 font-body text-sm font-medium text-text-secondary no-underline transition-colors hover:text-text-primary"
                   >
                     <span className="material-symbols-outlined text-lg">
                       arrow_back
                     </span>
                     <span>Retour à la connexion</span>
-                  </Link>
+                  </button>
                 </div>
               </div>
 

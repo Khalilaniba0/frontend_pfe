@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
 import { ROUTES } from "constants/routes";
 
 export default function LoginForm() {
@@ -13,31 +14,26 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex w-full items-center justify-center overflow-y-auto bg-white px-6 py-8 md:px-10 lg:w-1/2">
-      <div className="w-full max-w-[400px]">
-        <Link to="/landing" className="mb-8 flex items-center gap-3 no-underline">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20">
-            <span className="material-symbols-outlined text-lg text-white">
-              shield
-            </span>
-          </div>
-          <span className="font-display text-xl font-bold text-text-primary">
-            Talen<span className="text-primary">tia</span>
+    <section className="flex w-full flex-1 items-center justify-center overflow-hidden bg-[#f7fbff] p-4 md:p-6 lg:p-7">
+      <div className="w-full max-w-md">
+        <Link to={ROUTES.LANDING} className="mb-5 inline-flex items-center gap-2 no-underline">
+          <span className="text-2xl font-bold tracking-tight text-[#0f2a47]">
+            Talen<span className="text-[#007BFF]">tia</span>
           </span>
         </Link>
 
-        <div className="mb-6">
-          <h2 className="mb-1.5 font-display text-2xl font-bold tracking-tight text-text-primary md:text-3xl">
+        <div className="mb-5">
+          <h2 className="mb-1 font-display text-[1.9rem] font-bold tracking-tight text-[#0f2a47]">
             Bon retour
           </h2>
-          <p className="m-0 font-body text-sm leading-relaxed text-text-secondary">
+          <p className="m-0 font-body text-sm leading-relaxed text-slate-500">
             Entrez vos identifiants pour accéder au portail de gestion RH.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="font-body text-sm font-medium text-text-primary">
+            <label className="font-body text-sm font-medium text-[#0f2a47]">
               Adresse e-mail
             </label>
             <input
@@ -47,12 +43,12 @@ export default function LoginForm() {
               onChange={function (e) {
                 setEmail(e.target.value);
               }}
-              className="h-11 w-full rounded-xl border border-border bg-white px-4 font-body text-sm text-text-primary outline-none transition-all duration-150 placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 font-body text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="font-body text-sm font-medium text-text-primary">
+            <label className="font-body text-sm font-medium text-[#0f2a47]">
               Mot de passe
             </label>
             <div className="relative">
@@ -64,14 +60,14 @@ export default function LoginForm() {
                   setPassword(e.target.value);
                 }}
                 autoComplete="current-password"
-                className="h-11 w-full rounded-xl border border-border bg-white pl-4 pr-12 font-body text-sm text-text-primary outline-none transition-all duration-150 placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-4 pr-12 font-body text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
               />
               <button
                 type="button"
                 onClick={function () {
                   setShowPassword(!showPassword);
                 }}
-                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center border-none bg-transparent p-0 text-text-muted transition-colors hover:text-text-primary"
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center border-none bg-transparent p-0 text-slate-400 transition-colors hover:text-slate-600"
               >
                 <span className="material-symbols-outlined text-lg">
                   {showPassword ? "visibility_off" : "visibility"}
@@ -88,15 +84,15 @@ export default function LoginForm() {
                 onChange={function (e) {
                   setRememberMe(e.target.checked);
                 }}
-                className="h-4 w-4 cursor-pointer accent-primary"
+                className="h-4 w-4 cursor-pointer accent-[#007BFF]"
               />
-              <span className="font-body text-sm text-text-secondary">
+              <span className="font-body text-sm text-slate-500">
                 Se souvenir de moi
               </span>
             </label>
             <Link
               to={ROUTES.FORGOT_PASSWORD}
-              className="font-body text-sm font-medium text-primary no-underline transition-colors hover:text-primary-dark"
+              className="font-body text-sm font-medium text-[#007BFF] no-underline transition-colors hover:text-[#0062db]"
             >
               Mot de passe oublié ?
             </Link>
@@ -104,7 +100,7 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            className="mt-2 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-none bg-primary font-body text-sm font-semibold text-white shadow-md shadow-primary/25 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg"
+            className="mt-1.5 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-none bg-[#007BFF] font-body text-sm font-semibold text-white shadow-md shadow-[#007BFF]/25 transition-all duration-150 hover:bg-[#0062db] hover:shadow-lg"
           >
             <span>Se connecter</span>
             <span className="material-symbols-outlined text-lg">login</span>
@@ -112,10 +108,10 @@ export default function LoginForm() {
 
           <div className="relative my-2 py-2">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
+              <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-3 font-body text-xs text-text-muted">
+              <span className="bg-[#f7fbff] px-3 font-body text-xs text-slate-400">
                 Nouveau sur Talentia ?
               </span>
             </div>
@@ -123,19 +119,19 @@ export default function LoginForm() {
 
           <Link
             to={ROUTES.SIGNUP}
-            className="flex h-12 w-full items-center justify-center rounded-xl border border-border bg-white font-body text-sm font-medium text-text-primary no-underline transition-all duration-150 hover:border-primary/30 hover:bg-primary-light"
+            className="flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white font-body text-sm font-medium text-[#0f2a47] no-underline transition-all duration-150 hover:border-[#007BFF]/40 hover:bg-[#007BFF]/5"
           >
             Inscrivez-vous gratuitement
           </Link>
         </form>
 
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-text-muted">
+        <div className="mt-4 flex items-center justify-center gap-1.5 text-slate-400">
           <span className="material-symbols-outlined text-sm">lock</span>
           <p className="m-0 font-body text-xs">
             Authentification sécurisée chiffrée AES-256
           </p>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

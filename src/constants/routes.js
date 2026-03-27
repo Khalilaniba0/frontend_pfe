@@ -6,6 +6,9 @@ export const ROUTES = {
   // Public routes
   LANDING: "/landing",
   PROFILE_FORM: "/formulaire",
+  CANDIDATE_OFFRES: "/offres",
+  CANDIDATE_LOGIN: "/candidat/login",
+  CANDIDATE_SIGNUP: "/candidat/signup",
 
   // Auth routes
   LOGIN: "/login",
@@ -20,7 +23,6 @@ export const ROUTES = {
   DASHBOARD_EMPLOYEES: "/dashboard/employees",
   DASHBOARD_TIME_OFF: "/dashboard/time-off",
   DASHBOARD_SETTINGS: "/dashboard/settings",
-
 };
 
 export default ROUTES;
