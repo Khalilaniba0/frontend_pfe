@@ -9,6 +9,7 @@ import { AuthProvider } from "context/AuthContext";
 import { ROUTES } from "constants/routes";
 import AdminLayout from "layouts/AdminLayout.jsx";
 import LandingPage from "pages/LandingPage.jsx";
+import SelectionPage from "pages/SelectionPage.jsx";
 import ProfileForm from "pages/ProfileForm.jsx";
 import Login from "pages/Login.jsx";
 import ForgotPassword from "pages/ForgotPassword.jsx";
@@ -41,9 +42,9 @@ root.render(
         <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
         <Route path={ROUTES.SIGNUP} element={<SignUp />} />
 
-        {/* Redirection par défaut vers la landing */}
-        <Route path="/" element={<Navigate to={ROUTES.LANDING} replace />} />
-        <Route path="*" element={<Navigate to={ROUTES.LANDING} replace />} />
+        {/* Ecran de sélection d'espace */}
+        <Route path={ROUTES.SELECTION} element={<SelectionPage />} />
+        <Route path="*" element={<Navigate to={ROUTES.SELECTION} replace />} />
       </Routes>
     </BrowserRouter>
   </AuthProvider>

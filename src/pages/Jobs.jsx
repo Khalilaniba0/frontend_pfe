@@ -1,94 +1,100 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import JobStatCard from "components/Jobs/JobStatCard";
 import JobsTable from "components/Jobs/JobsTable";
 import SourceChart from "components/Jobs/SourceChart";
 import RecruitmentTimeCard from "components/Jobs/RecruitmentTimeCard";
 import CreateJobModal from "components/Jobs/CreateJobModal";
+import {
+  deleteOffre,
+  getOffreByEntreprise,
+  toggleOffreStatus,
+} from "service/restApiOffres";
 
-const STATS = [
-  {
-    icon: "work_history",
-    label: "Total d'offres",
-    value: "42",
-    badge: "+12%",
-    badgeLabel: "vs mois dernier",
-    iconBg: "bg-primary-light",
-    iconColor: "text-primary",
-    trend: "up",
-  },
-  {
-    icon: "rocket_launch",
-    label: "Offres actives",
-    value: "18",
-    badge: "8",
-    badgeLabel: "en cours",
-    iconBg: "bg-secondary-light",
-    iconColor: "text-secondary",
-    trend: "neutral",
-  },
-  {
-    icon: "person_search",
-    label: "Candidatures reçues",
-    value: "1 284",
-    badge: "+48",
-    badgeLabel: "nouvelles",
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-600",
-    trend: "up",
-  },
-];
+const SOURCE_COLORS = ["bg-primary", "bg-secondary", "bg-primary/40", "bg-secondary/40"];
 
-const JOBS = [
-  {
-    title: "Senior Product Designer",
-    department: "Design",
-    location: "Remote (FR)",
-    status: "Ouverte",
-    candidates: { avatars: ["NB", "LF"], extra: 12 },
-    team: "Core Product",
-    date: "12 Oct 2023",
-  },
-  {
-    title: "Lead Backend Engineer",
-    department: "Engineering",
-    location: "Paris, FR",
-    status: "En pause",
-    candidates: { avatars: ["PS"], extra: 4 },
-    team: "Platform",
-    date: "08 Oct 2023",
-  },
-  {
-    title: "HR Business Partner",
-    department: "People",
-    location: "Hybrid",
-    status: "Fermée",
-    candidates: { avatars: [], extra: 0 },
-    team: "Operations",
-    date: "22 Sep 2023",
-  },
-  {
-    title: "Marketing Manager",
-    department: "Marketing",
-    location: "Lyon, FR",
-    status: "Ouverte",
-    candidates: { avatars: ["MJ", "FD"], extra: 2 },
-    team: "Growth",
-    date: "05 Oct 2023",
-  },
-];
+function getOffreStatus(offre) {
+  const rawStatus = String(offre?.statut || offre?.status || "")
+    .trim()
+    .toLowerCase();
 
-const SOURCES = [
-  { label: "LinkedIn Jobs", percent: 45, color: "bg-primary" },
-  { label: "Indeed", percent: 28, color: "bg-secondary" },
-  { label: "Site Carrière", percent: 15, color: "bg-primary/40" },
-  { label: "Cooptation", percent: 12, color: "bg-secondary/40" },
-];
+  if (["open", "ouverte", "ouvert", "actif", "active", "en cours"].includes(rawStatus)) {
+    return "open";
+  }
+
+  if (["paused", "pause", "en pause"].includes(rawStatus)) {
+    return "paused";
+  }
+
+  return "closed";
+}
+
+function getOffreTitle(offre) {
+  return offre?.poste || offre?.post || "Poste sans titre";
+}
+
+function getCandidateCount(offre) {
+  const count = Number(
+    offre?.candidaturesCount ?? offre?.nombreCandidatures ?? offre?.candidatsCount ?? offre?.candidatures?.length ?? 0
+  );
+
+  return Number.isFinite(count) && count >= 0 ? count : 0;
+}
+
+function getDisplayStatus(status) {
+  if (status === "open") {
+    return "Ouverte";
+  }
+  if (status === "closed") {
+    return "Fermée";
+  }
+  return "En pause";
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default function Jobs() {
   const [search, setSearch] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [jobs, setJobs] = useState(JOBS);
+  const [offres, setOffres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
+
+  const chargerOffres = useCallback(async function () {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await getOffreByEntreprise();
+      const data = res?.data?.data || res?.data || [];
+      setOffres(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur lors du chargement des offres");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(
+    function () {
+      chargerOffres();
+    },
+    [chargerOffres]
+  );
 
   useEffect(
     function () {
@@ -104,26 +110,191 @@ export default function Jobs() {
     [toast]
   );
 
-  const handleCreateJob = function (newJob) {
-    setJobs(function (prev) {
-      return [
-        {
-          ...newJob,
-          candidates: { avatars: [], extra: 0 },
-        },
-        ...prev,
-      ];
-    });
-    setShowCreateModal(false);
-    setToast(newJob.title);
+  const handleCreateSuccess = useCallback(
+    function (createdOffre) {
+      const title = getOffreTitle(createdOffre);
+      setToast(title);
+      setShowCreateModal(false);
+      chargerOffres();
+    },
+    [chargerOffres]
+  );
+
+  const handleToggleStatus = async function (id) {
+    try {
+      await toggleOffreStatus(id);
+      setOffres(function (prev) {
+        return prev.map(function (o) {
+          if (o._id !== id) {
+            return o;
+          }
+
+          const currentStatus = getOffreStatus(o);
+          const nextStatus = currentStatus === "open" ? "closed" : "open";
+
+          return { ...o, statut: nextStatus, status: nextStatus };
+        });
+      });
+    } catch (err) {
+      console.error("Erreur toggle statut:", err.response?.data || err.message);
+    }
   };
 
-  const filteredJobs = jobs.filter(function (j) {
+  const handleDelete = async function (id) {
+    if (!window.confirm("Supprimer cette offre ?")) {
+      return;
+    }
+
+    try {
+      await deleteOffre(id);
+      setOffres(function (prev) {
+        return prev.filter(function (o) {
+          return o._id !== id;
+        });
+      });
+    } catch (err) {
+      console.error("Erreur suppression:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Erreur lors de la suppression");
+    }
+  };
+
+  const filteredOffres = offres.filter(function (o) {
+    const title = getOffreTitle(o);
+    const department = o?.departement || "";
+    const location = o?.localisation || "";
+    const query = search.toLowerCase();
+
     return (
-      j.title.toLowerCase().includes(search.toLowerCase()) ||
-      j.department.toLowerCase().includes(search.toLowerCase())
+      title.toLowerCase().includes(query) ||
+      department.toLowerCase().includes(query) ||
+      location.toLowerCase().includes(query)
     );
   });
+
+  const jobs = filteredOffres.map(function (offre) {
+    const candidateCount = getCandidateCount(offre);
+
+    return {
+      _id: offre?._id,
+      title: getOffreTitle(offre),
+      department: offre?.departement || "-",
+      location: offre?.localisation || "-",
+      status: getDisplayStatus(getOffreStatus(offre)),
+      candidates: {
+        avatars: [],
+        extra: candidateCount,
+      },
+      createdDate: formatDate(offre?.createdAt),
+      deadlineDate: formatDate(offre?.dateLimite),
+      onToggleStatus: handleToggleStatus,
+      onDelete: handleDelete,
+    };
+  });
+
+  const totalOffres = offres.length;
+  const offresActives = offres.filter(function (o) {
+    return getOffreStatus(o) === "open";
+  }).length;
+  const totalCandidats = offres.reduce(function (sum, o) {
+    return sum + getCandidateCount(o);
+  }, 0);
+
+  const stats = [
+    {
+      icon: "work_history",
+      label: "Total d'offres",
+      value: totalOffres,
+      badge: null,
+      badgeLabel: "",
+      iconBg: "bg-primary-light",
+      iconColor: "text-primary",
+      trend: "neutral",
+    },
+    {
+      icon: "rocket_launch",
+      label: "Offres actives",
+      value: offresActives,
+      badge: String(offresActives),
+      badgeLabel: "en cours",
+      iconBg: "bg-secondary-light",
+      iconColor: "text-secondary",
+      trend: "neutral",
+    },
+    {
+      icon: "person_search",
+      label: "Candidatures reçues",
+      value: totalCandidats.toLocaleString("fr-FR"),
+      badge: null,
+      badgeLabel: "",
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-600",
+      trend: "neutral",
+    },
+  ];
+
+  const sources = useMemo(function () {
+    if (!offres.length) {
+      return [{ label: "Aucune donnée", percent: 100, color: "bg-primary/20" }];
+    }
+
+    const byDepartment = offres.reduce(function (acc, offre) {
+      const key = offre?.departement || "Non défini";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const entries = Object.entries(byDepartment).sort(function (a, b) {
+      return b[1] - a[1];
+    });
+
+    const total = entries.reduce(function (sum, entry) {
+      return sum + entry[1];
+    }, 0);
+
+    return entries.slice(0, 4).map(function (entry, index) {
+      return {
+        label: entry[0],
+        percent: Math.max(1, Math.round((entry[1] / total) * 100)),
+        color: SOURCE_COLORS[index % SOURCE_COLORS.length],
+      };
+    });
+  }, [offres]);
+
+  const recrutementStats = useMemo(function () {
+    const durations = offres
+      .map(function (offre) {
+        const createdAt = new Date(offre?.createdAt);
+        const dateLimite = new Date(offre?.dateLimite);
+
+        if (Number.isNaN(createdAt.getTime()) || Number.isNaN(dateLimite.getTime())) {
+          return null;
+        }
+
+        const diffDays = Math.ceil((dateLimite.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : null;
+      })
+      .filter(function (value) {
+        return value !== null;
+      });
+
+    if (!durations.length) {
+      return { days: 22, improvement: 5 };
+    }
+
+    const average = Math.max(
+      1,
+      Math.round(
+        durations.reduce(function (sum, value) {
+          return sum + value;
+        }, 0) / durations.length
+      )
+    );
+
+    return {
+      days: average,
+      improvement: Math.max(0, Math.round(average * 0.1)),
+    };
+  }, [offres]);
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -134,7 +305,7 @@ export default function Jobs() {
           </h1>
           <p className="mt-1 font-body text-sm text-text-secondary">
             Visualisez et gérez vos{" "}
-            <span className="font-semibold tabular-nums text-primary">42</span>{" "}
+            <span className="font-semibold tabular-nums text-primary">{totalOffres}</span>{" "}
             recrutements actifs
           </p>
         </div>
@@ -162,7 +333,7 @@ export default function Jobs() {
       </header>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {STATS.map(function (stat) {
+        {stats.map(function (stat) {
           return <JobStatCard key={stat.label} {...stat} />;
         })}
       </section>
@@ -177,16 +348,33 @@ export default function Jobs() {
           onChange={function (e) {
             setSearch(e.target.value);
           }}
-          placeholder="Rechercher par titre ou département..."
+          placeholder="Rechercher par titre, département ou localisation..."
           className="w-full rounded-xl border border-border bg-white py-2.5 pl-11 pr-4 font-body text-sm text-text-primary shadow-sm transition-all duration-150 placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
-      <JobsTable jobs={filteredJobs} total={42} />
+      {loading ? (
+        <section className="overflow-hidden rounded-2xl border border-border bg-white px-6 py-12 text-center shadow-sm">
+          <p className="font-body text-sm text-text-secondary">Chargement...</p>
+        </section>
+      ) : error ? (
+        <section className="overflow-hidden rounded-2xl border border-border bg-white px-6 py-12 text-center shadow-sm">
+          <p className="font-body text-sm text-red-500">{error}</p>
+        </section>
+      ) : offres.length === 0 ? (
+        <section className="overflow-hidden rounded-2xl border border-border bg-white px-6 py-12 text-center shadow-sm">
+          <p className="font-body text-sm text-text-secondary">Aucune offre disponible</p>
+        </section>
+      ) : (
+        <JobsTable jobs={jobs} total={jobs.length} />
+      )}
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SourceChart sources={SOURCES} />
-        <RecruitmentTimeCard days={22} improvement={5} />
+        <SourceChart sources={sources} />
+        <RecruitmentTimeCard
+          days={recrutementStats.days}
+          improvement={recrutementStats.improvement}
+        />
       </section>
 
       {showCreateModal && (
@@ -194,7 +382,7 @@ export default function Jobs() {
           onClose={function () {
             setShowCreateModal(false);
           }}
-          onSubmit={handleCreateJob}
+          onSuccess={handleCreateSuccess}
         />
       )}
 

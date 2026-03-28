@@ -1,4 +1,6 @@
 import React from "react";
+import { ROUTES } from "constants/routes";
+import BrandLogo from "components/common/BrandLogo.jsx";
 
 const footerLinks = {
   Produit: ["Fonctionnalités", "Pipeline Kanban", "Analytics", "Tarifs"],
@@ -21,23 +23,7 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-[0_0_14px_rgba(19,200,236,0.25)]">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M12 2L4 7v10l8 5 8-5V7L12 2z"
-                    stroke="white"
-                    strokeWidth="1.8"
-                    strokeLinejoin="round"
-                    fill="rgba(255,255,255,0.2)"
-                  />
-                  <path d="M12 8v8M8 10l4-2 4 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </div>
-             <span className="font-display font-bold text-xl text-slate-900 tracking-tight">
-            Talen<span className="text-primary">tia</span>
-              </span>
-            </div>
+            <BrandLogo to={ROUTES.LANDING} />
 
             <p className="font-body text-sm text-slate-400 leading-relaxed max-w-[200px]">
               La plateforme ATS nouvelle génération pour les équipes RH modernes.

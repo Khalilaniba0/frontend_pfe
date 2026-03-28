@@ -1,17 +1,23 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import AuthLayout from "layouts/AuthLayout.jsx";
 import AuthHero from "components/Sections/AuthHero.jsx";
 import { ROUTES } from "constants/routes";
+import BrandLogo from "components/common/BrandLogo.jsx";
+import { registerEntreprise } from "service/restApiAuth";
 
 export default function SignUp() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
-    fullName: "",
+    nom: "",
     email: "",
-    company: "",
-    password: "",
+    adminName: "",
+    adminEmail: "",
+    adminPassword: "",
     terms: false,
   });
 
@@ -25,8 +31,24 @@ export default function SignUp() {
     });
   };
 
-  const handleSubmit = function (e) {
+  const handleSubmit = async function (e) {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await registerEntreprise({
+        nom: formData.nom,
+        email: formData.email,
+        adminName: formData.adminName,
+        adminEmail: formData.adminEmail,
+        adminPassword: formData.adminPassword,
+      });
+      navigate(`${ROUTES.LOGIN}?registered=true`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,11 +59,7 @@ export default function SignUp() {
 
           <section className="flex w-full flex-1 items-center justify-center overflow-hidden bg-[#f7fbff] p-4 md:p-6 lg:p-7">
             <div className="w-full max-w-md">
-              <Link to={ROUTES.LANDING} className="mb-4 inline-flex items-center gap-2 no-underline">
-                <span className="text-2xl font-bold tracking-tight text-[#0f2a47]">
-                  Talen<span className="text-[#007BFF]">tia</span>
-                </span>
-              </Link>
+              <BrandLogo to={ROUTES.LANDING} className="mb-4" />
 
               <div className="mb-3">
                 <h2 className="m-0 font-display text-[1.85rem] font-bold tracking-tight text-[#0f2a47]">
@@ -50,27 +68,30 @@ export default function SignUp() {
                 <p className="mt-1 text-sm text-slate-500">
                   Commencez à gérer vos effectifs internationaux dès aujourd'hui.
                 </p>
+                {error && (
+                  <p className="mt-2 text-sm text-red-500">{error}</p>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-medium text-[#0f2a47]">Nom complet</label>
+                  <label className="text-[13px] font-medium text-[#0f2a47]">Nom de l'entreprise</label>
                   <input
                     className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
-                    placeholder="Jane Doe"
+                    placeholder="Ex: Acme Corp"
                     required
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="nom"
+                    value={formData.nom}
                     onChange={handleChange}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-medium text-[#0f2a47]">E-mail professionnel</label>
+                  <label className="text-[13px] font-medium text-[#0f2a47]">E-mail entreprise</label>
                   <input
                     className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
-                    placeholder="jane@company.com"
+                    placeholder="contact@entreprise.com"
                     required
                     type="email"
                     name="email"
@@ -80,28 +101,41 @@ export default function SignUp() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-medium text-[#0f2a47]">Nom de l'entreprise</label>
+                  <label className="text-[13px] font-medium text-[#0f2a47]">Nom admin</label>
                   <input
                     className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
-                    placeholder="Ex: Acme Corp"
+                    placeholder="Prénom Nom"
                     required
                     type="text"
-                    name="company"
-                    value={formData.company}
+                    name="adminName"
+                    value={formData.adminName}
                     onChange={handleChange}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[13px] font-medium text-[#0f2a47]">Mot de passe</label>
+                  <label className="text-[13px] font-medium text-[#0f2a47]">E-mail admin</label>
+                  <input
+                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
+                    placeholder="admin@exemple.com"
+                    required
+                    type="email"
+                    name="adminEmail"
+                    value={formData.adminEmail}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#0f2a47]">Mot de passe admin</label>
                   <div className="relative">
                     <input
                       className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-4 pr-12 text-sm text-slate-700 outline-none transition-all duration-150 placeholder:text-slate-400 focus:border-[#007BFF] focus:ring-2 focus:ring-[#007BFF]/20"
                       placeholder="••••••••"
                       required
                       type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
+                      name="adminPassword"
+                      value={formData.adminPassword}
                       onChange={handleChange}
                       autoComplete="new-password"
                     />
@@ -142,10 +176,11 @@ export default function SignUp() {
                 </div>
 
                 <button
-                  className="mt-1 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-none bg-[#007BFF] text-sm font-semibold text-white shadow-md shadow-[#007BFF]/25 transition-all duration-150 hover:bg-[#0062db] hover:shadow-lg"
+                  className="mt-1 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-none bg-[#007BFF] text-sm font-semibold text-white shadow-md shadow-[#007BFF]/25 transition-all duration-150 hover:bg-[#0062db] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
                   type="submit"
+                  disabled={loading}
                 >
-                  <span>Créer un compte entreprise</span>
+                  <span>{loading ? "Création..." : "Créer un compte entreprise"}</span>
                   <span className="material-symbols-outlined text-lg">arrow_forward</span>
                 </button>
 

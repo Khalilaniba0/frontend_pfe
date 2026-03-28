@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { ROUTES } from "constants/routes";
+import BrandLogo from "components/common/BrandLogo.jsx";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -16,11 +17,7 @@ export default function LoginForm() {
   return (
     <section className="flex w-full flex-1 items-center justify-center overflow-hidden bg-[#f7fbff] p-4 md:p-6 lg:p-7">
       <div className="w-full max-w-md">
-        <Link to={ROUTES.LANDING} className="mb-5 inline-flex items-center gap-2 no-underline">
-          <span className="text-2xl font-bold tracking-tight text-[#0f2a47]">
-            Talen<span className="text-[#007BFF]">tia</span>
-          </span>
-        </Link>
+        <BrandLogo to={ROUTES.LANDING} className="mb-5" />
 
         <div className="mb-5">
           <h2 className="mb-1 font-display text-[1.9rem] font-bold tracking-tight text-[#0f2a47]">
@@ -77,19 +74,7 @@ export default function LoginForm() {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={function (e) {
-                  setRememberMe(e.target.checked);
-                }}
-                className="h-4 w-4 cursor-pointer accent-[#007BFF]"
-              />
-              <span className="font-body text-sm text-slate-500">
-                Se souvenir de moi
-              </span>
-            </label>
+            
             <Link
               to={ROUTES.FORGOT_PASSWORD}
               className="font-body text-sm font-medium text-[#007BFF] no-underline transition-colors hover:text-[#0062db]"

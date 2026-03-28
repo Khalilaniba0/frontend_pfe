@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import JobRow from "components/Jobs/JobRow";
 
@@ -6,7 +6,22 @@ const JOBS_PER_PAGE = 4;
 
 export default function JobsTable({ jobs, total }) {
   const [page, setPage] = useState(1);
-  const totalPages = Math.ceil(total / JOBS_PER_PAGE);
+  const safeTotal = Number.isFinite(total) ? total : jobs.length;
+  const totalPages = Math.max(1, Math.ceil(safeTotal / JOBS_PER_PAGE));
+  const startIndex = (page - 1) * JOBS_PER_PAGE;
+  const endIndex = startIndex + JOBS_PER_PAGE;
+  const visibleJobs = jobs.slice(startIndex, endIndex);
+  const displayFrom = safeTotal === 0 ? 0 : startIndex + 1;
+  const displayTo = safeTotal === 0 ? 0 : Math.min(page * JOBS_PER_PAGE, safeTotal);
+
+  useEffect(
+    function () {
+      if (page > totalPages) {
+        setPage(totalPages);
+      }
+    },
+    [page, totalPages]
+  );
 
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
@@ -45,16 +60,19 @@ export default function JobsTable({ jobs, total }) {
                 Titre du Poste
               </th>
               <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
+                Localisation
+              </th>
+              <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Statut
               </th>
               <th className="px-6 py-3.5 text-center font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Candidats
               </th>
               <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
-                Équipe
+                Date création
               </th>
               <th className="px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
-                Date
+                Date limite
               </th>
               <th className="px-6 py-3.5 text-right font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Actions
@@ -62,13 +80,13 @@ export default function JobsTable({ jobs, total }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {jobs.length > 0 ? (
-              jobs.map(function (job, i) {
-                return <JobRow key={i} {...job} />;
+            {visibleJobs.length > 0 ? (
+              visibleJobs.map(function (job, i) {
+                return <JobRow key={job?._id || i} {...job} />;
               })
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
+                <td colSpan={7} className="px-6 py-12 text-center">
                   <span className="material-symbols-outlined mb-2 text-4xl text-text-muted">
                     search_off
                   </span>
@@ -86,10 +104,9 @@ export default function JobsTable({ jobs, total }) {
         <p className="font-body text-xs text-text-secondary">
           Affichage de{" "}
           <span className="font-semibold tabular-nums text-text-primary">
-            {(page - 1) * JOBS_PER_PAGE + 1}–
-            {Math.min(page * JOBS_PER_PAGE, total)}
+            {displayFrom}–{displayTo}
           </span>{" "}
-          sur <span className="font-semibold tabular-nums">{total}</span> offres
+          sur <span className="font-semibold tabular-nums">{safeTotal}</span> offres
         </p>
 
         <div className="flex items-center gap-1">
@@ -137,7 +154,7 @@ export default function JobsTable({ jobs, total }) {
                 return Math.min(totalPages, p + 1);
               });
             }}
-            disabled={page === totalPages}
+            disabled={page >= totalPages}
             className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-150 hover:bg-white disabled:opacity-30"
           >
             <span className="material-symbols-outlined text-sm">

@@ -1,4 +1,5 @@
 import React from "react";
+import authHeroVisual from "assets/auth-hero-visual.svg";
 
 export default function AuthHero() {
   const avatars = ["NB", "LF", "PS"];
@@ -9,16 +10,15 @@ export default function AuthHero() {
   ];
 
   return (
-    <div className="relative hidden h-full flex-1 overflow-hidden md:block">
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1400&q=80')",
-        }}
-      ></div>
+    <div className="relative hidden min-h-[520px] flex-1 overflow-hidden md:block">
+      <img
+        src={authHeroVisual}
+        alt=""
+        className="absolute inset-0 z-0 h-full w-full object-cover"
+        loading="eager"
+      />
 
-      <div className="absolute inset-0 z-[1] bg-gradient-to-br from-[#0d3b66]/85 via-[#0f4c75]/70 to-[#0a2238]/90" />
+      <div className="absolute inset-0 z-[1] bg-gradient-to-br from-slate-900/60 via-sky-900/45 to-slate-950/75" />
 
       <div className="absolute inset-x-8 bottom-9 z-10 max-w-[480px] text-white lg:inset-x-10 lg:bottom-12">
         <span className="mb-4 inline-block rounded-full border border-[#7db8ff]/30 bg-[#007BFF]/20 px-3 py-1 font-body text-[10px] font-bold uppercase tracking-widest text-[#94c5ff]">

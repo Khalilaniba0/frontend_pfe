@@ -58,19 +58,103 @@ Le projet combine des écrans déjà connectés au backend et des écrans encore
 
 ```text
 src/
+  assets/
+    auth-hero-visual.svg
+    styles/
+      tailwind.css
   components/
     Candidate/
       JobCard.jsx
+    Dashboard/
+      HiringChart.jsx
+      RecentActivity.jsx
+      StatCard.jsx
+      UpcomingInterviews.jsx
+    Interviews/
+      CreateInterviewModal.jsx
+      EntretiensEnLigneTab.jsx
+      InterviewCalendar.jsx
+      InterviewsLayout.jsx
+      JitsiMeetModal.jsx
+    Jobs/
+      CreateJobModal.jsx
+      JobRow.jsx
+      JobsTable.jsx
+      JobStatCard.jsx
+      RecruitmentTimeCard.jsx
+      SourceChart.jsx
+      StatusBadge.jsx
+    Recruitment/
+      CandidateCard.jsx
+      CandidateModal.jsx
+      PipelineColumn.jsx
+    Sections/
+      AnalyticsRapportsCard.jsx
+      AuthHero.jsx
+      AutomatisationCard.jsx
+      FeatureCard.jsx
+      FeaturesSection.jsx
+      GestionCandidatsCard.jsx
+      HeroBanner.jsx
+      PipelineKanbanCard.jsx
+      PlanningEntretiensCard.jsx
+    Settings/
+      ManageUsersModal.jsx
+      SettingsLayout.jsx
+      tabs/
+        ApparenceTab.jsx
+        EntrepriseTab.jsx
+        IntegrationsTab.jsx
+        NotificationsTab.jsx
+        SecuriteTab.jsx
+    Users/
+      CreateUserModal.jsx
+      UserRow.jsx
+      UserStatsCard.jsx
+      UserTable.jsx
+    auth/
+      LoginForm.jsx
+    common/
+      BrandLogo.jsx
+      ModalBackdrop.jsx
+      ProtectedRoute.jsx
+      SelectionCard.jsx
+    layout/
+      AdminNavbar.jsx
+      AuthFooter.jsx
+      Footer.jsx
+      Navbar.jsx
+      Sidebar.jsx
   constants/
+    interviewsData.js
+    navigation.js
+    routes.js
   context/
+    AuthContext.jsx
   layouts/
+    AdminLayout.jsx
+    AuthLayout.jsx
   pages/
+    Dashboard.jsx
+    ForgotPassword.jsx
+    Interviews.jsx
+    Jobs.jsx
+    LandingPage.jsx
+    Login.jsx
+    ProfileForm.jsx
+    Recruitment.jsx
+    SelectionPage.jsx
+    Settings.jsx
+    SignUp.jsx
+    Users.jsx
     Candidate/
-      JobList.jsx
       CandidateLogin.jsx
+      CandidateSignup.jsx
+      JobList.jsx
   service/
-    restApiUser.js
     restApiJobs.js
+    restApiUser.js
+  index.css
   index.js
 ```
 

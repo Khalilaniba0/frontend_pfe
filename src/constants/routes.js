@@ -4,6 +4,7 @@
 
 export const ROUTES = {
   // Public routes
+  SELECTION: "/",
   LANDING: "/landing",
   PROFILE_FORM: "/formulaire",
   CANDIDATE_OFFRES: "/offres",

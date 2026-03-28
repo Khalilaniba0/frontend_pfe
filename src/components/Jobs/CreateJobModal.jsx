@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
+import { createOffre } from "service/restApiOffres";
 
 const DEPARTMENTS = [
   "Engineering",
@@ -31,11 +32,12 @@ const EMPTY_FORM = {
   publishStatus: "publish",
 };
 
-export default function CreateJobModal({ onClose, onSubmit }) {
+export default function CreateJobModal({ onClose, onSuccess }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [skillInput, setSkillInput] = useState("");
   const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(function () {
     document.body.style.overflow = "hidden";
@@ -49,6 +51,7 @@ export default function CreateJobModal({ onClose, onSubmit }) {
     setForm(function (prev) {
       return { ...prev, [name]: value };
     });
+    setError(null);
     setErrors(function (prev) {
       return { ...prev, [name]: "" };
     });
@@ -105,43 +108,76 @@ export default function CreateJobModal({ onClose, onSubmit }) {
     return errs;
   };
 
-  const handleSubmit = function (e) {
-    e.preventDefault();
+  const handleSubmit = async function (e) {
+    e?.preventDefault?.();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-    setSubmitting(true);
-    setTimeout(function () {
-      const newJob = {
-        id: Date.now(),
-        title: form.title.trim(),
-        department: form.department,
-        location: form.location.trim(),
-        contract: form.contract,
-        workMode: form.workMode,
-        team: form.team,
-        deadline: form.deadline || null,
-        description: form.description.trim(),
-        skills: form.skills,
-        status: form.publishStatus === "publish" ? "Ouverte" : "Brouillon",
-        candidates: 0,
-        date: new Date().toLocaleDateString("fr-FR", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }),
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formData = form;
+      const workModeMap = {
+        "Présentiel": "presentiel",
+        Remote: "remote",
+        Hybride: "hybride",
       };
-      onSubmit(newJob);
-      setSubmitting(false);
-    }, 800);
+
+      const requirements = Array.isArray(formData.requirements)
+        ? formData.requirements
+        : Array.isArray(formData.competences)
+          ? formData.competences
+          : Array.isArray(formData.skills)
+            ? formData.skills
+            : [];
+
+      const modeContrat = formData.modeContrat || workModeMap[formData.workMode] || "presentiel";
+
+      const payload = {
+        post: formData.titre || formData.post || formData.poste || formData.title || "",
+        description: formData.description || "",
+        requirements,
+        typeContrat: formData.typeContrat || formData.contract || "CDI",
+        localisation: formData.localisation || formData.location || "",
+        modeContrat,
+        departement: formData.departement || formData.equipe || formData.department || formData.team || "",
+        niveauExperience: formData.niveauExperience || "junior",
+      };
+
+      if (formData.dateLimite || formData.deadline) {
+        payload.dateLimite = formData.dateLimite || formData.deadline;
+      }
+      if (formData.salaireMin) {
+        payload.salaireMin = Number(formData.salaireMin);
+      }
+      if (formData.salaireMax) {
+        payload.salaireMax = Number(formData.salaireMax);
+      }
+
+      const res = await createOffre(payload);
+      const createdOffre = res?.data?.data || res?.data;
+      if (typeof onSuccess === "function") onSuccess(createdOffre);
+      if (typeof onClose === "function") onClose();
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Erreur lors de la publication de l'offre"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = function () {
     setForm(EMPTY_FORM);
     setSkillInput("");
     setErrors({});
+    setError(null);
     onClose();
   };
 
@@ -446,6 +482,8 @@ export default function CreateJobModal({ onClose, onSubmit }) {
               </label>
             </div>
           </div>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
         </form>
 
         {/* Footer */}
@@ -457,23 +495,23 @@ export default function CreateJobModal({ onClose, onSubmit }) {
             <button
               type="button"
               onClick={handleCancel}
-              disabled={submitting}
+              disabled={loading}
               className="rounded-lg border border-border px-4 py-2 font-display font-medium text-text-secondary transition-colors hover:bg-bg-soft disabled:opacity-50"
             >
               Annuler
             </button>
             <button
-              type="submit"
+              type="button"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={loading}
               className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2 font-display font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-60"
             >
-              {submitting ? (
+              {loading ? (
                 <>
                   <span className="material-symbols-outlined animate-spin text-base">
                     progress_activity
                   </span>
-                  Publication...
+                  Création...
                 </>
               ) : (
                 <>
@@ -494,5 +532,5 @@ export default function CreateJobModal({ onClose, onSubmit }) {
 
 CreateJobModal.propTypes = {
   onClose: PropTypes.func.isRequired,
-  onSubmit: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func,
 };

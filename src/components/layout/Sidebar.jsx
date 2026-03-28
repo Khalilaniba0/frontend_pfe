@@ -2,6 +2,8 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "context/AuthContext";
 import { NAV_ITEMS } from "constants/navigation";
+import { ROUTES } from "constants/routes";
+import BrandLogo from "components/common/BrandLogo.jsx";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const [activeNav, setActiveNav] = React.useState("Tableau de bord");
@@ -9,7 +11,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const { user } = useAuth();
 
   const filteredNavItems = NAV_ITEMS.filter(function (item) {
-    return item.roles.includes(user.role);
+    return item.roles.includes(user?.role);
   });
 
   React.useEffect(
@@ -39,20 +41,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         >
           <span className="material-symbols-outlined text-xl">close</span>
         </button>
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20">
-          <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-            <path
-              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-              stroke="white"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <span className="font-display text-lg font-bold tracking-tight text-text-primary">
-          Talen<span className="text-primary">tia</span>
-        </span>
+        <BrandLogo
+          to={ROUTES.LANDING}
+          textClassName="font-display text-lg font-bold tracking-tight text-text-primary"
+          iconClassName="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20"
+        />
       </div>
 
       <div className="mt-2 flex-1 px-3">
@@ -96,7 +89,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </ul>
       </div>
 
-      {user.role === "admin" && (
+      {user?.role === "admin" && (
         <div className="mx-3 mb-4 rounded-xl border border-primary/20 bg-gradient-to-r from-primary-light to-secondary-light p-3">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-base text-primary">

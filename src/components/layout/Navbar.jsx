@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ROUTES } from "constants/routes";
+import BrandLogo from "components/common/BrandLogo.jsx";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -37,28 +38,7 @@ export default function Navbar() {
       }
     >
       <div className="mx-auto flex max-w-[1200px] items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/25">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L4 7v10l8 5 8-5V7L12 2z"
-                stroke="white"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-                fill="rgba(255,255,255,0.2)"
-              />
-              <path
-                d="M12 8v8M8 10l4-2 4 2"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight text-text-primary">
-            Talen<span className="text-primary">tia</span>
-          </span>
-        </div>
+        <BrandLogo to={ROUTES.LANDING} />
 
         <div className="hidden items-center gap-8 md:flex">
           {isCandidateMenu ? (
@@ -74,7 +54,7 @@ export default function Navbar() {
                 to={ROUTES.CANDIDATE_OFFRES}
                 className="font-body text-sm font-medium text-text-secondary transition-colors duration-150 hover:text-primary"
               >
-                Trouver un job
+                offres d'emploi
               </Link>
               {navLinks.map(function (item) {
                 return (

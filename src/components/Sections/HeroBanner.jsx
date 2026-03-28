@@ -123,12 +123,6 @@ export default function HeroBanner() {
               >
                 Démarrez gratuitement
               </Link>
-              <Link
-                to={ROUTES.CANDIDATE_OFFRES}
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-7 py-3.5 font-body text-base font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 w-full sm:w-auto text-center"
-              >
-                Vous êtes candidat ? <span className="text-primary">Parcourir les offres</span>
-              </Link>
             </div>
 
             {/* Social proof */}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 
 import { ROUTES } from "constants/routes";
+import BrandLogo from "components/common/BrandLogo.jsx";
 
 export default function CandidateSignup() {
   const [fullName, setFullName] = useState("");
@@ -36,11 +37,7 @@ export default function CandidateSignup() {
 
         <section className="flex w-full flex-1 items-center justify-center overflow-y-auto bg-[#f7fbff] p-5 md:p-8 lg:p-10">
           <div className="w-full max-w-md">
-            <Link to={ROUTES.LANDING} className="mb-5 inline-flex items-center gap-2 no-underline">
-              <span className="text-2xl font-bold tracking-tight text-[#0f2a47]">
-                Talen<span className="text-[#0072FF]">tia</span>
-              </span>
-            </Link>
+            <BrandLogo to={ROUTES.LANDING} className="mb-5" />
 
             <h2 className="font-display text-3xl font-bold text-[#0f2a47]">
               Creez votre compte candidat
