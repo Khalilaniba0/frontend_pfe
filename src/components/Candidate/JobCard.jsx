@@ -52,6 +52,7 @@ function getSalaryLabel(offre) {
 }
 
 export default function JobCard({ offre, viewMode }) {
+  const offreId = offre?._id || offre?.id;
   const poste = offre?.poste || "Poste non renseigne";
   const entrepriseNom = offre?.entreprise?.nom || "Entreprise";
   const localisation = offre?.localisation || "Localisation non precisee";
@@ -116,10 +117,16 @@ export default function JobCard({ offre, viewMode }) {
         </span>
 
         <Link
-          to={ROUTES.PROFILE_FORM}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#00D2FF] to-[#3a7bd5] px-3 py-2 text-sm font-semibold text-white no-underline shadow-sm transition-all duration-200 hover:brightness-105 hover:shadow-md"
+          to={offreId ? `/offres/${offreId}` : ROUTES.CANDIDATE_OFFRES}
+          aria-disabled={!offreId}
+          className={
+            "inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[#00D2FF] to-[#3a7bd5] px-3 py-2 text-sm font-semibold text-white no-underline shadow-sm transition-all duration-200 " +
+            (offreId
+              ? "hover:brightness-105 hover:shadow-md"
+              : "pointer-events-none opacity-60")
+          }
         >
-          Voir l'offre
+          Voir le detail
           <ChevronRight size={16} />
         </Link>
       </div>

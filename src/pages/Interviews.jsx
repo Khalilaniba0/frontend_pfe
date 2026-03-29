@@ -1,27 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 import InterviewsLayout from "components/Interviews/InterviewsLayout";
 import InterviewCalendar from "components/Interviews/InterviewCalendar";
 import EntretiensEnLigneTab from "components/Interviews/EntretiensEnLigneTab";
 import CreateInterviewModal from "components/Interviews/CreateInterviewModal";
-import { CALENDAR_EVENTS } from "constants/interviewsData";
-
-function CalendrierTab() {
-  return (
-    <div className="w-full">
-      <InterviewCalendar
-        events={CALENDAR_EVENTS}
-        currentMonth={8}
-        currentYear={2024}
-      />
-    </div>
-  );
-}
-
-const TABS = {
-  calendrier: <CalendrierTab />,
-  "en-ligne": <EntretiensEnLigneTab />,
-};
+import { getAllEntretiens, createEntretien } from "service/restApiEntretiens";
 
 export default function Interviews() {
   const [activeTab, setActiveTab] = useState("calendrier");
@@ -29,13 +12,128 @@ export default function Interviews() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
 
-  const handleCreateInterview = function (newInterviewData) {
-    setLastCreated(newInterviewData.candidat);
-    setShowModal(false);
-    setShowSuccess(true);
-    setTimeout(function () {
-      setShowSuccess(false);
-    }, 4000);
+  const [entretiens, setEntretiens] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadEntretiens = useCallback(async function () {
+    setLoading(true);
+    setError(null);
+    try {
+      const items = await getAllEntretiens();
+      setEntretiens(items);
+    } catch (err) {
+      setError(
+        err?.response?.data?.message || "Erreur de chargement des entretiens"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(
+    function () {
+      loadEntretiens();
+    },
+    [loadEntretiens]
+  );
+
+  /* ── Build calendar events from entretiens ─── */
+
+  const now = new Date();
+
+  const calendarEvents = entretiens
+    .map(function (e) {
+      const d = new Date(e.dateEntretien || e.date_entretien);
+      if (isNaN(d.getTime())) return null;
+
+      const candidatName =
+        e.candidature?.nom ||
+        e.candidature?.candidat?.nom ||
+        "Entretien";
+
+      const isToday =
+        d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear();
+
+      return {
+        day: d.getDate(),
+        month: d.getMonth(),
+        year: d.getFullYear(),
+        title: candidatName,
+        time: d.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        color: e.typeEntretien === "visio" ? "primary" : "secondary",
+        isToday: isToday,
+      };
+    })
+    .filter(function (e) {
+      return e !== null;
+    });
+
+  /* ── handle create ─────────────────────────── */
+
+  const handleCreateInterview = async function (payload) {
+    try {
+      await createEntretien(payload);
+      setLastCreated(payload.candidatName || "le candidat");
+      setShowModal(false);
+      setShowSuccess(true);
+      setTimeout(function () {
+        setShowSuccess(false);
+      }, 4000);
+      loadEntretiens();
+    } catch (err) {
+      alert(
+        err?.response?.data?.message ||
+          "Erreur lors de la création de l'entretien"
+      );
+    }
+  };
+
+  /* ── tabs (pass data down) ─────────────────── */
+
+  function CalendrierTab() {
+    // Filter events for current displayed month
+    const eventsForCalendar = calendarEvents.filter(function (e) {
+      return e.month === now.getMonth() && e.year === now.getFullYear();
+    });
+
+    return (
+      <div className="w-full">
+        {loading ? (
+          <div className="py-12 text-center">
+            <p className="font-body text-sm text-text-muted">
+              Chargement du calendrier...
+            </p>
+          </div>
+        ) : error ? (
+          <div className="py-12 text-center">
+            <p className="font-body text-sm text-red-500">{error}</p>
+          </div>
+        ) : (
+          <InterviewCalendar
+            events={eventsForCalendar}
+            currentMonth={now.getMonth()}
+            currentYear={now.getFullYear()}
+          />
+        )}
+      </div>
+    );
+  }
+
+  const TABS = {
+    calendrier: <CalendrierTab />,
+    "en-ligne": (
+      <EntretiensEnLigneTab
+        entretiens={entretiens}
+        loading={loading}
+        error={error}
+      />
+    ),
   };
 
   return (

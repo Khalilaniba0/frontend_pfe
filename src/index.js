@@ -17,6 +17,7 @@ import SignUp from "pages/SignUp.jsx";
 import JobList from "pages/Candidate/JobList.jsx";
 import CandidateLogin from "pages/Candidate/CandidateLogin.jsx";
 import CandidateSignup from "pages/Candidate/CandidateSignup.jsx";
+import JobDetail from "./pages/Candidate/JobDetail";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
@@ -25,7 +26,7 @@ root.render(
       <Routes>
         {/* Dashboard RH/Admin */}
         <Route path="/dashboard/*" element={<AdminLayout />} />
-
+        <Route path="/offres/:id" element={<JobDetail />} />
         {/* Landing entreprise */}
         <Route path={ROUTES.LANDING} element={<LandingPage />} />
 

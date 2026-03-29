@@ -13,3 +13,11 @@ export async function registerEntreprise(payload) {
 export async function logoutUser() {
     return await axios.post(`${API_URL}/user/logout`, {}, { withCredentials: true });
 }
+
+export async function updatePassword(userId, newPassword) {
+    return await axios.put(
+        `${API_URL}/user/updateUser/${userId}`,
+        { motDePasse: newPassword },
+        { withCredentials: true }
+    );
+}

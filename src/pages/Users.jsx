@@ -1,34 +1,36 @@
-import React, { useState } from "react";
-import UserStatsCard from "components/Users/UserStatsCard";
+import React, { useState, useCallback, useRef } from "react";
 import UserTable from "components/Users/UserTable";
 import CreateUserModal from "components/Users/CreateUserModal";
-
-
 
 export default function Users() {
   const [showModal, setShowModal] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
 
-  
+  // Use a ref to trigger refresh in UserTable
+  const refreshRef = useRef(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleCreateUser = function (newUserData) {
-    const newUser = {
-      id: Date.now(),
-      ...newUserData,
-    };
-    setLastCreated(newUserData.name);
+  const triggerRefresh = useCallback(function () {
+    setRefreshKey(function (prev) {
+      return prev + 1;
+    });
+  }, []);
+
+  const handleCreateUser = function (result) {
+    var userName = result?.name || result?.nom || "L'utilisateur";
+    setLastCreated(userName);
     setShowModal(false);
     setShowSuccess(true);
+    triggerRefresh();
     setTimeout(function () {
       setShowSuccess(false);
     }, 4000);
   };
 
   const handleEdit = function (userId) {
+    // TODO: implement edit modal
   };
-
-
 
   return (
     <>
@@ -81,9 +83,7 @@ export default function Users() {
           </div>
         )}
 
-        
-
-        <UserTable  onEdit={handleEdit}  />
+        <UserTable onEdit={handleEdit} refreshKey={refreshKey} />
       </div>
 
       {showModal && (

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Chart,
   BarController,
@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { getHiringChartData } from "service/restApiDashboard";
 
 Chart.register(
   BarController,
@@ -26,35 +27,64 @@ Chart.register(
   Legend
 );
 
-// Données mock — facilement remplaçables par un appel API
-// Pour connecter au backend : const [chartData, setChartData] = useState(null);
-// useEffect(() => { fetch("/api/dashboard/hiring-stats").then(...) }, []);
-const chartData = {
-  labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
-  candidatures: [45, 62, 38, 71, 58, 83],
-  pourvus: [8, 12, 7, 15, 11, 18],
-  tauxConversion: [18, 19, 18, 21, 19, 22],
-};
-
 export default function HiringChart() {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
-
-  // KPI calculés
-  const totalCandidatures = chartData.candidatures.reduce(function (a, b) {
-    return a + b;
-  }, 0);
-  const totalPourvus = chartData.pourvus.reduce(function (a, b) {
-    return a + b;
-  }, 0);
-  const tauxMoyen = Math.round(
-    chartData.tauxConversion.reduce(function (a, b) {
-      return a + b;
-    }, 0) / chartData.tauxConversion.length
-  );
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(function () {
-    if (chartRef.current) {
+    var cancelled = false;
+
+    async function fetchData() {
+      try {
+        const data = await getHiringChartData();
+        if (!cancelled) {
+          setChartData(data);
+        }
+      } catch (err) {
+        console.error("Erreur chargement chart:", err);
+        // Fallback to empty data
+        if (!cancelled) {
+          setChartData({
+            labels: [],
+            candidatures: [],
+            pourvus: [],
+            tauxConversion: [],
+          });
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchData();
+
+    return function () {
+      cancelled = true;
+    };
+  }, []);
+
+  // KPI calculés
+  const totalCandidatures = chartData
+    ? chartData.candidatures.reduce(function (a, b) { return a + b; }, 0)
+    : 0;
+  const totalPourvus = chartData
+    ? chartData.pourvus.reduce(function (a, b) { return a + b; }, 0)
+    : 0;
+  const tauxMoyen = chartData && chartData.tauxConversion.length > 0
+    ? Math.round(
+        chartData.tauxConversion.reduce(function (a, b) { return a + b; }, 0) /
+          chartData.tauxConversion.length
+      )
+    : 0;
+
+  useEffect(
+    function () {
+      if (!chartRef.current || !chartData || chartData.labels.length === 0) return;
+
       const ctx = chartRef.current.getContext("2d");
 
       if (chartInstance.current) {
@@ -163,7 +193,6 @@ export default function HiringChart() {
               type: "linear",
               position: "left",
               beginAtZero: true,
-              max: 100,
               grid: { color: "#f1f5f9" },
               border: { display: false },
               ticks: {
@@ -177,7 +206,7 @@ export default function HiringChart() {
               type: "linear",
               position: "right",
               beginAtZero: true,
-              max: 40,
+              max: 100,
               grid: { drawOnChartArea: false },
               border: { display: false },
               ticks: {
@@ -191,14 +220,15 @@ export default function HiringChart() {
           },
         },
       });
-    }
 
-    return function () {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
-  }, []);
+      return function () {
+        if (chartInstance.current) {
+          chartInstance.current.destroy();
+        }
+      };
+    },
+    [chartData]
+  );
 
   return (
     <div className="flex h-64 sm:h-80 lg:h-[380px] flex-col rounded-2xl border border-border bg-white p-5 shadow-sm">
@@ -237,20 +267,26 @@ export default function HiringChart() {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1.5 font-display text-xs font-semibold text-primary">
           <span className="material-symbols-outlined text-sm">inbox</span>
-          {totalCandidatures} Candidatures
+          {loading ? "…" : totalCandidatures} Candidatures
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary-light px-3 py-1.5 font-display text-xs font-semibold text-secondary">
           <span className="material-symbols-outlined text-sm">check_circle</span>
-          {totalPourvus} Pourvus
+          {loading ? "…" : totalPourvus} Pourvus
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 font-display text-xs font-semibold text-blue-600">
           <span className="material-symbols-outlined text-sm">trending_up</span>
-          {tauxMoyen}% Conversion
+          {loading ? "…" : tauxMoyen}% Conversion
         </span>
       </div>
 
       <div className="relative min-h-0 flex-1">
-        <canvas ref={chartRef}></canvas>
+        {loading ? (
+          <div className="flex h-full items-center justify-center">
+            <p className="font-body text-sm text-text-muted">Chargement du graphique...</p>
+          </div>
+        ) : (
+          <canvas ref={chartRef}></canvas>
+        )}
       </div>
     </div>
   );

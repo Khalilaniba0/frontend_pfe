@@ -1,326 +1,164 @@
-import React from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import PipelineColumn from "components/Recruitment/PipelineColumn.jsx";
 import CandidateModal from "components/Recruitment/CandidateModal.jsx";
+import {
+  getPipelineCandidatures,
+  updateCandidatureEtape,
+  getOffresEntreprise,
+} from "service/restApiRecruitment";
 
-var allCandidatesForCandidature = [
-  {
-    id: "c1",
-    name: "Sophie Martin",
-    role: "Ingénieure logiciel",
-    job: "Ingénieure logiciel",
-    priority: "Haute",
-    appliedDate: "26 Oct 2023",
-    avatar: "",
-    score: 91,
-    email: "sophie.martin@email.com",
-    phone: "+33 6 34 56 78 90",
-    location: "Bordeaux, France",
-    salary: "52 000 €/an",
-    availability: "Immédiate",
-    linkedin: "linkedin.com/in/sophie-martin",
-  },
-  {
-    id: "c2",
-    name: "Nadia Belkacem",
-    role: "Ingénieure logiciel",
-    job: "Ingénieure logiciel",
-    priority: "Haute",
-    appliedDate: "25 Oct 2023",
-    avatar: "",
-    score: 87,
-    email: "nadia.belkacem@email.com",
-    phone: "+33 6 12 34 56 78",
-    location: "Paris, France",
-    salary: "55 000 €/an",
-    availability: "Immédiate",
-    linkedin: "linkedin.com/in/nadia-belkacem",
-  },
-  {
-    id: "c3",
-    name: "Marcus Johansson",
-    role: "Chef de produit",
-    job: "Chef de produit",
-    priority: "Haute",
-    appliedDate: "24 Oct 2023",
-    avatar: "",
-    score: 85,
-    email: "marcus.johansson@email.com",
-    phone: "+33 6 78 90 12 34",
-    location: "Paris, France",
-    salary: "60 000 €/an",
-    availability: "Immédiate",
-    linkedin: "linkedin.com/in/marcus-johansson",
-  },
-  {
-    id: "c4",
-    name: "Priya Sharma",
-    role: "Data Scientist",
-    job: "Data Scientist",
-    priority: "Haute",
-    appliedDate: "23 Oct 2023",
-    avatar: "",
-    score: 78,
-    email: "priya.sharma@email.com",
-    phone: "+33 6 56 78 90 12",
-    location: "Toulouse, France",
-    salary: "58 000 €/an",
-    availability: "Immédiate",
-    linkedin: "linkedin.com/in/priya-sharma",
-  },
-  {
-    id: "c5",
-    name: "Thomas Dubois",
-    role: "Designer UX",
-    job: "Designer UX",
-    priority: "Haute",
-    appliedDate: "22 Oct 2023",
-    avatar: "",
-    score: 72,
-    email: "thomas.dubois@email.com",
-    phone: "+33 6 67 89 01 23",
-    location: "Nantes, France",
-    salary: "45 000 €/an",
-    availability: "3 semaines",
-    linkedin: "linkedin.com/in/thomas-dubois",
-  },
-  {
-    id: "c6",
-    name: "Lucas Ferreira",
-    role: "Chef de produit",
-    job: "Chef de produit",
-    priority: "Priorité moyenne",
-    appliedDate: "21 Oct 2023",
-    avatar: "",
-    score: 62,
-    email: "lucas.ferreira@email.com",
-    phone: "+33 6 23 45 67 89",
-    location: "Lyon, France",
-    salary: "48 000 €/an",
-    availability: "1 mois",
-    linkedin: "linkedin.com/in/lucas-ferreira",
-  },
-  {
-    id: "c7",
-    name: "Ahmed Benali",
-    role: "Data Scientist",
-    job: "Data Scientist",
-    priority: "Priorité moyenne",
-    appliedDate: "20 Oct 2023",
-    avatar: "",
-    score: 59,
-    email: "ahmed.benali@email.com",
-    phone: "+33 6 45 67 89 01",
-    location: "Marseille, France",
-    salary: "50 000 €/an",
-    availability: "2 mois",
-    linkedin: "linkedin.com/in/ahmed-benali",
-  },
-  {
-    id: "c8",
-    name: "Yuki Tanaka",
-    role: "Designer UX",
-    job: "Designer UX",
-    priority: "Priorité moyenne",
-    appliedDate: "19 Oct 2023",
-    avatar: "",
-    score: 55,
-    email: "yuki.tanaka@email.com",
-    phone: "+33 6 11 22 33 44",
-    location: "Paris, France",
-    salary: "43 000 €/an",
-    availability: "1 mois",
-    linkedin: "linkedin.com/in/yuki-tanaka",
-  },
-  {
-    id: "c9",
-    name: "Carlos Rivera",
-    role: "Ingénieure logiciel",
-    job: "Ingénieure logiciel",
-    priority: "Priorité moyenne",
-    appliedDate: "18 Oct 2023",
-    avatar: "",
-    score: 51,
-    email: "carlos.rivera@email.com",
-    phone: "+33 6 22 33 44 55",
-    location: "Lyon, France",
-    salary: "40 000 €/an",
-    availability: "2 mois",
-    linkedin: "linkedin.com/in/carlos-rivera",
-  },
-  {
-    id: "c10",
-    name: "Amina Koné",
-    role: "Data Scientist",
-    job: "Data Scientist",
-    priority: "Priorité moyenne",
-    appliedDate: "17 Oct 2023",
-    avatar: "",
-    score: 47,
-    email: "amina.kone@email.com",
-    phone: "+33 6 33 44 55 66",
-    location: "Marseille, France",
-    salary: "46 000 €/an",
-    availability: "Immédiate",
-    linkedin: "linkedin.com/in/amina-kone",
-  },
-  {
-    id: "c11",
-    name: "Pierre Leroy",
-    role: "Chef de produit",
-    job: "Chef de produit",
-    priority: "Priorité moyenne",
-    appliedDate: "16 Oct 2023",
-    avatar: "",
-    score: 38,
-    email: "pierre.leroy@email.com",
-    phone: "+33 6 44 55 66 77",
-    location: "Bordeaux, France",
-    salary: "44 000 €/an",
-    availability: "3 semaines",
-    linkedin: "linkedin.com/in/pierre-leroy",
-  },
-  {
-    id: "c12",
-    name: "Sara Messaoudi",
-    role: "Ingénieure logiciel",
-    job: "Ingénieure logiciel",
-    priority: "Priorité moyenne",
-    appliedDate: "15 Oct 2023",
-    avatar: "",
-    score: 29,
-    email: "sara.messaoudi@email.com",
-    phone: "+33 6 55 66 77 88",
-    location: "Lille, France",
-    salary: "38 000 €/an",
-    availability: "2 mois",
-    linkedin: "linkedin.com/in/sara-messaoudi",
-  },
+/* ── mapping étapes backend → colonnes Kanban ──── */
+
+var ETAPE_TO_COLUMN = {
+  soumise: "Candidature",
+  preselectionne: "Présélection",
+  entretien_planifie: "Entretien",
+  entretien_passe: "Test technique",
+  accepte: "Offre",
+  refuse: "Refusé",
+};
+
+var COLUMN_TO_ETAPE = {
+  Candidature: "soumise",
+  "Présélection": "preselectionne",
+  Entretien: "entretien_planifie",
+  "Test technique": "entretien_passe",
+  Offre: "accepte",
+};
+
+var COLUMN_DEFS = [
+  { title: "Candidature", color: "bg-slate-500" },
+  { title: "Présélection", color: "bg-amber-500" },
+  { title: "Entretien", color: "bg-primary" },
+  { title: "Test technique", color: "bg-indigo-500" },
+  { title: "Offre", color: "bg-secondary" },
 ];
 
-var initialPipelineData = [
-  {
-    title: "Candidature",
-    color: "bg-slate-500",
-    candidates: allCandidatesForCandidature.slice(0, 5),
-  },
-  {
-    title: "Présélection",
-    color: "bg-amber-500",
-    candidates: [],
-  },
-  {
-    title: "Entretien",
-    color: "bg-primary",
-    candidates: [],
-  },
-  {
-    title: "Test technique",
-    color: "bg-indigo-500",
-    candidates: [],
-  },
-  {
-    title: "Offre",
-    color: "bg-secondary",
-    candidates: [],
-  },
-];
+var pipelineOrder = COLUMN_DEFS.map(function (c) {
+  return c.title;
+});
 
-var jobOpenings = [
-  "Tous les postes",
-  "Ingénieure logiciel",
-  "Chef de produit",
-  "Designer UX",
-  "Data Scientist",
-];
+/* ── map backend candidature → card data ─────── */
 
-var pipelineOrder = [
-  "Candidature",
-  "Présélection",
-  "Entretien",
-  "Test technique",
-  "Offre",
-];
+function mapCandidateCard(c) {
+  return {
+    id: c._id,
+    name: c.nom || c.candidat?.nom || c.email || "Candidat",
+    role: c.offre?.poste || c.poste || "Poste",
+    job: c.offre?.poste || c.poste || "Poste",
+    priority:
+      c.scoreIA >= 70
+        ? "Haute"
+        : c.scoreIA >= 40
+          ? "Priorité moyenne"
+          : "Normale",
+    appliedDate: c.createdAt
+      ? new Date(c.createdAt).toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "",
+    avatar: "",
+    score: c.scoreIA || 0,
+    email: c.email || c.candidat?.email || "",
+    phone: c.telephone || c.candidat?.telephone || "",
+    location: c.offre?.localisation || "",
+    salary: "",
+    availability: "",
+    linkedin: "",
+    _etape: c.etape,
+    _offreId: c.offre?._id || c.offre || "",
+  };
+}
 
 export default function Recruitment() {
-  var selectedJobState = React.useState(jobOpenings[0]);
-  var selectedJob = selectedJobState[0];
-  var setSelectedJob = selectedJobState[1];
+  var [loading, setLoading] = useState(true);
+  var [error, setError] = useState(null);
+  var [allCandidatures, setAllCandidatures] = useState([]);
+  var [jobOpenings, setJobOpenings] = useState(["Tous les postes"]);
+  var [selectedJob, setSelectedJob] = useState("Tous les postes");
 
-  var pipelineState = React.useState(initialPipelineData);
-  var pipelineData = pipelineState[0];
-  var setPipelineData = pipelineState[1];
+  var [dragging, setDragging] = useState(null);
+  var [modalCandidate, setModalCandidate] = useState(null);
+  var [lastMove, setLastMove] = useState(null);
+  var [errorToast, setErrorToast] = useState(null);
 
-  var waitingState = React.useState(allCandidatesForCandidature.slice(5));
-  var waitingCandidates = waitingState[0];
-  var setWaitingCandidates = waitingState[1];
+  var toastTimerRef = useRef(null);
+  var errorTimerRef = useRef(null);
 
-  var totalReceivedState = React.useState(12);
-  var totalReceived = totalReceivedState[0];
+  /* ── load data ─────────────────────────────── */
 
-  var draggingState = React.useState(null);
-  var dragging = draggingState[0];
-  var setDragging = draggingState[1];
+  var loadData = useCallback(async function () {
+    setLoading(true);
+    setError(null);
+    try {
+      var [candidatures, offres] = await Promise.all([
+        getPipelineCandidatures(),
+        getOffresEntreprise(),
+      ]);
 
-  var modalCandidateState = React.useState(null);
-  var modalCandidate = modalCandidateState[0];
-  var setModalCandidate = modalCandidateState[1];
+      setAllCandidatures(candidatures.map(mapCandidateCard));
 
-  var lastMoveState = React.useState(null);
-  var lastMove = lastMoveState[0];
-  var setLastMove = lastMoveState[1];
-
-  var errorToastState = React.useState(null);
-  var errorToast = errorToastState[0];
-  var setErrorToast = errorToastState[1];
-
-  var toastTimerRef = React.useRef(null);
-  var errorTimerRef = React.useRef(null);
-
-  function getFilteredPipeline() {
-    var data = pipelineData;
-    if (selectedJob !== "Tous les postes") {
-      data = pipelineData.map(function (column) {
-        var filteredCandidates = column.candidates.filter(function (candidate) {
-          return candidate.job === selectedJob;
+      var postes = offres
+        .map(function (o) {
+          return o.poste || o.post || "";
+        })
+        .filter(function (p) {
+          return p.length > 0;
         });
-        return {
-          title: column.title,
-          color: column.color,
-          candidates: filteredCandidates,
-        };
-      });
+      var uniquePostes = Array.from(new Set(postes));
+      setJobOpenings(["Tous les postes"].concat(uniquePostes));
+    } catch (err) {
+      setError(
+        err?.response?.data?.message || "Erreur de chargement du pipeline"
+      );
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    return data.map(function (column) {
-      var sorted = column.candidates.slice().sort(function (a, b) {
-        return b.score - a.score;
+  useEffect(
+    function () {
+      loadData();
+    },
+    [loadData]
+  );
+
+  /* ── build pipeline from candidatures ──────── */
+
+  function buildPipeline(candidatures) {
+    return COLUMN_DEFS.map(function (col) {
+      var etape = COLUMN_TO_ETAPE[col.title];
+      var candidates = candidatures.filter(function (c) {
+        return c._etape === etape;
       });
       return {
-        title: column.title,
-        color: column.color,
-        candidates: sorted,
+        title: col.title,
+        color: col.color,
+        candidates: candidates.slice().sort(function (a, b) {
+          return b.score - a.score;
+        }),
       };
     });
   }
 
-  var filteredPipeline = getFilteredPipeline();
+  /* ── filtering ─────────────────────────────── */
 
-  var filteredWaitingCount = 0;
-  var displayedTotalReceived = totalReceived;
-
+  var filteredCandidatures = allCandidatures;
   if (selectedJob !== "Tous les postes") {
-    filteredWaitingCount = waitingCandidates.filter(function (c) {
+    filteredCandidatures = allCandidatures.filter(function (c) {
       return c.job === selectedJob;
-    }).length;
-
-    var candidatureColumn = filteredPipeline.find(function (col) {
-      return col.title === "Candidature";
     });
-    var displayedCount = candidatureColumn ? candidatureColumn.candidates.length : 0;
-    displayedTotalReceived = displayedCount + filteredWaitingCount;
-  } else {
-    filteredWaitingCount = waitingCandidates.length;
   }
+
+  var filteredPipeline = buildPipeline(filteredCandidatures);
+
+  var totalCandidates = filteredPipeline.reduce(function (sum, col) {
+    return sum + col.candidates.length;
+  }, 0);
+
+  /* ── top candidates per job ────────────────── */
 
   function getTopCandidateIds() {
     var candidatureColumn = filteredPipeline.find(function (col) {
@@ -353,9 +191,7 @@ export default function Recruitment() {
 
   var topCandidateIds = getTopCandidateIds();
 
-  var totalCandidates = filteredPipeline.reduce(function (sum, col) {
-    return sum + col.candidates.length;
-  }, 0);
+  /* ── drag & drop ───────────────────────────── */
 
   function handleCandidateDragStart(candidateId, fromColumn, e) {
     setDragging({ candidateId: candidateId, fromColumn: fromColumn });
@@ -367,156 +203,7 @@ export default function Recruitment() {
     setDragging(null);
   }
 
-  function refillCandidature(prevData, prevWaiting, removedId) {
-    var candidatureIndex = prevData.findIndex(function (col) {
-      return col.title === "Candidature";
-    });
-
-    if (candidatureIndex === -1) {
-      return { newPipelineData: prevData, newWaiting: prevWaiting };
-    }
-
-    var candidatureColumn = prevData[candidatureIndex];
-    var candidatesAfterRemoval = candidatureColumn.candidates.filter(
-      function (c) {
-        return c.id !== removedId;
-      }
-    );
-
-    var newWaiting = prevWaiting.slice();
-    var newCandidates = candidatesAfterRemoval;
-    var replacementId = null;
-
-    if (newWaiting.length > 0) {
-      var nextCandidate = newWaiting[0];
-      newCandidates = candidatesAfterRemoval.concat([nextCandidate]);
-      newWaiting = newWaiting.slice(1);
-      replacementId = nextCandidate.id;
-    }
-
-    var newPipelineData = prevData.map(function (col, index) {
-      if (index === candidatureIndex) {
-        return {
-          title: col.title,
-          color: col.color,
-          candidates: newCandidates,
-        };
-      }
-      return col;
-    });
-
-    return { newPipelineData: newPipelineData, newWaiting: newWaiting, replacementId: replacementId };
-  }
-
-  function cancelLastMove() {
-    if (!lastMove) return;
-
-    if (toastTimerRef.current) {
-      clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = null;
-    }
-
-    var move = lastMove;
-    var isFromCandidature = move.fromColumn === "Candidature";
-
-    if (isFromCandidature && move.replacementId) {
-      setWaitingCandidates(function (prevWaiting) {
-        setPipelineData(function (prevData) {
-          var toIndex = prevData.findIndex(function (col) {
-            return col.title === move.toColumn;
-          });
-          var fromIndex = prevData.findIndex(function (col) {
-            return col.title === move.fromColumn;
-          });
-
-          if (fromIndex === -1 || toIndex === -1) return prevData;
-
-          var replacementCandidate = prevData[fromIndex].candidates.find(
-            function (c) {
-              return c.id === move.replacementId;
-            }
-          );
-
-          var newData = prevData.map(function (col, index) {
-            if (index === fromIndex) {
-              var candidatesWithoutReplacement = col.candidates.filter(
-                function (c) {
-                  return c.id !== move.replacementId;
-                }
-              );
-              var candidatesWithOriginal = candidatesWithoutReplacement
-                .concat([move.candidate])
-                .sort(function (a, b) {
-                  return b.score - a.score;
-                });
-              return {
-                title: col.title,
-                color: col.color,
-                candidates: candidatesWithOriginal,
-              };
-            }
-            if (index === toIndex) {
-              return {
-                title: col.title,
-                color: col.color,
-                candidates: col.candidates.filter(function (c) {
-                  return c.id !== move.candidate.id;
-                }),
-              };
-            }
-            return col;
-          });
-
-          if (replacementCandidate) {
-            setTimeout(function () {
-              setWaitingCandidates([replacementCandidate].concat(prevWaiting));
-            }, 0);
-          }
-
-          return newData;
-        });
-
-        return prevWaiting;
-      });
-    } else {
-      setPipelineData(function (prevData) {
-        var toIndex = prevData.findIndex(function (col) {
-          return col.title === move.toColumn;
-        });
-        var fromIndex = prevData.findIndex(function (col) {
-          return col.title === move.fromColumn;
-        });
-
-        if (fromIndex === -1 || toIndex === -1) return prevData;
-
-        var newData = prevData.map(function (col, index) {
-          if (index === fromIndex) {
-            return {
-              title: col.title,
-              color: col.color,
-              candidates: col.candidates.concat([move.candidate]),
-            };
-          }
-          if (index === toIndex) {
-            return {
-              title: col.title,
-              color: col.color,
-              candidates: col.candidates.filter(function (c) {
-                return c.id !== move.candidate.id;
-              }),
-            };
-          }
-          return col;
-        });
-
-        return newData;
-      });
-    }
-
-    setLastMove(null);
-  }
-
-  function handleDrop(toColumn) {
+  async function handleDrop(toColumn) {
     if (!dragging) return;
     if (dragging.fromColumn === toColumn) {
       setDragging(null);
@@ -538,149 +225,104 @@ export default function Recruitment() {
       return;
     }
 
-    var foundCandidate = null;
-    for (var i = 0; i < pipelineData.length; i++) {
-      var col = pipelineData[i];
-      if (col.title === dragging.fromColumn) {
-        foundCandidate = col.candidates.find(function (c) {
-          return c.id === dragging.candidateId;
-        });
-        break;
-      }
+    var candidateId = dragging.candidateId;
+    var newEtape = COLUMN_TO_ETAPE[toColumn];
+
+    if (!newEtape) {
+      setDragging(null);
+      return;
     }
 
+    // Find the candidate
+    var foundCandidate = allCandidatures.find(function (c) {
+      return c.id === candidateId;
+    });
     if (!foundCandidate) {
       setDragging(null);
       return;
     }
 
-    var isLeavingCandidature = dragging.fromColumn === "Candidature";
-
-    if (isLeavingCandidature) {
-      setWaitingCandidates(function (prevWaiting) {
-        setPipelineData(function (prevData) {
-          var result = refillCandidature(
-            prevData,
-            prevWaiting,
-            foundCandidate.id
-          );
-          var fromIdx = result.newPipelineData.findIndex(function (col) {
-            return col.title === dragging.fromColumn;
-          });
-          var toIdx = result.newPipelineData.findIndex(function (col) {
-            return col.title === toColumn;
-          });
-
-          if (fromIdx === -1 || toIdx === -1) return prevData;
-
-          var candidate = result.newPipelineData[fromIdx].candidates.find(
-            function (c) {
-              return c.id === foundCandidate.id;
-            }
-          );
-
-          if (!candidate) {
-            candidate = prevData[fromIdx].candidates.find(function (c) {
-              return c.id === foundCandidate.id;
-            });
-          }
-
-          if (!candidate) return prevData;
-
-          var finalData = result.newPipelineData.map(function (col, index) {
-            if (index === fromIdx) {
-              return {
-                title: col.title,
-                color: col.color,
-                candidates: col.candidates.filter(function (c) {
-                  return c.id !== foundCandidate.id;
-                }),
-              };
-            }
-            if (index === toIdx) {
-              return {
-                title: col.title,
-                color: col.color,
-                candidates: col.candidates.concat([candidate]),
-              };
-            }
-            return col;
-          });
-
-          setTimeout(function () {
-            setWaitingCandidates(result.newWaiting);
-          }, 0);
-
-          setLastMove({
-            candidate: candidate,
-            fromColumn: dragging.fromColumn,
-            toColumn: toColumn,
-            replacementId: result.replacementId,
-          });
-
-          return finalData;
-        });
-
-        return prevWaiting;
+    // Optimistic update
+    var previousEtape = foundCandidate._etape;
+    setAllCandidatures(function (prev) {
+      return prev.map(function (c) {
+        if (c.id === candidateId) {
+          return { ...c, _etape: newEtape };
+        }
+        return c;
       });
-    } else {
-      setPipelineData(function (prevData) {
-        var fromIdx = prevData.findIndex(function (col) {
-          return col.title === dragging.fromColumn;
-        });
-        var toIdx = prevData.findIndex(function (col) {
-          return col.title === toColumn;
-        });
+    });
 
-        if (fromIdx === -1 || toIdx === -1) return prevData;
-
-        var candidate = prevData[fromIdx].candidates.find(function (c) {
-          return c.id === foundCandidate.id;
-        });
-
-        if (!candidate) return prevData;
-
-        var newData = prevData.map(function (col, index) {
-          if (index === fromIdx) {
-            return {
-              title: col.title,
-              color: col.color,
-              candidates: col.candidates.filter(function (c) {
-                return c.id !== foundCandidate.id;
-              }),
-            };
-          }
-          if (index === toIdx) {
-            return {
-              title: col.title,
-              color: col.color,
-              candidates: col.candidates.concat([candidate]),
-            };
-          }
-          return col;
-        });
-
-        setLastMove({
-          candidate: candidate,
-          fromColumn: dragging.fromColumn,
-          toColumn: toColumn,
-          replacementId: null,
-        });
-
-        return newData;
-      });
-    }
+    setLastMove({
+      candidate: foundCandidate,
+      fromColumn: dragging.fromColumn,
+      toColumn: toColumn,
+    });
 
     if (toastTimerRef.current) {
       clearTimeout(toastTimerRef.current);
     }
-
     toastTimerRef.current = setTimeout(function () {
       setLastMove(null);
     }, 5000);
 
     setDragging(null);
+
+    // API call
+    try {
+      await updateCandidatureEtape(candidateId, newEtape);
+    } catch (err) {
+      // Revert on error
+      setAllCandidatures(function (prev) {
+        return prev.map(function (c) {
+          if (c.id === candidateId) {
+            return { ...c, _etape: previousEtape };
+          }
+          return c;
+        });
+      });
+      setErrorToast(
+        err?.response?.data?.message ||
+          "Erreur lors du déplacement du candidat"
+      );
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+      errorTimerRef.current = setTimeout(function () {
+        setErrorToast(null);
+      }, 3000);
+    }
   }
+
+  function cancelLastMove() {
+    if (!lastMove) return;
+
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
+    }
+
+    var move = lastMove;
+    var previousEtape = COLUMN_TO_ETAPE[move.fromColumn];
+
+    setAllCandidatures(function (prev) {
+      return prev.map(function (c) {
+        if (c.id === move.candidate.id) {
+          return { ...c, _etape: previousEtape };
+        }
+        return c;
+      });
+    });
+
+    // Revert on backend too
+    updateCandidatureEtape(move.candidate.id, previousEtape).catch(function (err) {
+      console.error("Erreur annulation:", err);
+    });
+
+    setLastMove(null);
+  }
+
+  /* ── modal ─────────────────────────────────── */
 
   function handleCandidateClick(candidate) {
     setModalCandidate(candidate);
@@ -691,16 +333,11 @@ export default function Recruitment() {
   }
 
   function findCandidateColumn(candidateId) {
-    for (var i = 0; i < pipelineData.length; i++) {
-      var col = pipelineData[i];
-      var found = col.candidates.find(function (c) {
-        return c.id === candidateId;
-      });
-      if (found) {
-        return col.title;
-      }
-    }
-    return null;
+    var candidate = allCandidatures.find(function (c) {
+      return c.id === candidateId;
+    });
+    if (!candidate) return null;
+    return ETAPE_TO_COLUMN[candidate._etape] || null;
   }
 
   function moveToNextStage() {
@@ -715,110 +352,99 @@ export default function Recruitment() {
     }
 
     var nextColumn = pipelineOrder[currentIndex + 1];
-    var isLeavingCandidature = currentColumn === "Candidature";
 
-    if (isLeavingCandidature) {
-      setWaitingCandidates(function (prevWaiting) {
-        setPipelineData(function (prevData) {
-          var result = refillCandidature(
-            prevData,
-            prevWaiting,
-            modalCandidate.id
-          );
-          var fromIndex = result.newPipelineData.findIndex(function (col) {
-            return col.title === currentColumn;
-          });
-          var toIndex = result.newPipelineData.findIndex(function (col) {
-            return col.title === nextColumn;
-          });
+    // Simulate drop
+    var tempDragging = {
+      candidateId: modalCandidate.id,
+      fromColumn: currentColumn,
+    };
+    setDragging(tempDragging);
 
-          if (fromIndex === -1 || toIndex === -1) return prevData;
-
-          var candidate = result.newPipelineData[fromIndex].candidates.find(
-            function (c) {
-              return c.id === modalCandidate.id;
-            }
-          );
-
-          if (!candidate) {
-            candidate = prevData[fromIndex].candidates.find(function (c) {
-              return c.id === modalCandidate.id;
-            });
-          }
-
-          if (!candidate) return prevData;
-
-          var finalData = result.newPipelineData.map(function (col, index) {
-            if (index === fromIndex) {
-              return {
-                title: col.title,
-                color: col.color,
-                candidates: col.candidates.filter(function (c) {
-                  return c.id !== modalCandidate.id;
-                }),
-              };
-            }
-            if (index === toIndex) {
-              return {
-                title: col.title,
-                color: col.color,
-                candidates: col.candidates.concat([candidate]),
-              };
-            }
-            return col;
-          });
-
-          setTimeout(function () {
-            setWaitingCandidates(result.newWaiting);
-          }, 0);
-
-          return finalData;
-        });
-
-        return prevWaiting;
-      });
-    } else {
-      setPipelineData(function (prevData) {
-        var fromIndex = prevData.findIndex(function (col) {
-          return col.title === currentColumn;
-        });
-        var toIndex = prevData.findIndex(function (col) {
-          return col.title === nextColumn;
-        });
-
-        if (fromIndex === -1 || toIndex === -1) return prevData;
-
-        var candidate = prevData[fromIndex].candidates.find(function (c) {
-          return c.id === modalCandidate.id;
-        });
-
-        if (!candidate) return prevData;
-
-        var newData = prevData.map(function (col, index) {
-          if (index === fromIndex) {
-            return {
-              title: col.title,
-              color: col.color,
-              candidates: col.candidates.filter(function (c) {
-                return c.id !== modalCandidate.id;
-              }),
-            };
-          }
-          if (index === toIndex) {
-            return {
-              title: col.title,
-              color: col.color,
-              candidates: col.candidates.concat([candidate]),
-            };
-          }
-          return col;
-        });
-
-        return newData;
-      });
-    }
-
+    // Close modal first, then handle drop
     closeModal();
+
+    var newEtape = COLUMN_TO_ETAPE[nextColumn];
+    var previousEtape = COLUMN_TO_ETAPE[currentColumn];
+
+    setAllCandidatures(function (prev) {
+      return prev.map(function (c) {
+        if (c.id === modalCandidate.id) {
+          return { ...c, _etape: newEtape };
+        }
+        return c;
+      });
+    });
+
+    setDragging(null);
+
+    updateCandidatureEtape(modalCandidate.id, newEtape).catch(function () {
+      setAllCandidatures(function (prev) {
+        return prev.map(function (c) {
+          if (c.id === modalCandidate.id) {
+            return { ...c, _etape: previousEtape };
+          }
+          return c;
+        });
+      });
+    });
+  }
+
+  /* ── render ─────────────────────────────────── */
+
+  if (loading) {
+    return (
+      <div className="animate-fade-in">
+        <header className="mb-6">
+          <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
+            Pipeline de recrutement
+          </h1>
+          <p className="mt-1 font-body text-sm text-text-secondary">
+            Chargement...
+          </p>
+        </header>
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {[1, 2, 3, 4, 5].map(function (i) {
+            return (
+              <div
+                key={i}
+                className="w-72 flex-shrink-0 animate-pulse rounded-2xl border border-border bg-white p-4"
+              >
+                <div className="mb-4 h-4 w-24 rounded bg-gray-200"></div>
+                <div className="space-y-3">
+                  <div className="h-20 rounded-xl bg-gray-100"></div>
+                  <div className="h-20 rounded-xl bg-gray-100"></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="animate-fade-in">
+        <header className="mb-6">
+          <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
+            Pipeline de recrutement
+          </h1>
+        </header>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+          <span className="material-symbols-outlined mb-2 text-3xl text-red-400">
+            error
+          </span>
+          <p className="font-body text-sm text-red-600">{error}</p>
+          <button
+            type="button"
+            onClick={loadData}
+            className="mt-3 rounded-lg bg-red-100 px-4 py-2 font-body text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -861,8 +487,6 @@ export default function Recruitment() {
               expand_more
             </span>
           </div>
-
-          
         </div>
       </header>
 
@@ -882,8 +506,10 @@ export default function Recruitment() {
               onCandidateClick={handleCandidateClick}
               topCandidateIds={isCandidatureColumn ? topCandidateIds : []}
               dragging={dragging}
-              waitingCount={isCandidatureColumn ? filteredWaitingCount : 0}
-              totalReceived={isCandidatureColumn ? displayedTotalReceived : 0}
+              waitingCount={0}
+              totalReceived={
+                isCandidatureColumn ? column.candidates.length : 0
+              }
             />
           );
         })}
@@ -917,7 +543,9 @@ export default function Recruitment() {
 
       {errorToast && (
         <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-red-500 px-4 py-3 text-white shadow-lg animate-fade-in sm:right-auto sm:max-w-md">
-          <span className="break-words font-body text-sm font-medium">{errorToast}</span>
+          <span className="break-words font-body text-sm font-medium">
+            {errorToast}
+          </span>
         </div>
       )}
     </div>

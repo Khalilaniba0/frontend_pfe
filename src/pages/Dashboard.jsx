@@ -4,14 +4,7 @@ import StatCard from "components/Dashboard/StatCard.jsx";
 import HiringChart from "components/Dashboard/HiringChart.jsx";
 import RecentActivity from "components/Dashboard/RecentActivity.jsx";
 import UpcomingInterviews from "components/Dashboard/UpcomingInterviews.jsx";
-
-// Données mock pour développement local
-const MOCK_STATS = {
-  candidatures_en_attente: { total: 128, nouvelles_aujourd_hui: 23 },
-  postes_ouverts: { total: 47, en_cloture_cette_semaine: 8 },
-  entretiens_cette_semaine: { total: 12, aujourd_hui: 3, demain: 4 },
-  offres_en_attente: { total: 6, delai_moyen_reponse_jours: 3 },
-};
+import { getDashboardStats } from "service/restApiDashboard";
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -26,35 +19,32 @@ export default function Dashboard() {
   });
 
   useEffect(function () {
-    // Simuler un appel API avec les données mock
-    // Remplacer par fetch("/api/dashboard/stats") quand le backend est prêt
-    const fetchStats = function () {
+    var cancelled = false;
+
+    async function fetchStats() {
       setLoading(true);
       setError(null);
-
-      // Simulation d'un délai réseau
-      setTimeout(function () {
-        try {
-          // TODO: Remplacer par un vrai appel API
-          // fetch("/api/dashboard/stats")
-          //   .then((res) => {
-          //     if (!res.ok) throw new Error("Erreur serveur");
-          //     return res.json();
-          //   })
-          //   .then((data) => setStats(data))
-          //   .catch((err) => setError(err.message))
-          //   .finally(() => setLoading(false));
-
-          setStats(MOCK_STATS);
-          setLoading(false);
-        } catch (err) {
-          setError(err.message);
+      try {
+        const result = await getDashboardStats();
+        if (!cancelled) {
+          setStats(result);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err?.response?.data?.message || "Erreur de chargement des statistiques");
+        }
+      } finally {
+        if (!cancelled) {
           setLoading(false);
         }
-      }, 300);
-    };
+      }
+    }
 
     fetchStats();
+
+    return function () {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -75,7 +65,6 @@ export default function Dashboard() {
 
       <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {loading ? (
-          // Skeleton loading state
           <>
             {[1, 2, 3, 4].map(function (i) {
               return (
@@ -96,7 +85,6 @@ export default function Dashboard() {
             })}
           </>
         ) : error ? (
-          // Error state
           <div className="col-span-full rounded-2xl border border-red-200 bg-red-50 p-5">
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-red-500">
@@ -111,7 +99,6 @@ export default function Dashboard() {
             </div>
           </div>
         ) : stats ? (
-          // Loaded state
           <>
             <StatCard
               icon="inbox"

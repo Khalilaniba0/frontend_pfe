@@ -1,35 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import ModalBackdrop from "../common/ModalBackdrop";
+import {
+  getCandidaturesDisponibles,
+  getRecruteurs,
+} from "service/restApiEntretiens";
 
 const EMPTY_FORM = {
-  candidat: "",
+  candidature: "",
   poste: "",
   date: "",
   heureDebut: "",
   heureFin: "",
-  type: "Visio",
+  type: "visio",
   lienVisio: "",
   recruteur: "",
   notes: "",
 };
 
-const TYPES_ENTRETIEN = ["Visio", "Téléphonique", "Présentiel"];
-
-const CANDIDATS_DISPONIBLES = [
-  "Nadia Belkacem",
-  "Youssef Amrani",
-  "Léa Fontaine",
-  "Thomas Petit",
-  "Amira Benali",
-  "Lucas Ferreira",
-];
-
-const RECRUTEURS_DISPONIBLES = [
-  "Marie Dupont",
-  "Lucas Bernard",
-  "Sophie Martin",
-  "Jean Moreau",
+const TYPES_ENTRETIEN = [
+  { value: "visio", label: "Visio", icon: "videocam" },
+  { value: "telephone", label: "Téléphonique", icon: "phone" },
+  { value: "presentiel", label: "Présentiel", icon: "location_on" },
 ];
 
 export default function CreateInterviewModal({ onClose, onSubmit }) {
@@ -37,10 +29,56 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
+  const [candidatures, setCandidatures] = useState([]);
+  const [recruteurs, setRecruteurs] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(function () {
+    var cancelled = false;
+
+    async function loadData() {
+      try {
+        var [cands, recs] = await Promise.all([
+          getCandidaturesDisponibles(),
+          getRecruteurs(),
+        ]);
+        if (!cancelled) {
+          setCandidatures(cands);
+          setRecruteurs(recs);
+        }
+      } catch (err) {
+        console.error("Erreur chargement données modal:", err);
+      } finally {
+        if (!cancelled) {
+          setLoadingData(false);
+        }
+      }
+    }
+
+    loadData();
+
+    return function () {
+      cancelled = true;
+    };
+  }, []);
+
   const handleChange = function (e) {
     const { name, value } = e.target;
     setForm(function (prev) {
-      return { ...prev, [name]: value };
+      var updated = { ...prev, [name]: value };
+
+      // Auto-fill poste when candidature is selected
+      if (name === "candidature" && value) {
+        var selected = candidatures.find(function (c) {
+          return c._id === value;
+        });
+        if (selected) {
+          updated.poste =
+            selected.offre?.poste || selected.poste || updated.poste;
+        }
+      }
+
+      return updated;
     });
     setErrors(function (prev) {
       return { ...prev, [name]: "" };
@@ -49,8 +87,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
 
   const validate = function () {
     const errs = {};
-    if (!form.candidat) errs.candidat = "Candidat requis";
-    if (!form.poste.trim()) errs.poste = "Poste requis";
+    if (!form.candidature) errs.candidature = "Candidature requise";
     if (!form.date) errs.date = "Date requise";
     if (!form.heureDebut) errs.heureDebut = "Heure de début requise";
     if (!form.heureFin) errs.heureFin = "Heure de fin requise";
@@ -67,45 +104,69 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
     return errs;
   };
 
-  const handleSubmit = function (e) {
+  const handleSubmit = async function (e) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-    setSubmitting(true);
-    setTimeout(function () {
-      const dateObj = new Date(form.date);
-      const dateFormatted = dateObj.toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
 
-      let lienEntretien = form.lienVisio || "N/A";
-      if (form.type === "Visio") {
-        const roomId =
+    setSubmitting(true);
+
+    try {
+      // Calculate duration in minutes
+      var startParts = form.heureDebut.split(":");
+      var endParts = form.heureFin.split(":");
+      var startMin =
+        parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+      var endMin =
+        parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+      var duree = endMin - startMin;
+
+      // Build ISO date
+      var dateEntretien = form.date + "T" + form.heureDebut + ":00.000Z";
+
+      // Generate Jitsi link for visio
+      var lienVisio = form.lienVisio || "";
+      if (form.type === "visio" && !lienVisio) {
+        var roomId =
           "talentia-" +
           Date.now() +
           "-" +
           Math.random().toString(36).substr(2, 9);
-        lienEntretien = "https://meet.jit.si/" + roomId;
+        lienVisio = "https://meet.jit.si/" + roomId;
       }
 
-      onSubmit({
-        candidat: form.candidat,
-        poste: form.poste,
-        date: dateFormatted,
-        heure: form.heureDebut + " - " + form.heureFin,
-        type: form.type,
-        lien: lienEntretien,
-        recruteur: form.recruteur,
-        notes: form.notes,
-        statut: "À venir",
+      var payload = {
+        candidature: form.candidature,
+        responsable: form.recruteur,
+        dateEntretien: dateEntretien,
+        date_entretien: dateEntretien,
+        typeEntretien: form.type,
+        type_entretien: form.type,
+        duree: duree > 0 ? duree : 60,
+        lienVisio: lienVisio,
+        lien_visio: lienVisio,
+        commentaires: form.notes,
+      };
+
+      // Find candidat name for success message
+      var selectedCand = candidatures.find(function (c) {
+        return c._id === form.candidature;
       });
+      payload.candidatName =
+        selectedCand?.nom ||
+        selectedCand?.candidat?.nom ||
+        selectedCand?.email ||
+        "le candidat";
+
+      await onSubmit(payload);
+    } catch (err) {
+      console.error("Erreur soumission:", err);
+    } finally {
       setSubmitting(false);
-    }, 600);
+    }
   };
 
   const handleCancel = function () {
@@ -173,19 +234,31 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                   person
                 </span>
                 <select
-                  name="candidat"
-                  value={form.candidat}
+                  name="candidature"
+                  value={form.candidature}
                   onChange={handleChange}
+                  disabled={loadingData}
                   className={
-                    inputClass("candidat") +
+                    inputClass("candidature") +
                     " cursor-pointer appearance-none pl-10 pr-10"
                   }
                 >
-                  <option value="">Sélectionner un candidat</option>
-                  {CANDIDATS_DISPONIBLES.map(function (candidat) {
+                  <option value="">
+                    {loadingData
+                      ? "Chargement..."
+                      : "Sélectionner un candidat"}
+                  </option>
+                  {candidatures.map(function (c) {
+                    var name =
+                      c.nom ||
+                      c.candidat?.nom ||
+                      c.email ||
+                      "Candidat";
+                    var poste = c.offre?.poste || "";
                     return (
-                      <option key={candidat} value={candidat}>
-                        {candidat}
+                      <option key={c._id} value={c._id}>
+                        {name}
+                        {poste ? " — " + poste : ""}
                       </option>
                     );
                   })}
@@ -194,19 +267,19 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                   expand_more
                 </span>
               </div>
-              {errors.candidat && (
+              {errors.candidature && (
                 <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
                   <span className="material-symbols-outlined text-xs">
                     error
                   </span>
-                  {errors.candidat}
+                  {errors.candidature}
                 </p>
               )}
             </div>
 
             <div>
               <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
-                Poste <span className="text-red-400">*</span>
+                Poste
               </label>
               <div className="relative">
                 <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-text-muted">
@@ -217,18 +290,11 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                   name="poste"
                   value={form.poste}
                   onChange={handleChange}
-                  placeholder="Ex : Développeur Full-Stack"
-                  className={inputClass("poste") + " pl-10"}
+                  placeholder="Auto-rempli depuis la candidature"
+                  readOnly
+                  className={inputClass("poste") + " pl-10 bg-bg-soft"}
                 />
               </div>
-              {errors.poste && (
-                <p className="mt-1 flex items-center gap-1 font-body text-xs text-red-500">
-                  <span className="material-symbols-outlined text-xs">
-                    error
-                  </span>
-                  {errors.poste}
-                </p>
-              )}
             </div>
           </div>
 
@@ -315,11 +381,11 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
               Type d'entretien <span className="text-red-400">*</span>
             </label>
             <div className="flex gap-3">
-              {TYPES_ENTRETIEN.map(function (type) {
-                const isSelected = form.type === type;
+              {TYPES_ENTRETIEN.map(function (t) {
+                const isSelected = form.type === t.value;
                 return (
                   <label
-                    key={type}
+                    key={t.value}
                     className={
                       "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 transition-all duration-150 " +
                       (isSelected
@@ -330,7 +396,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                     <input
                       type="radio"
                       name="type"
-                      value={type}
+                      value={t.value}
                       checked={isSelected}
                       onChange={handleChange}
                       className="sr-only"
@@ -341,11 +407,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                         (isSelected ? "text-primary" : "text-text-muted")
                       }
                     >
-                      {type === "Visio"
-                        ? "videocam"
-                        : type === "Téléphonique"
-                          ? "phone"
-                          : "location_on"}
+                      {t.icon}
                     </span>
                     <span
                       className={
@@ -353,7 +415,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                         (isSelected ? "text-primary" : "text-text-secondary")
                       }
                     >
-                      {type}
+                      {t.label}
                     </span>
                   </label>
                 );
@@ -361,7 +423,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
             </div>
           </div>
 
-          {form.type === "Visio" && (
+          {form.type === "visio" && (
             <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
               <span className="material-symbols-outlined mt-0.5 flex-shrink-0 text-base text-emerald-600">
                 check_circle
@@ -385,16 +447,21 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
                 name="recruteur"
                 value={form.recruteur}
                 onChange={handleChange}
+                disabled={loadingData}
                 className={
                   inputClass("recruteur") +
                   " cursor-pointer appearance-none pl-10 pr-10"
                 }
               >
-                <option value="">Sélectionner un recruteur</option>
-                {RECRUTEURS_DISPONIBLES.map(function (recruteur) {
+                <option value="">
+                  {loadingData
+                    ? "Chargement..."
+                    : "Sélectionner un recruteur"}
+                </option>
+                {recruteurs.map(function (r) {
                   return (
-                    <option key={recruteur} value={recruteur}>
-                      {recruteur}
+                    <option key={r._id} value={r._id}>
+                      {r.nom || r.name || r.email} ({r.role})
                     </option>
                   );
                 })}
@@ -441,7 +508,7 @@ export default function CreateInterviewModal({ onClose, onSubmit }) {
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || loadingData}
               onClick={handleSubmit}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg disabled:opacity-60"
             >

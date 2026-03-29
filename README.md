@@ -198,7 +198,7 @@ npm run build
 
 Les services API lisent l'URL backend depuis:
 
-- VITE_API_URL
+- REACT_APP_API_URL
 
 Si la variable n'est pas définie, la valeur de fallback est:
 
@@ -207,7 +207,7 @@ Si la variable n'est pas définie, la valeur de fallback est:
 Créer un fichier .env à la racine:
 
 ```env
-VITE_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:5000
 ```
 
 ## Routes principales

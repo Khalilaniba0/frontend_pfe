@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import ModalBackdrop from "../common/ModalBackdrop";
+import { createRh } from "service/restApiUser";
 
 const EMPTY_FORM = {
   firstName: "",
@@ -44,6 +45,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [apiError, setApiError] = useState(null);
 
   const strength = getPasswordStrength(form.password);
 
@@ -55,6 +57,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
     setErrors(function (prev) {
       return { ...prev, [name]: "" };
     });
+    setApiError(null);
   };
 
   const validate = function () {
@@ -74,26 +77,43 @@ export default function CreateUserModal({ onClose, onSubmit }) {
     return errs;
   };
 
-  const handleSubmit = function (e) {
+  const handleSubmit = async function (e) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
+
     setSubmitting(true);
-    setTimeout(function () {
-      onSubmit({
-        name: form.firstName + " " + form.lastName,
+    setApiError(null);
+
+    try {
+      var payload = {
+        nom: form.firstName + " " + form.lastName,
         email: form.email,
-        phone: form.phone,
-        department: form.department,
+        motDePasse: form.password,
+      };
+
+      if (form.phone) {
+        payload.tel = form.phone;
+      }
+
+      await createRh(payload);
+
+      onSubmit({
+        name: payload.nom,
+        email: form.email,
         role: "RH",
-        status: "Actif",
-        lastLogin: "Jamais",
       });
+    } catch (err) {
+      setApiError(
+        err?.response?.data?.message ||
+          "Erreur lors de la création du compte"
+      );
+    } finally {
       setSubmitting(false);
-    }, 600);
+    }
   };
 
   const handleCancel = function () {
@@ -101,6 +121,7 @@ export default function CreateUserModal({ onClose, onSubmit }) {
     setShowPassword(false);
     setShowConfirm(false);
     setErrors({});
+    setApiError(null);
     onClose();
   };
 
@@ -158,6 +179,17 @@ export default function CreateUserModal({ onClose, onSubmit }) {
               . Seul un administrateur peut créer des comptes sur la plateforme.
             </p>
           </div>
+
+          {apiError && (
+            <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+              <span className="material-symbols-outlined mt-0.5 flex-shrink-0 text-base text-red-500">
+                error
+              </span>
+              <p className="font-body text-xs leading-relaxed text-red-600">
+                {apiError}
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>

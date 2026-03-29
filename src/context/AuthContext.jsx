@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
 import { ROUTES } from "constants/routes";
 import { loginUser, logoutUser } from "service/restApiAuth";
+import { getAllUsers } from "service/restApiUser";
 
 const AuthContext = createContext(null);
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const SESSION_KEY = "talentia_user";
 
 export function AuthProvider({ children }) {
@@ -22,9 +21,8 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        await axios.get(`${API_URL}/user/getAllUsers`, {
-          withCredentials: true,
-        });
+        // Validate session by calling a protected route through the service layer
+        await getAllUsers();
 
         try {
           const parsedUser = JSON.parse(stored);

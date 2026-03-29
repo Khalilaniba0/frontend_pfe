@@ -1,45 +1,104 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { getUpcomingEntretiens } from "service/restApiDashboard";
+
+var GRADIENTS = [
+  "from-pink-400 to-rose-500",
+  "from-sky-400 to-blue-500",
+  "from-amber-400 to-orange-500",
+  "from-emerald-400 to-teal-500",
+  "from-violet-400 to-purple-500",
+];
+
+function getInitials(name) {
+  if (!name) return "??";
+  var parts = name.trim().split(" ");
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
+
+function getTypeLabel(type) {
+  switch (type) {
+    case "visio":
+      return "Visio";
+    case "telephone":
+      return "Téléphone";
+    case "presentiel":
+      return "Présentiel";
+    default:
+      return type || "Entretien";
+  }
+}
+
+var getTypeStyle = function (type) {
+  switch (type) {
+    case "visio":
+      return "bg-indigo-50 text-indigo-600";
+    case "telephone":
+      return "bg-secondary-light text-secondary";
+    case "presentiel":
+      return "bg-primary-light text-primary";
+    default:
+      return "bg-gray-100 text-gray-600";
+  }
+};
 
 export default function UpcomingInterviews() {
-  const interviews = [
-    {
-      name: "Amira Khoury",
-      role: "Ingénieure senior",
-      time: "10:00",
-      type: "Technique",
-      initials: "AK",
-      gradient: "from-pink-400 to-rose-500",
-    },
-    {
-      name: "Thomas Petit",
-      role: "Responsable marketing",
-      time: "13:30",
-      type: "RH",
-      initials: "TP",
-      gradient: "from-sky-400 to-blue-500",
-    },
-    {
-      name: "Fatou Diallo",
-      role: "Designer produit",
-      time: "15:45",
-      type: "Final",
-      initials: "FD",
-      gradient: "from-amber-400 to-orange-500",
-    },
-  ];
+  var [interviews, setInterviews] = useState([]);
+  var [loading, setLoading] = useState(true);
 
-  const getTypeStyle = function (type) {
-    switch (type) {
-      case "Technique":
-        return "bg-indigo-50 text-indigo-600";
-      case "RH":
-        return "bg-secondary-light text-secondary";
-      case "Final":
-        return "bg-primary-light text-primary";
-      default:
-        return "bg-gray-100 text-gray-600";
+  useEffect(function () {
+    var cancelled = false;
+
+    async function fetchData() {
+      try {
+        var items = await getUpcomingEntretiens();
+        if (!cancelled) {
+          setInterviews(
+            items.map(function (e, index) {
+              var candidatName =
+                e.candidature?.nom ||
+                e.candidature?.candidat?.nom ||
+                e.candidature?.email ||
+                "Candidat";
+              var role =
+                e.candidature?.offre?.poste ||
+                e.candidature?.poste ||
+                "Poste non défini";
+              var dateObj = new Date(e.dateEntretien || e.date_entretien);
+              var timeStr = dateObj.toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+
+              return {
+                name: candidatName,
+                role: role,
+                time: timeStr,
+                type: getTypeLabel(e.typeEntretien || e.type_entretien),
+                rawType: e.typeEntretien || e.type_entretien,
+                initials: getInitials(candidatName),
+                gradient: GRADIENTS[index % GRADIENTS.length],
+              };
+            })
+          );
+        }
+      } catch (err) {
+        console.error("Erreur entretiens à venir:", err);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
-  };
+
+    fetchData();
+
+    return function () {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="rounded-2xl border border-border bg-white p-5 shadow-sm">
@@ -49,7 +108,9 @@ export default function UpcomingInterviews() {
             Entretiens à venir
           </h3>
           <p className="mt-0.5 font-body text-xs text-text-muted">
-            Aujourd'hui — {interviews.length} programmés
+            {loading
+              ? "Chargement..."
+              : "Prochains — " + interviews.length + " programmés"}
           </p>
         </div>
         <button
@@ -61,61 +122,75 @@ export default function UpcomingInterviews() {
         </button>
       </header>
 
-      <ul className="flex flex-col">
-        {interviews.map(function (interview, index) {
-          return (
-            <li
-              key={index}
-              className={
-                "group flex items-center gap-4 py-3.5 transition-colors duration-150 " +
-                (index < interviews.length - 1 ? "border-b border-border" : "")
-              }
-            >
-              <div
+      {loading ? (
+        <div className="py-8 text-center">
+          <p className="font-body text-sm text-text-muted">Chargement...</p>
+        </div>
+      ) : interviews.length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="font-body text-sm text-text-muted">
+            Aucun entretien à venir
+          </p>
+        </div>
+      ) : (
+        <ul className="flex flex-col">
+          {interviews.map(function (interview, index) {
+            return (
+              <li
+                key={index}
                 className={
-                  "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-body text-xs font-bold text-white shadow-sm " +
-                  interview.gradient
+                  "group flex items-center gap-4 py-3.5 transition-colors duration-150 " +
+                  (index < interviews.length - 1
+                    ? "border-b border-border"
+                    : "")
                 }
               >
-                {interview.initials}
-              </div>
+                <div
+                  className={
+                    "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-body text-xs font-bold text-white shadow-sm " +
+                    interview.gradient
+                  }
+                >
+                  {interview.initials}
+                </div>
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-body text-sm font-semibold text-text-primary">
-                  {interview.name}
-                </p>
-                <p className="truncate font-body text-xs text-text-secondary">
-                  {interview.role}
-                </p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-body text-sm font-semibold text-text-primary">
+                    {interview.name}
+                  </p>
+                  <p className="truncate font-body text-xs text-text-secondary">
+                    {interview.role}
+                  </p>
+                </div>
 
-              <span
-                className={
-                  "hidden rounded-md px-2 py-1 font-body text-xs font-medium sm:inline-block " +
-                  getTypeStyle(interview.type)
-                }
-              >
-                {interview.type}
-              </span>
-
-              <div className="flex items-center gap-1.5 text-text-primary">
-                <i className="fas fa-clock text-xs text-text-muted"></i>
-                <span className="font-body text-sm font-semibold tabular-nums">
-                  {interview.time}
+                <span
+                  className={
+                    "hidden rounded-md px-2 py-1 font-body text-xs font-medium sm:inline-block " +
+                    getTypeStyle(interview.rawType)
+                  }
+                >
+                  {interview.type}
                 </span>
-              </div>
 
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted opacity-0 transition-all duration-150 hover:bg-primary-light hover:text-primary group-hover:opacity-100"
-                title="Voir les détails"
-              >
-                <i className="fas fa-chevron-right text-xs"></i>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                <div className="flex items-center gap-1.5 text-text-primary">
+                  <i className="fas fa-clock text-xs text-text-muted"></i>
+                  <span className="font-body text-sm font-semibold tabular-nums">
+                    {interview.time}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-text-muted opacity-0 transition-all duration-150 hover:bg-primary-light hover:text-primary group-hover:opacity-100"
+                  title="Voir les détails"
+                >
+                  <i className="fas fa-chevron-right text-xs"></i>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
