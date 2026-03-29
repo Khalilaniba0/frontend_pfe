@@ -1,72 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Send,
-  CalendarCheck,
-  Bookmark,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Briefcase,
-  MapPin,
-  Building2,
-  Clock,
-  Zap,
-  Sparkles,
-} from "lucide-react";
+import { Briefcase, Calendar, Search } from "lucide-react";
 import { useCandidateAuth } from "context/CandidateAuthContext";
 import { getMesCandidatures } from "service/restApiCandidature";
 import { getAllOffres } from "service/restApiJobs";
 
-const ETAPE_LABELS = {
-  soumise: { label: "Candidature reçue", color: "bg-gray-100 text-gray-600" },
-  preselectionne: {
-    label: "En cours d'examen",
-    color: "bg-blue-100 text-blue-700",
-  },
-  entretien_planifie: {
-    label: "Entretien prévu",
-    color: "bg-teal-100 text-teal-700",
-  },
-  entretien_passe: {
-    label: "Entretien passé",
-    color: "bg-purple-100 text-purple-700",
-  },
-  accepte: { label: "Accepté", color: "bg-green-100 text-green-700" },
-  refuse: { label: "Refusé", color: "bg-red-100 text-red-600" },
+const ETAPE_CONFIG = {
+  soumise:            { label: "Candidature reçue",  cls: "bg-gray-100 text-gray-600"    },
+  preselectionne:     { label: "En cours d'examen",  cls: "bg-blue-100 text-blue-700"    },
+  entretien_planifie: { label: "Entretien prévu",    cls: "bg-teal-100 text-teal-700"    },
+  entretien_passe:    { label: "Entretien passé",    cls: "bg-purple-100 text-purple-700" },
+  accepte:            { label: "Accepté",            cls: "bg-green-100 text-green-700"  },
+  refuse:             { label: "Refusé",             cls: "bg-red-100 text-red-600"      },
 };
-
-function formatRelativeDate(dateStr) {
-  if (!dateStr) return "";
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return "Aujourd'hui";
-  if (days === 1) return "Hier";
-  if (days < 30) return `Il y a ${days}j`;
-  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(dateStr));
-}
-
-function isUrgent(offre) {
-  if (!offre?.dateLimite) return false;
-  const daysLeft = (new Date(offre.dateLimite).getTime() - Date.now()) / 86400000;
-  return daysLeft > 0 && daysLeft < 7;
-}
-
-function isNew(offre) {
-  if (!offre?.createdAt) return false;
-  const daysAgo = (Date.now() - new Date(offre.createdAt).getTime()) / 86400000;
-  return daysAgo < 7;
-}
-
-function getSalaryRange(offre) {
-  if (offre?.salaire) return offre.salaire;
-  if (offre?.salaireMin && offre?.salaireMax) {
-    const min = offre.salaireMin >= 1000 ? `${Math.round(offre.salaireMin / 1000)}k` : offre.salaireMin;
-    const max = offre.salaireMax >= 1000 ? `${Math.round(offre.salaireMax / 1000)}k` : offre.salaireMax;
-    return `${min} - ${max}€`;
-  }
-  return null;
-}
 
 export default function CandidateDashboard() {
   const { candidat } = useCandidateAuth();
@@ -74,210 +20,143 @@ export default function CandidateDashboard() {
 
   const [candidatures, setCandidatures] = useState([]);
   const [offres, setOffres] = useState([]);
-  const [loadingCandidatures, setLoadingCandidatures] = useState(true);
-  const [loadingOffres, setLoadingOffres] = useState(true);
-  const [recoPage, setRecoPage] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(function () {
-    async function fetchCandidatures() {
+  useEffect(() => {
+    const load = async () => {
       try {
-        const res = await getMesCandidatures();
-        const list = Array.isArray(res?.data?.data)
-          ? res.data.data
-          : Array.isArray(res?.data)
-          ? res.data
-          : [];
-        setCandidatures(list);
+        const [cRes, oRes] = await Promise.all([
+          getMesCandidatures(),
+          getAllOffres(),
+        ]);
+        const cList = Array.isArray(cRes?.data?.data) ? cRes.data.data
+                    : Array.isArray(cRes?.data) ? cRes.data : [];
+        const oList = Array.isArray(oRes?.data?.data) ? oRes.data.data
+                    : Array.isArray(oRes?.data) ? oRes.data : [];
+        setCandidatures(cList);
+        setOffres(oList.slice(0, 3));
       } catch {
-        setCandidatures([]);
+        // silently handle
       } finally {
-        setLoadingCandidatures(false);
+        setLoading(false);
       }
-    }
-
-    async function fetchOffres() {
-      try {
-        const res = await getAllOffres();
-        const list = Array.isArray(res?.data?.data)
-          ? res.data.data
-          : Array.isArray(res?.data)
-          ? res.data
-          : [];
-        setOffres(list);
-      } catch {
-        setOffres([]);
-      } finally {
-        setLoadingOffres(false);
-      }
-    }
-
-    fetchCandidatures();
-    fetchOffres();
+    };
+    load();
   }, []);
 
-  // Stats
-  const candidaturesEnvoyees = candidatures.length;
-  const entretiensVus = candidatures.filter(function (c) {
-    const e = c?.etape || c?.status;
-    return e === "entretien_planifie" || e === "entretien_passe";
-  }).length;
+  const entretiensPreus = candidatures.filter(
+    (c) => c.etape === "entretien_planifie"
+  ).length;
 
-  const recentCandidatures = candidatures.slice(0, 3);
-
-  // Recommandations pages of 3
-  const RECO_PER_PAGE = 3;
-  const recoStart = recoPage * RECO_PER_PAGE;
-  const recoSlice = offres.slice(recoStart, recoStart + RECO_PER_PAGE);
-  const recoMaxPage = Math.max(0, Math.ceil(offres.length / RECO_PER_PAGE) - 1);
+  if (loading) {
+    return (
+      <div className="p-8 space-y-4 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-64" />
+        <div className="h-4 bg-gray-200 rounded w-48" />
+        <div className="grid grid-cols-3 gap-4 mt-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-28 bg-gray-200 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 md:p-8 max-w-5xl mx-auto">
       {/* Header */}
-      <div>
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">
-          Bonjour, {candidat?.nom?.split(" ")[0] || "Candidat"} !
+          Bonjour, {candidat?.nom || "Candidat"} !
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="text-sm text-gray-500 mt-1">
           Suivez l'état de vos candidatures en un clin d'œil.
         </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {/* Candidatures envoyées */}
-        <div className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-md">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                Candidatures envoyées
-              </p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {loadingCandidatures ? "–" : candidaturesEnvoyees}
-              </p>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-500 transition-colors group-hover:bg-teal-100">
-              <Send size={20} />
-            </div>
-          </div>
-        </div>
-
-        {/* Entretiens prévus */}
-        <div className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-md">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                Entretiens prévus
-              </p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">
-                {loadingCandidatures ? "–" : entretiensVus}
-              </p>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-500 transition-colors group-hover:bg-blue-100">
-              <CalendarCheck size={20} />
-            </div>
-          </div>
-        </div>
-
-        {/* Offres enregistrées */}
-        <div className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-md">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                Offres enregistrées
-              </p>
-              <p className="mt-2 text-3xl font-bold text-gray-900">0</p>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-500 transition-colors group-hover:bg-amber-100">
-              <Bookmark size={20} />
-            </div>
-          </div>
-        </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <StatCard
+          label="Candidatures envoyées"
+          value={candidatures.length}
+          icon={<Briefcase className="w-5 h-5 text-teal-500" />}
+        />
+        <StatCard
+          label="Entretiens prévus"
+          value={entretiensPreus}
+          icon={<Calendar className="w-5 h-5 text-teal-500" />}
+        />
+        <StatCard
+          label="Offres disponibles"
+          value={offres.length}
+          icon={<Search className="w-5 h-5 text-teal-500" />}
+          onClick={() => navigate("/candidat/offres")}
+          clickable
+        />
       </div>
 
       {/* Candidatures en cours */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">
-            Candidatures en cours
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Mes candidatures
           </h2>
-          {candidatures.length > 3 && (
-            <button
-              onClick={function () {
-                navigate("/candidat/mes-candidatures");
-              }}
-              className="flex items-center gap-1 text-sm font-semibold text-teal-600 transition-colors hover:text-teal-700"
-            >
-              Voir tout
-              <ArrowRight size={16} />
-            </button>
-          )}
+          <button
+            onClick={() => navigate("/candidat/mes-candidatures")}
+            className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+          >
+            Voir tout →
+          </button>
         </div>
 
-        {loadingCandidatures ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(function (i) {
-              return (
-                <div
-                  key={i}
-                  className="h-20 animate-pulse rounded-2xl border border-gray-100 bg-white"
-                />
-              );
-            })}
-          </div>
-        ) : recentCandidatures.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center">
-            <Briefcase size={32} className="mx-auto mb-3 text-gray-300" />
-            <p className="font-medium text-gray-600">
-              Aucune candidature pour le moment
-            </p>
-            <p className="mt-1 text-sm text-gray-400">
-              Explorez nos offres et postulez dès maintenant !
+        {candidatures.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+            <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">
+              Vous n'avez pas encore postulé à une offre.
             </p>
             <button
-              onClick={function () {
-                navigate("/offres");
-              }}
-              className="mt-4 rounded-xl bg-teal-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-600"
+              onClick={() => navigate("/candidat/offres")}
+              className="mt-4 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
-              Découvrir les offres
+              Parcourir les offres
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {recentCandidatures.map(function (c) {
-              const offre = c?.offre || {};
-              const poste = offre?.poste || offre?.titre || "Poste";
-              const entreprise = offre?.entreprise?.nom || "Entreprise";
-              const loc = offre?.localisation || "";
-              const etape = c?.etape || c?.status || "soumise";
-              const info = ETAPE_LABELS[etape] || ETAPE_LABELS.soumise;
-
+          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+            {candidatures.slice(0, 3).map((c) => {
+              const etape = ETAPE_CONFIG[c.etape] || ETAPE_CONFIG.soumise;
+              const poste =
+                c.offre?.poste || c.offre?.post || c.nom || "Poste";
+              const entreprise = c.offre?.entreprise?.nom || "";
+              const date = c.createdAt
+                ? new Date(c.createdAt).toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "short",
+                  })
+                : "";
               return (
                 <div
                   key={c._id}
-                  className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition-all hover:border-teal-200 hover:shadow-md"
+                  className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 text-xs font-bold text-white">
-                    {(entreprise || "E").slice(0, 2).toUpperCase()}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+                      <Briefcase className="w-4 h-4 text-teal-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {poste}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {[entreprise, date].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
                   </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-sm font-bold text-gray-900">
-                      {poste}
-                    </h4>
-                    <p className="mt-0.5 truncate text-xs text-gray-500">
-                      {entreprise}
-                      {loc ? ` · ${loc}` : ""}
-                      {c?.createdAt
-                        ? ` · ${formatRelativeDate(c.createdAt)}`
-                        : ""}
-                    </p>
-                  </div>
-
                   <span
-                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${info.color}`}
+                    className={`text-xs font-medium px-3 py-1 rounded-full ${etape.cls}`}
                   >
-                    {info.label}
+                    {etape.label}
                   </span>
                 </div>
               );
@@ -287,135 +166,80 @@ export default function CandidateDashboard() {
       </section>
 
       {/* Recommandations */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">
-            Recommandations pour vous
+      {offres.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Offres pour vous
           </h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={function () {
-                setRecoPage(function (p) {
-                  return Math.max(0, p - 1);
-                });
-              }}
-              disabled={recoPage === 0}
-              className="rounded-lg border border-gray-200 p-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 disabled:opacity-40"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              onClick={function () {
-                setRecoPage(function (p) {
-                  return Math.min(recoMaxPage, p + 1);
-                });
-              }}
-              disabled={recoPage >= recoMaxPage}
-              className="rounded-lg border border-gray-200 p-1.5 text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 disabled:opacity-40"
-            >
-              <ChevronRight size={18} />
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {offres.map((offre) => (
+              <OffreCard
+                key={offre._id}
+                offre={offre}
+                onClick={() => navigate(`/offres/${offre._id}`)}
+              />
+            ))}
           </div>
-        </div>
+        </section>
+      )}
+    </div>
+  );
+}
 
-        {loadingOffres ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {[1, 2, 3].map(function (i) {
-              return (
-                <div
-                  key={i}
-                  className="h-48 animate-pulse rounded-2xl border border-gray-100 bg-white"
-                />
-              );
-            })}
-          </div>
-        ) : recoSlice.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white px-6 py-8 text-center">
-            <p className="text-sm text-gray-500">
-              Aucune recommandation disponible pour le moment.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {recoSlice.map(function (offre) {
-              const offreId = offre?._id || offre?.id;
-              const poste = offre?.poste || offre?.titre || "Poste";
-              const entreprise =
-                offre?.entreprise?.nom || offre?.nomEntreprise || "Entreprise";
-              const loc = offre?.localisation || "";
-              const salary = getSalaryRange(offre);
-              const urgent = isUrgent(offre);
-              const nouveau = isNew(offre) && !urgent;
-              const logoLetters = entreprise.slice(0, 2).toUpperCase();
+function StatCard({ label, value, icon, onClick, clickable }) {
+  return (
+    <div
+      onClick={onClick}
+      className={`bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 ${
+        clickable
+          ? "cursor-pointer hover:border-teal-300 transition-colors"
+          : ""
+      }`}
+    >
+      <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs text-gray-500 uppercase tracking-wide">
+          {label}
+        </p>
+        <p className="text-2xl font-bold text-gray-900 mt-0.5">{value}</p>
+      </div>
+    </div>
+  );
+}
 
-              return (
-                <div
-                  key={offreId}
-                  className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:border-teal-200 hover:shadow-md"
-                >
-                  {/* Badge */}
-                  <div className="mb-3 flex items-center gap-2">
-                    {urgent && (
-                      <span className="flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-600">
-                        <Zap size={10} />
-                        Urgent
-                      </span>
-                    )}
-                    {nouveau && (
-                      <span className="flex items-center gap-1 rounded-full bg-teal-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-600">
-                        <Sparkles size={10} />
-                        Nouveau
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 text-xs font-bold text-white">
-                      {logoLetters}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="truncate text-sm font-bold text-gray-900">
-                        {poste}
-                      </h3>
-                      <p className="mt-0.5 truncate text-xs text-gray-500">
-                        {entreprise}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="mt-3 space-y-1.5 text-xs text-gray-400">
-                    {loc && (
-                      <span className="flex items-center gap-1">
-                        <MapPin size={12} />
-                        {loc}
-                      </span>
-                    )}
-                    {salary && (
-                      <span className="flex items-center gap-1">
-                        <Briefcase size={12} />
-                        {salary}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* CTA */}
-                  <button
-                    onClick={function () {
-                      navigate(`/offres/${offreId}`);
-                    }}
-                    className="mt-auto flex items-center gap-1 pt-4 text-sm font-semibold text-teal-600 transition-colors hover:text-teal-700"
-                  >
-                    Voir l'offre
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
+function OffreCard({ offre, onClick }) {
+  const isUrgent =
+    offre.dateLimite &&
+    new Date(offre.dateLimite) - new Date() < 7 * 86400000;
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-teal-300 hover:shadow-sm transition-all"
+    >
+      {isUrgent && (
+        <span className="text-xs font-semibold bg-red-50 text-red-600 px-2 py-0.5 rounded-full mb-2 inline-block">
+          URGENT
+        </span>
+      )}
+      <p className="text-sm font-semibold text-gray-900 mt-1">
+        {offre.poste || offre.post}
+      </p>
+      <p className="text-xs text-gray-500 mt-1">
+        {offre.entreprise?.nom && <span>{offre.entreprise.nom}</span>}
+        {offre.localisation && <span> · {offre.localisation}</span>}
+      </p>
+      {(offre.salaireMin || offre.salaireMax) && (
+        <p className="text-xs text-teal-600 font-medium mt-2">
+          {offre.salaireMin && `${offre.salaireMin}k`}
+          {offre.salaireMin && offre.salaireMax && " – "}
+          {offre.salaireMax && `${offre.salaireMax}k€`}
+        </p>
+      )}
+      <button className="mt-3 text-xs text-teal-600 font-medium hover:text-teal-700">
+        Voir l'offre →
+      </button>
     </div>
   );
 }

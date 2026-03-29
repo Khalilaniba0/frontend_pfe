@@ -186,7 +186,10 @@ export default function CandidateLogin() {
             <p className="mt-5 text-center text-xs text-slate-500">
               Pas encore de compte ?{" "}
               <Link 
-                to={`${ROUTES.CANDIDATE_SIGNUP}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`} 
+                to={searchParams.get("redirect")
+                  ? `${ROUTES.CANDIDATE_SIGNUP}?redirect=${encodeURIComponent(searchParams.get("redirect"))}`
+                  : ROUTES.CANDIDATE_SIGNUP
+                } 
                 className="font-semibold text-[#0072FF] no-underline hover:underline"
               >
                 Inscrivez-vous

@@ -138,8 +138,9 @@ export default function JobDetail() {
 
   function handlePostuler() {
     if (!isAuthenticated) {
-      sessionStorage.setItem("redirectAfterAuth", `/offres/${id}`);
-      navigate(`/candidat/login?redirect=/offres/${id}`);
+      const redirectUrl = `/offres/${id}`;
+      sessionStorage.setItem("redirectAfterAuth", redirectUrl);
+      navigate(`/candidat/login?redirect=${encodeURIComponent(redirectUrl)}`);
       return;
     }
     setShowPostulerModal(true);

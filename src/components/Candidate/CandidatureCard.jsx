@@ -35,7 +35,9 @@ function formatDate(dateStr) {
 
 export default function CandidatureCard({ candidature, onAnnuler }) {
   const offre = candidature?.offre || {};
-  const poste = offre?.poste || offre?.titre || "Poste non renseigné";
+  // NOTE: Si le backend ne populate pas `offre` dans GET /condidature/mesCandidatures,
+  // on utilise candidature.nom comme fallback (qui stocke le nom du candidat, pas le poste).
+  const poste = offre?.poste || offre?.post || offre?.titre || candidature?.nom || "Poste inconnu";
   const entrepriseNom =
     offre?.entreprise?.nom || offre?.nomEntreprise || "Entreprise";
   const localisation = offre?.localisation || "Non précisé";

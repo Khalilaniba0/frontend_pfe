@@ -47,6 +47,7 @@ root.render(
           <Route element={<CandidateLayout />}>
             <Route path="/candidat/dashboard" element={<CandidateDashboard />} />
             <Route path="/candidat/mes-candidatures" element={<MesCandidatures />} />
+            <Route path="/candidat/offres" element={<JobList />} />
             <Route path="/candidat/profil" element={<CandidateProfile />} />
           </Route>
         </Route>

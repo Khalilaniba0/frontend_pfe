@@ -3,15 +3,9 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutGrid,
   Briefcase,
-  Mail,
-  Bookmark,
-  User,
-  HelpCircle,
-  LogOut,
   Search,
-  Bell,
-  Settings,
-  Plus,
+  User,
+  LogOut,
 } from "lucide-react";
 import { useCandidateAuth } from "context/CandidateAuthContext";
 
@@ -27,173 +21,85 @@ const NAV_ITEMS = [
     icon: Briefcase,
   },
   {
-    label: "Messages",
-    to: "#",
-    icon: Mail,
-    badge: 3,
-    disabled: true,
+    label: "Parcourir les offres",
+    to: "/candidat/offres",
+    icon: Search,
   },
   {
-    label: "Offres Enregistrées",
-    to: "#",
-    icon: Bookmark,
-    disabled: true,
-  },
-  {
-    label: "Profil",
+    label: "Mon Profil",
     to: "/candidat/profil",
     icon: User,
   },
 ];
 
-function SidebarLink({ item }) {
-  if (item.disabled) {
-    return (
-      <span className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed">
-        <item.icon size={20} />
-        <span className="flex-1">{item.label}</span>
-        {item.badge && (
-          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-teal-500 px-1.5 text-[10px] font-bold text-white">
-            {item.badge}
-          </span>
-        )}
-      </span>
-    );
-  }
-
-  return (
-    <NavLink
-      to={item.to}
-      end
-      className={function ({ isActive }) {
-        return (
-          "flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 " +
-          (isActive
-            ? "bg-teal-50 text-teal-600"
-            : "text-gray-600 hover:bg-gray-50 hover:text-teal-600")
-        );
-      }}
-    >
-      <item.icon size={20} />
-      <span className="flex-1">{item.label}</span>
-      {item.badge && (
-        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-teal-500 px-1.5 text-[10px] font-bold text-white">
-          {item.badge}
-        </span>
-      )}
-    </NavLink>
-  );
-}
-
 export default function CandidateLayout() {
   const { candidat, logout } = useCandidateAuth();
   const navigate = useNavigate();
 
-  const initials = (candidat?.nom || "C")
-    .split(" ")
-    .map(function (w) {
-      return w[0];
-    })
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   async function handleLogout() {
     await logout();
-    navigate("/candidat/login");
+    navigate("/offres");
   }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* ── Sidebar ── */}
-      <aside className="sticky top-0 flex h-screen w-[260px] shrink-0 flex-col border-r border-gray-200 bg-white">
+      <aside className="w-60 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0">
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-6 py-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 shadow-sm">
-            <Briefcase size={18} className="text-white" />
+        <div className="px-5 py-5 border-b border-gray-100">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 shadow-sm">
+              <Briefcase size={18} className="text-white" />
+            </div>
+            <span className="text-lg font-bold tracking-tight text-gray-900">
+              Talentia
+            </span>
           </div>
-          <span className="text-lg font-bold tracking-tight text-gray-900">
-            Talentia
-          </span>
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 space-y-1 px-3 py-2">
-          {NAV_ITEMS.map(function (item) {
-            return <SidebarLink key={item.label} item={item} />;
-          })}
+        <nav className="flex-1 space-y-1 px-3 py-4">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.to}
+              end={item.to === "/candidat/dashboard"}
+              className={({ isActive }) =>
+                isActive
+                  ? "flex items-center gap-3 px-3 py-2.5 rounded-lg bg-teal-50 text-teal-600 font-medium text-sm"
+                  : "flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors text-sm"
+              }
+            >
+              <item.icon size={20} />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
         </nav>
 
-        {/* Bottom section */}
-        <div className="border-t border-gray-100 px-4 py-4">
-          {/* User info */}
-          <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-xs font-bold text-white">
-              {initials}
+        {/* Bottom section — user info + logout */}
+        <div className="mt-auto px-5 py-4 border-t border-gray-100">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center text-white text-sm font-medium">
+              {candidat?.nom?.[0]?.toUpperCase() || "C"}
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-gray-900">
-                {candidat?.nom || "Candidat"}
+            <div>
+              <p className="text-sm font-medium text-gray-900 truncate max-w-[130px]">
+                {candidat?.nom}
               </p>
-              <p className="truncate text-xs text-gray-400">
-                {candidat?.email || ""}
-              </p>
+              <p className="text-xs text-gray-500">Candidat</p>
             </div>
           </div>
-
-          {/* Aide / Déconnexion */}
-          <div className="flex gap-2">
-            <button className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50">
-              <HelpCircle size={14} />
-              Aide
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:border-red-200"
-            >
-              <LogOut size={14} />
-              Déconnexion
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-xs text-gray-500 hover:text-red-500 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" /> Déconnexion
+          </button>
         </div>
       </aside>
 
       {/* ── Main content ── */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 flex items-center gap-4 border-b border-gray-200 bg-white/80 backdrop-blur-md px-6 py-3">
-          {/* Search */}
-          <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2">
-            <Search size={16} className="text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un poste, une entreprise…"
-              className="w-full border-none bg-transparent p-0 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-0"
-            />
-          </div>
-
-          {/* Actions */}
-          <button className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
-            <Bell size={20} />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-teal-500" />
-          </button>
-
-          <button className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600">
-            <Settings size={20} />
-          </button>
-
-          <button
-            onClick={function () {
-              navigate("/offres");
-            }}
-            className="flex items-center gap-2 rounded-xl bg-teal-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-600 hover:shadow-md"
-          >
-            <Plus size={16} />
-            Nouvelle Recherche
-          </button>
-        </header>
-
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
