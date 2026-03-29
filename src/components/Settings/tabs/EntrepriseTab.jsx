@@ -1,8 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  getMyEntreprise,
+  updateEntreprise,
+} from "service/restApiEntreprise";
 
 export default function EntrepriseTab() {
   const [formData, setFormData] = useState({
-    name: "Talentia Corp",
+    name: "",
     description: "",
     sector: "Technologie & SaaS",
     size: "50 – 200 employés",
@@ -14,7 +18,55 @@ export default function EntrepriseTab() {
   const [logoError, setLogoError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [saveError, setSaveError] = useState(null);
   const fileInputRef = useRef(null);
+
+  /* ── Load company data on mount ────────────── */
+
+  useEffect(function () {
+    var cancelled = false;
+
+    async function fetchEntreprise() {
+      try {
+        var res = await getMyEntreprise();
+        var data = res?.data?.data || res?.data;
+
+        if (!cancelled && data && typeof data === "object") {
+          setFormData({
+            name: data.nom || data.name || "",
+            description: data.description || "",
+            sector: data.secteur || data.sector || "Technologie & SaaS",
+            size: data.taille || data.size || "50 – 200 employés",
+            website: data.siteWeb || data.website || "",
+            email: data.email || "",
+            address: data.adresse || data.address || "",
+          });
+          if (data.logo) {
+            setLogoPreview(data.logo);
+          }
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLoadError(
+            err?.response?.data?.message ||
+              "Erreur de chargement des données de l'entreprise"
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchEntreprise();
+
+    return function () {
+      cancelled = true;
+    };
+  }, []);
 
   const handleChange = function (e) {
     const { name, value } = e.target;
@@ -22,6 +74,7 @@ export default function EntrepriseTab() {
       return { ...prev, [name]: value };
     });
     setSaved(false);
+    setSaveError(null);
   };
 
   const handleLogoChange = function (e) {
@@ -51,17 +104,54 @@ export default function EntrepriseTab() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = function (e) {
+  const handleSubmit = async function (e) {
     e.preventDefault();
     setSaving(true);
-    setTimeout(function () {
-      setSaving(false);
+    setSaveError(null);
+    setSaved(false);
+
+    try {
+      var payload = {
+        nom: formData.name,
+        description: formData.description,
+        secteur: formData.sector,
+        email: formData.email,
+        adresse: formData.address,
+        siteWeb: formData.website,
+      };
+
+      await updateEntreprise(payload);
       setSaved(true);
-    }, 800);
+    } catch (err) {
+      setSaveError(
+        err?.response?.data?.message ||
+          "Erreur lors de l'enregistrement"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputClasses =
     "w-full rounded-xl border border-border bg-white px-4 py-2.5 font-body text-sm text-text-primary placeholder:text-text-muted outline-none transition-all duration-150 focus:border-primary focus:ring-2 focus:ring-primary/20";
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center">
+        <p className="font-body text-sm text-text-muted">
+          Chargement des informations de l'entreprise...
+        </p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="py-12 text-center">
+        <p className="font-body text-sm text-red-500">{loadError}</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -75,6 +165,7 @@ export default function EntrepriseTab() {
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Logo section */}
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
             <span className="material-symbols-outlined text-lg text-primary">
@@ -130,6 +221,7 @@ export default function EntrepriseTab() {
           />
         </div>
 
+        {/* Organization details */}
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
             <span className="material-symbols-outlined text-lg text-primary">
@@ -233,6 +325,7 @@ export default function EntrepriseTab() {
           </div>
         </div>
 
+        {/* Contact details */}
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
             <span className="material-symbols-outlined text-lg text-primary">
@@ -313,7 +406,14 @@ export default function EntrepriseTab() {
           </div>
         </div>
 
+        {/* Submit */}
         <div className="flex items-center justify-end gap-3 pt-2">
+          {saveError && (
+            <span className="flex items-center gap-1.5 font-body text-sm text-red-500">
+              <span className="material-symbols-outlined text-base">error</span>
+              {saveError}
+            </span>
+          )}
           {saved && (
             <span className="flex items-center gap-1.5 font-body text-sm text-emerald-600">
               <span className="material-symbols-outlined text-base">

@@ -1,14 +1,46 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail, Loader2 } from "lucide-react";
 
 import { ROUTES } from "constants/routes";
 import BrandLogo from "components/common/BrandLogo.jsx";
+import { useCandidateAuth } from "context/CandidateAuthContext";
 
 export default function CandidateLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { login } = useCandidateAuth();
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await login(email, password);
+      
+      const redirectTo =
+        searchParams.get("redirect") ||
+        sessionStorage.getItem("redirectAfterAuth") ||
+        "/candidat/dashboard";
+
+      sessionStorage.removeItem("redirectAfterAuth");
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          "Identifiants incorrects. Veuillez réessayer."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#d8ecff_0,_#eef4f9_42%,_#f4f7fb_100%)] px-4 py-4 font-body md:h-screen md:overflow-hidden md:px-6 md:py-5">
@@ -47,10 +79,13 @@ export default function CandidateLogin() {
 
             <form
               className="mt-6 space-y-4"
-              onSubmit={function (event) {
-                event.preventDefault();
-              }}
+              onSubmit={handleLogin}
             >
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Email
@@ -106,9 +141,17 @@ export default function CandidateLogin() {
 
               <button
                 type="submit"
-                className="mt-1 flex w-full items-center justify-center rounded-xl bg-[#0072FF] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0062db]"
+                disabled={loading}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0072FF] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0062db] disabled:opacity-60"
               >
-                Se connecter
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Connexion...
+                  </>
+                ) : (
+                  "Se connecter"
+                )}
               </button>
             </form>
 
@@ -142,7 +185,10 @@ export default function CandidateLogin() {
 
             <p className="mt-5 text-center text-xs text-slate-500">
               Pas encore de compte ?{" "}
-              <Link to={ROUTES.CANDIDATE_SIGNUP} className="font-semibold text-[#0072FF] no-underline hover:underline">
+              <Link 
+                to={`${ROUTES.CANDIDATE_SIGNUP}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`} 
+                className="font-semibold text-[#0072FF] no-underline hover:underline"
+              >
                 Inscrivez-vous
               </Link>
             </p>

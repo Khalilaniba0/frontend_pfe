@@ -1,26 +1,11 @@
 import React, { useState, useMemo } from "react";
 import ManageUsersModal from "../ManageUsersModal";
-
-const INITIAL_SESSIONS = [
-  {
-    id: 1,
-    device: "Chrome · Windows 11",
-    icon: "laptop_windows",
-    location: "Paris, France",
-    date: "Session actuelle",
-    current: true,
-  },
-  {
-    id: 2,
-    device: "Safari · iPhone",
-    icon: "smartphone",
-    location: "Tunis, Tunisie",
-    date: "Il y a 2 jours",
-    current: false,
-  },
-];
+import { useAuth } from "context/AuthContext";
+import { updatePassword } from "service/restApiAuth";
 
 export default function SecuriteTab() {
+  const { user } = useAuth();
+
   const [passwords, setPasswords] = useState({
     current: "",
     new: "",
@@ -32,8 +17,9 @@ export default function SecuriteTab() {
     confirm: false,
   });
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [sessions, setSessions] = useState(INITIAL_SESSIONS);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [showManageUsers, setShowManageUsers] = useState(false);
 
   const passwordStrength = useMemo(
@@ -63,6 +49,8 @@ export default function SecuriteTab() {
     setPasswords(function (prev) {
       return { ...prev, [field]: value };
     });
+    setSaveSuccess(false);
+    setSaveError(null);
   };
 
   const togglePasswordVisibility = function (field) {
@@ -71,21 +59,42 @@ export default function SecuriteTab() {
     });
   };
 
-  const handlePasswordSubmit = function (e) {
+  const handlePasswordSubmit = async function (e) {
     e.preventDefault();
-    setSaving(true);
-    setTimeout(function () {
-      setSaving(false);
-      setPasswords({ current: "", new: "", confirm: "" });
-    }, 800);
-  };
+    setSaveError(null);
+    setSaveSuccess(false);
 
-  const handleRevokeSession = function (sessionId) {
-    setSessions(function (prev) {
-      return prev.filter(function (s) {
-        return s.id !== sessionId;
-      });
-    });
+    if (!passwords.new) {
+      setSaveError("Veuillez saisir un nouveau mot de passe");
+      return;
+    }
+    if (passwords.new.length < 8) {
+      setSaveError("Le mot de passe doit contenir au moins 8 caractères");
+      return;
+    }
+    if (passwords.new !== passwords.confirm) {
+      setSaveError("Les mots de passe ne correspondent pas");
+      return;
+    }
+
+    if (!user?._id) {
+      setSaveError("Utilisateur non connecté");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await updatePassword(user._id, passwords.new);
+      setSaveSuccess(true);
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (err) {
+      setSaveError(
+        err?.response?.data?.message ||
+          "Erreur lors de la mise à jour du mot de passe"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputClasses =
@@ -103,6 +112,7 @@ export default function SecuriteTab() {
       </header>
 
       <div className="space-y-6">
+        {/* Password change section */}
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
             <span className="material-symbols-outlined text-lg text-primary">
@@ -112,6 +122,26 @@ export default function SecuriteTab() {
           </h3>
 
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            {saveSuccess && (
+              <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <span className="material-symbols-outlined text-base text-emerald-600">
+                  check_circle
+                </span>
+                <p className="font-body text-xs text-emerald-700">
+                  Mot de passe mis à jour avec succès
+                </p>
+              </div>
+            )}
+
+            {saveError && (
+              <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <span className="material-symbols-outlined text-base text-red-500">
+                  error
+                </span>
+                <p className="font-body text-xs text-red-600">{saveError}</p>
+              </div>
+            )}
+
             <div className="max-w-md">
               <label className="mb-1.5 block font-body text-sm font-medium text-text-primary">
                 Mot de passe actuel
@@ -258,6 +288,7 @@ export default function SecuriteTab() {
           </form>
         </div>
 
+        {/* 2FA section */}
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
             <span className="material-symbols-outlined text-lg text-primary">
@@ -313,6 +344,7 @@ export default function SecuriteTab() {
           </div>
         </div>
 
+        {/* Sessions section — unavailable message */}
         <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h3 className="mb-4 flex items-center gap-2 font-display text-sm font-semibold text-text-primary">
             <span className="material-symbols-outlined text-lg text-primary">
@@ -321,77 +353,24 @@ export default function SecuriteTab() {
             Sessions actives
           </h3>
 
-          <div className="overflow-hidden rounded-xl border border-border">
-            <table className="w-full">
-              <thead className="bg-bg-soft">
-                <tr>
-                  <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
-                    Appareil
-                  </th>
-                  <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
-                    Localisation
-                  </th>
-                  <th className="px-4 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-text-muted">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {sessions.map(function (session) {
-                  return (
-                    <tr
-                      key={session.id}
-                      className="transition-colors duration-150 hover:bg-bg-soft/50"
-                    >
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <span className="material-symbols-outlined text-lg text-text-secondary">
-                            {session.icon}
-                          </span>
-                          <span className="font-body text-sm text-text-primary">
-                            {session.device}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 font-body text-sm text-text-secondary">
-                        {session.location}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        {session.current ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary-light px-2.5 py-1 font-body text-xs font-medium text-primary">
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary"></span>
-                            {session.date}
-                          </span>
-                        ) : (
-                          <span className="font-body text-sm text-text-secondary">
-                            {session.date}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3.5 text-right">
-                        {!session.current && (
-                          <button
-                            type="button"
-                            onClick={function () {
-                              handleRevokeSession(session.id);
-                            }}
-                            className="font-body text-sm font-medium text-red-500 transition-colors hover:text-red-600"
-                          >
-                            Révoquer
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4">
+            <span className="material-symbols-outlined flex-shrink-0 text-xl text-amber-500">
+              info
+            </span>
+            <div>
+              <p className="font-body text-sm font-medium text-amber-800">
+                Fonctionnalité non disponible
+              </p>
+              <p className="mt-0.5 font-body text-xs text-amber-700">
+                La gestion des sessions actives n'est pas encore prise en charge
+                par le serveur. Cette fonctionnalité sera disponible dans une
+                prochaine mise à jour.
+              </p>
+            </div>
           </div>
         </div>
 
+        {/* Manage users CTA */}
         <div className="rounded-2xl border border-primary/20 bg-primary-light p-4">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined flex-shrink-0 text-xl text-primary">

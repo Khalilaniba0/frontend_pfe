@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Clock, DollarSign, ChevronRight, Bookmark } from "lucide-react";
 import { ROUTES } from "constants/routes";
 
@@ -52,6 +52,7 @@ function getSalaryLabel(offre) {
 }
 
 export default function JobCard({ offre, viewMode }) {
+  const navigate = useNavigate();
   const offreId = offre?._id || offre?.id;
   const poste = offre?.poste || "Poste non renseigne";
   const entrepriseNom = offre?.entreprise?.nom || "Entreprise";
@@ -66,8 +67,13 @@ export default function JobCard({ offre, viewMode }) {
 
   return (
     <article
+      onClick={function () {
+        if (offreId) {
+          navigate(`/offres/${offreId}`);
+        }
+      }}
       className={
-        "group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-[0_14px_34px_rgba(19,200,236,0.16)] " +
+        "group cursor-pointer rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-[0_14px_34px_rgba(19,200,236,0.16)] " +
         (viewMode === "list" ? "md:flex md:items-center md:gap-5" : "")
       }
     >
@@ -102,6 +108,10 @@ export default function JobCard({ offre, viewMode }) {
 
         <button
           type="button"
+          onClick={function (e) {
+            e.stopPropagation();
+            // Handle save logic here
+          }}
           className="text-slate-300 transition-colors hover:text-primary-dark"
           aria-label="Sauvegarder l'offre"
         >

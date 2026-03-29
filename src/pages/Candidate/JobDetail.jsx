@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getOffreById } from "../../service/restApiOffres";
 import Navbar from "components/layout/Navbar.jsx";
+import { useCandidateAuth } from "context/CandidateAuthContext";
+import PostulerModal from "components/Candidate/PostulerModal";
 
 // ─── Sous-composants réutilisables ────────────────────────────────────────────
 
@@ -126,11 +128,22 @@ function extractOffre(response) {
 export default function JobDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading: authLoading } = useCandidateAuth();
 
   const [offre, setOffre] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [showPostulerModal, setShowPostulerModal] = useState(false);
+
+  function handlePostuler() {
+    if (!isAuthenticated) {
+      sessionStorage.setItem("redirectAfterAuth", `/offres/${id}`);
+      navigate(`/candidat/login?redirect=/offres/${id}`);
+      return;
+    }
+    setShowPostulerModal(true);
+  }
 
   useEffect(() => {
     if (!id) {
@@ -183,6 +196,11 @@ export default function JobDetail() {
   const logoEntreprise = offre?.entreprise?.logo || offre?.logoEntreprise || null;
   const tailleEntreprise = offre?.entreprise?.taille || offre?.tailleEntreprise || null;
   const secteur = offre?.entreprise?.secteur || offre?.secteur || null;
+  const rawStatus = String(offre?.statut || offre?.status || "").toLowerCase();
+  const isStatusClosed = rawStatus === "closed" || rawStatus === "fermee" || rawStatus === "fermée";
+  const isDatePassed = offre?.dateLimite && new Date(offre.dateLimite).getTime() < Date.now();
+  const isClosed = isStatusClosed || isDatePassed;
+
   const isRemote =
     offre?.remote ||
     offre?.teletravail ||
@@ -362,13 +380,29 @@ export default function JobDetail() {
                 )}
 
                 <div className="space-y-3 mb-6">
-                  <button
-                    onClick={() => navigate("/candidat/login")}
-                    className="w-full py-4 bg-gradient-to-r from-[#3ddaff] to-[#006478] text-white font-bold rounded-xl shadow-lg shadow-[#006478]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
-                  >
-                    Postuler maintenant
-                    <span className="material-symbols-outlined text-sm">send</span>
-                  </button>
+                  {isClosed ? (
+                    <div className="space-y-2">
+                      <span className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 py-3 text-sm font-bold text-gray-500">
+                        <span className="material-symbols-outlined text-sm">lock</span>
+                        Offre fermée
+                      </span>
+                      <button
+                        disabled
+                        className="w-full py-4 bg-gray-300 text-gray-500 font-bold rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        Postuler maintenant
+                        <span className="material-symbols-outlined text-sm">send</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handlePostuler}
+                      className="w-full py-4 bg-gradient-to-r from-[#3ddaff] to-[#006478] text-white font-bold rounded-xl shadow-lg shadow-[#006478]/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                      Postuler maintenant
+                      <span className="material-symbols-outlined text-sm">send</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => setSaved((s) => !s)}
                     className={`w-full py-4 border-2 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 ${
@@ -461,6 +495,17 @@ export default function JobDetail() {
           )}
         </div>
       </main>
+
+      {showPostulerModal && (
+        <PostulerModal
+          offreId={id}
+          offreTitre={titre}
+          onClose={() => setShowPostulerModal(false)}
+          onSuccess={() => {
+            setShowPostulerModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

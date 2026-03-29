@@ -18,11 +18,18 @@ import JobList from "pages/Candidate/JobList.jsx";
 import CandidateLogin from "pages/Candidate/CandidateLogin.jsx";
 import CandidateSignup from "pages/Candidate/CandidateSignup.jsx";
 import JobDetail from "./pages/Candidate/JobDetail";
+import { CandidateAuthProvider } from "context/CandidateAuthContext";
+import CandidateLayout from "components/Candidate/CandidateLayout";
+import CandidateAuthGuard from "components/common/CandidateAuthGuard";
+import CandidateDashboard from "pages/Candidate/CandidateDashboard";
+import MesCandidatures from "pages/Candidate/MesCandidatures";
+import CandidateProfile from "pages/Candidate/CandidateProfile";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
   <AuthProvider>
-    <BrowserRouter>
+    <CandidateAuthProvider>
+      <BrowserRouter>
       <Routes>
         {/* Dashboard RH/Admin */}
         <Route path="/dashboard/*" element={<AdminLayout />} />
@@ -34,6 +41,15 @@ root.render(
         <Route path={ROUTES.CANDIDATE_OFFRES} element={<JobList />} />
         <Route path={ROUTES.CANDIDATE_LOGIN} element={<CandidateLogin />} />
         <Route path={ROUTES.CANDIDATE_SIGNUP} element={<CandidateSignup />} />
+
+        {/* Espace candidat - Protégé */}
+        <Route element={<CandidateAuthGuard />}>
+          <Route element={<CandidateLayout />}>
+            <Route path="/candidat/dashboard" element={<CandidateDashboard />} />
+            <Route path="/candidat/mes-candidatures" element={<MesCandidatures />} />
+            <Route path="/candidat/profil" element={<CandidateProfile />} />
+          </Route>
+        </Route>
 
         {/* Formulaire profil */}
         <Route path={ROUTES.PROFILE_FORM} element={<ProfileForm />} />
@@ -48,5 +64,6 @@ root.render(
         <Route path="*" element={<Navigate to={ROUTES.SELECTION} replace />} />
       </Routes>
     </BrowserRouter>
+    </CandidateAuthProvider>
   </AuthProvider>
 );

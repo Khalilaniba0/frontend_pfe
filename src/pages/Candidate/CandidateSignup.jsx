@@ -1,15 +1,51 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail, User, Loader2 } from "lucide-react";
 
 import { ROUTES } from "constants/routes";
 import BrandLogo from "components/common/BrandLogo.jsx";
+import { useCandidateAuth } from "context/CandidateAuthContext";
 
 export default function CandidateSignup() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { register } = useCandidateAuth();
+
+  const handleSignup = async (event) => {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      await register({
+        nom: fullName,
+        email,
+        motDePasse: password,
+      });
+
+      const redirectTo =
+        searchParams.get("redirect") ||
+        sessionStorage.getItem("redirectAfterAuth") ||
+        "/candidat/dashboard";
+
+      sessionStorage.removeItem("redirectAfterAuth");
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          "Erreur lors de l'inscription. Veuillez réessayer."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#d8ecff_0,_#eef4f9_42%,_#f4f7fb_100%)] px-4 py-4 font-body md:h-screen md:overflow-hidden md:px-6 md:py-5">
@@ -48,10 +84,13 @@ export default function CandidateSignup() {
 
             <form
               className="mt-6 space-y-4"
-              onSubmit={function (event) {
-                event.preventDefault();
-              }}
+              onSubmit={handleSignup}
             >
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Nom complet
@@ -117,9 +156,17 @@ export default function CandidateSignup() {
 
               <button
                 type="submit"
-                className="mt-1 flex w-full items-center justify-center rounded-xl bg-[#0072FF] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0062db]"
+                disabled={loading}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0072FF] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0062db] disabled:opacity-60"
               >
-                Creer mon compte candidat
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Inscription...
+                  </>
+                ) : (
+                  "Créer mon compte candidat"
+                )}
               </button>
             </form>
 
@@ -153,7 +200,10 @@ export default function CandidateSignup() {
 
             <p className="mt-5 text-center text-xs text-slate-500">
               Vous avez deja un compte ?{" "}
-              <Link to={ROUTES.CANDIDATE_LOGIN} className="font-semibold text-[#0072FF] no-underline hover:underline">
+              <Link 
+                to={`${ROUTES.CANDIDATE_LOGIN}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`} 
+                className="font-semibold text-[#0072FF] no-underline hover:underline"
+              >
                 Connectez-vous
               </Link>
             </p>

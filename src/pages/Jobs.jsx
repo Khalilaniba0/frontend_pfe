@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import JobStatCard from "components/Jobs/JobStatCard";
 import JobsTable from "components/Jobs/JobsTable";
 import SourceChart from "components/Jobs/SourceChart";
@@ -9,6 +10,9 @@ import {
   getOffreByEntreprise,
   toggleOffreStatus,
 } from "service/restApiOffres";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 
 const SOURCE_COLORS = ["bg-primary", "bg-secondary", "bg-primary/40", "bg-secondary/40"];
 
@@ -75,13 +79,25 @@ export default function Jobs() {
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
 
+  const [totalCandidatsReels, setTotalCandidatsReels] = useState(0);
+
   const chargerOffres = useCallback(async function () {
     setLoading(true);
     setError(null);
     try {
-      const res = await getOffreByEntreprise();
-      const data = res?.data?.data || res?.data || [];
+      const [offresRes, candidaturesRes] = await Promise.all([
+        getOffreByEntreprise(),
+        axios.get(`${API_URL}/condidature/getAllCandidatures`, { withCredentials: true }).catch(function () { return { data: [] }; }),
+      ]);
+      const data = offresRes?.data?.data || offresRes?.data || [];
       setOffres(Array.isArray(data) ? data : []);
+
+      const cands = Array.isArray(candidaturesRes?.data?.data)
+        ? candidaturesRes.data.data
+        : Array.isArray(candidaturesRes?.data)
+          ? candidaturesRes.data
+          : [];
+      setTotalCandidatsReels(cands.length);
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors du chargement des offres");
     } finally {
@@ -195,7 +211,7 @@ export default function Jobs() {
   const offresActives = offres.filter(function (o) {
     return getOffreStatus(o) === "open";
   }).length;
-  const totalCandidats = offres.reduce(function (sum, o) {
+  const totalCandidats = totalCandidatsReels || offres.reduce(function (sum, o) {
     return sum + getCandidateCount(o);
   }, 0);
 
