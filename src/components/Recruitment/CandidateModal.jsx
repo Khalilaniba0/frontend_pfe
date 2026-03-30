@@ -7,6 +7,7 @@ export default function CandidateModal({
   pipelineOrder,
   onClose,
   onNextStage,
+  onRefuse,
   findCandidateColumn,
 }) {
   var noteState = React.useState("");
@@ -52,6 +53,7 @@ export default function CandidateModal({
   var isLastStage = currentIdx >= pipelineOrder.length - 1;
   var nextStage = isLastStage ? null : pipelineOrder[currentIdx + 1];
   var isFinalStage = currentStage === "Offre";
+  var canRefuse = candidate._etape !== "refuse" && candidate._etape !== "accepte";
 
   return (
     <ModalBackdrop onClose={onClose}>
@@ -258,6 +260,18 @@ export default function CandidateModal({
           >
             Annuler
           </button>
+          {canRefuse && (
+            <button
+              type="button"
+              onClick={onRefuse}
+              className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2.5 font-body text-sm font-medium text-white transition-all hover:bg-red-600"
+            >
+              <span className="material-symbols-outlined text-lg">
+                person_remove
+              </span>
+              Refuser
+            </button>
+          )}
           {!isLastStage && (
             <button
               type="button"
@@ -288,5 +302,6 @@ CandidateModal.propTypes = {
   pipelineOrder: PropTypes.arrayOf(PropTypes.string).isRequired,
   onClose: PropTypes.func.isRequired,
   onNextStage: PropTypes.func.isRequired,
+  onRefuse: PropTypes.func.isRequired,
   findCandidateColumn: PropTypes.func.isRequired,
 };

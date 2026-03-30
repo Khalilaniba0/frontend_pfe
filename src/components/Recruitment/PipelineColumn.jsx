@@ -7,11 +7,11 @@ export default function PipelineColumn({
   count = 0,
   color = "bg-slate-500",
   candidates = [],
-  onDragOver = function () {},
-  onDrop = function () {},
-  onCandidateDragStart = function () {},
-  onCandidateDragEnd = function () {},
-  onCandidateClick = function () {},
+  onDragOver = function () { },
+  onDrop = function () { },
+  onCandidateDragStart = function () { },
+  onCandidateDragEnd = function () { },
+  onCandidateClick = function () { },
   topCandidateIds = [],
   dragging = null,
   totalReceived = 0,
@@ -59,7 +59,7 @@ export default function PipelineColumn({
 
   return (
     <div
-      className="min-w-[280px] flex-shrink-0 md:w-auto md:flex-1"
+      className="min-w-[280px] shrink-0 md:min-w-0 md:shrink md:basis-0 md:flex-1"
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}

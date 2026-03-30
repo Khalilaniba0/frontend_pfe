@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { Briefcase, LayoutGrid, LogOut, Search, User } from "lucide-react";
+import { Bell, Briefcase, LayoutGrid, LogOut, Search, User } from "lucide-react";
 
 import { ROUTES } from "constants/routes";
 import { useCandidateAuth } from "context/CandidateAuthContext";
+import BrandLogo from "components/common/BrandLogo";
+import NotificationPanel from "components/Candidate/NotificationPanel";
+import useNotifications from "hooks/useNotifications";
 
 const NAV_ITEMS = [
   {
@@ -31,6 +34,8 @@ const NAV_ITEMS = [
 export default function CandidateLayout() {
   const { candidat, logout } = useCandidateAuth();
   const navigate = useNavigate();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const { unreadCount } = useNotifications();
 
   async function handleLogout() {
     await logout();
@@ -38,17 +43,14 @@ export default function CandidateLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <aside className="sticky top-0 flex h-screen w-60 flex-col border-r border-gray-200 bg-white">
-        <div className="border-b border-gray-100 px-5 py-5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 shadow-sm">
-              <Briefcase size={18} className="text-white" />
-            </div>
-            <span className="text-lg font-bold tracking-tight text-gray-900">
-              Talentia
-            </span>
-          </div>
+    <div className="flex h-[100dvh] overflow-hidden bg-bg-page">
+      <aside className="sticky top-0 flex h-screen w-64 flex-col border-r border-border bg-white">
+        <div className="border-b border-border px-5 py-5">
+          <BrandLogo
+            to={ROUTES.LANDING}
+            textClassName="font-display text-lg font-bold tracking-tight text-text-primary"
+            iconClassName="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary shadow-md shadow-primary/20"
+          />
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
@@ -60,44 +62,80 @@ export default function CandidateLayout() {
                 end={item.to === ROUTES.CANDIDATE.DASHBOARD}
                 className={function ({ isActive }) {
                   return isActive
-                    ? "flex items-center gap-3 rounded-lg bg-teal-50 px-3 py-2.5 text-sm font-medium text-teal-600"
-                    : "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-teal-600";
+                    ? "group relative flex items-center gap-3 rounded-xl bg-primary-light px-3 py-2.5 font-body text-sm font-medium text-primary transition-all duration-200"
+                    : "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 font-body text-sm text-text-secondary transition-all duration-200 hover:bg-bg-soft hover:text-text-primary";
                 }}
               >
-                <item.icon size={20} />
-                <span>{item.label}</span>
+                {function ({ isActive }) {
+                  return (
+                    <>
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary"></span>
+                      )}
+                      <item.icon size={20} className={isActive ? "text-primary transition-transform duration-200 group-hover:scale-110" : "transition-transform duration-200 group-hover:scale-110"} />
+                      <span>{item.label}</span>
+                    </>
+                  );
+                }}
               </NavLink>
             );
           })}
         </nav>
 
-        <div className="mt-auto border-t border-gray-100 px-5 py-4">
-          <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-500 text-sm font-medium text-white">
+        <div className="mt-auto border-t border-border px-5 py-4">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary font-display text-xs font-bold text-white shadow-sm">
               {candidat?.nom?.[0]?.toUpperCase() || "C"}
             </div>
-            <div>
-              <p className="max-w-[130px] truncate text-sm font-medium text-gray-900">
+            <div className="flex flex-col">
+              <span className="max-w-[130px] truncate font-body text-sm font-medium text-text-primary">
                 {candidat?.nom}
-              </p>
-              <p className="text-xs text-gray-500">Candidat</p>
+              </span>
+              <span className="font-body text-xs text-text-secondary">
+                Candidat
+              </span>
             </div>
           </div>
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-2 text-xs text-gray-500 transition-colors hover:text-red-500"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 font-body text-sm font-medium text-text-secondary transition-all duration-150 hover:bg-red-50 hover:text-red-500"
           >
-            <LogOut className="h-3.5 w-3.5" /> Déconnexion
+            <LogOut className="h-4 w-4" /> Déconnexion
           </button>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <main className="flex-1 overflow-y-auto p-6">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex justify-end px-6 pt-4 md:px-8">
+          <button
+            type="button"
+            onClick={function () {
+              setIsNotificationOpen(true);
+            }}
+            className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-white text-text-secondary shadow-sm transition-colors hover:text-text-primary"
+            aria-label="Ouvrir le centre de notifications"
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <main className="w-full flex-1 overflow-y-auto px-6 pb-10 pt-8 md:px-8">
           <Outlet />
         </main>
       </div>
+
+      <NotificationPanel
+        isOpen={isNotificationOpen}
+        onClose={function () {
+          setIsNotificationOpen(false);
+        }}
+      />
     </div>
   );
 }

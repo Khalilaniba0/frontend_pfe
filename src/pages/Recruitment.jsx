@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import PipelineColumn from "components/Recruitment/PipelineColumn.jsx";
 import CandidateModal from "components/Recruitment/CandidateModal.jsx";
+import EntretienModal from "components/Recruitment/EntretienModal.jsx";
 import {
   getPipelineCandidatures,
   updateCandidatureEtape,
+  refuserCandidature,
+  deleteCandidature,
   getOffresEntreprise,
 } from "service/restApiRecruitment";
 
@@ -54,10 +57,10 @@ function mapCandidateCard(c) {
           : "Normale",
     appliedDate: c.createdAt
       ? new Date(c.createdAt).toLocaleDateString("fr-FR", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        })
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
       : "",
     avatar: "",
     score: c.scoreIA || 0,
@@ -81,11 +84,16 @@ export default function Recruitment() {
 
   var [dragging, setDragging] = useState(null);
   var [modalCandidate, setModalCandidate] = useState(null);
+  var [entretienModal, setEntretienModal] = useState(null);
   var [lastMove, setLastMove] = useState(null);
   var [errorToast, setErrorToast] = useState(null);
+  var [successToast, setSuccessToast] = useState(null);
+  var [trashHover, setTrashHover] = useState(false);
+  var [deleteConfirm, setDeleteConfirm] = useState(null);
 
   var toastTimerRef = useRef(null);
   var errorTimerRef = useRef(null);
+  var successTimerRef = useRef(null);
 
   /* ── load data ─────────────────────────────── */
 
@@ -200,10 +208,70 @@ export default function Recruitment() {
   }
 
   function handleCandidateDragEnd() {
+    setTrashHover(false);
     setDragging(null);
   }
 
+  function handleTrashDrop(e) {
+    e.preventDefault();
+    setTrashHover(false);
+    if (!dragging) return;
+    var found = allCandidatures.find(function (c) {
+      return c.id === dragging.candidateId;
+    });
+    if (found) {
+      if (lastMove && lastMove.candidate?.id === found.id) {
+        if (toastTimerRef.current) {
+          clearTimeout(toastTimerRef.current);
+          toastTimerRef.current = null;
+        }
+        setLastMove(null);
+      }
+      setDeleteConfirm({ id: found.id, name: found.name });
+    }
+    setDragging(null);
+  }
+
+  function confirmDelete() {
+    if (!deleteConfirm) return;
+    var candidateId = deleteConfirm.id;
+    var candidateName = deleteConfirm.name;
+    setDeleteConfirm(null);
+
+    // Optimistic remove
+    setAllCandidatures(function (prev) {
+      return prev.filter(function (c) {
+        return c.id !== candidateId;
+      });
+    });
+
+    deleteCandidature(candidateId)
+      .then(function () {
+        setSuccessToast(candidateName + " a été supprimé du pipeline.");
+        if (successTimerRef.current) {
+          clearTimeout(successTimerRef.current);
+        }
+        successTimerRef.current = setTimeout(function () {
+          setSuccessToast(null);
+        }, 3000);
+      })
+      .catch(function (err) {
+        // Revert: reload data
+        loadData();
+        setErrorToast(
+          err?.response?.data?.message || "Erreur lors de la suppression"
+        );
+        if (errorTimerRef.current) {
+          clearTimeout(errorTimerRef.current);
+        }
+        errorTimerRef.current = setTimeout(function () {
+          setErrorToast(null);
+        }, 3000);
+      });
+  }
+
   async function handleDrop(toColumn) {
+    setTrashHover(false);
     if (!dragging) return;
     if (dragging.fromColumn === toColumn) {
       setDragging(null);
@@ -238,6 +306,15 @@ export default function Recruitment() {
       return c.id === candidateId;
     });
     if (!foundCandidate) {
+      setDragging(null);
+      return;
+    }
+
+    if (toColumn === "Entretien") {
+      setEntretienModal({
+        candidate: foundCandidate,
+        fromColumn: dragging.fromColumn,
+      });
       setDragging(null);
       return;
     }
@@ -283,7 +360,79 @@ export default function Recruitment() {
       });
       setErrorToast(
         err?.response?.data?.message ||
-          "Erreur lors du déplacement du candidat"
+        "Erreur lors du déplacement du candidat"
+      );
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+      errorTimerRef.current = setTimeout(function () {
+        setErrorToast(null);
+      }, 3000);
+    }
+  }
+
+  function handleEntretienCancel() {
+    setEntretienModal(null);
+    setDragging(null);
+  }
+
+  async function handleEntretienConfirm(dateEntretien, typeEntretien) {
+    if (!entretienModal) return;
+
+    var candidate = entretienModal.candidate;
+    var fromColumn = entretienModal.fromColumn;
+    var candidateId = candidate.id;
+    var previousEtape = COLUMN_TO_ETAPE[fromColumn];
+    var newEtape = COLUMN_TO_ETAPE.Entretien;
+
+    if (!previousEtape || !newEtape) {
+      setEntretienModal(null);
+      setDragging(null);
+      return;
+    }
+
+    setAllCandidatures(function (prev) {
+      return prev.map(function (c) {
+        if (c.id === candidateId) {
+          return { ...c, _etape: newEtape };
+        }
+        return c;
+      });
+    });
+
+    setLastMove({
+      candidate: candidate,
+      fromColumn: fromColumn,
+      toColumn: "Entretien",
+    });
+
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = setTimeout(function () {
+      setLastMove(null);
+    }, 5000);
+
+    setEntretienModal(null);
+    setDragging(null);
+
+    try {
+      await updateCandidatureEtape(candidateId, newEtape, {
+        dateEntretien: dateEntretien,
+        typeEntretien: typeEntretien,
+      });
+    } catch (err) {
+      setAllCandidatures(function (prev) {
+        return prev.map(function (c) {
+          if (c.id === candidateId) {
+            return { ...c, _etape: previousEtape };
+          }
+          return c;
+        });
+      });
+      setErrorToast(
+        err?.response?.data?.message ||
+          "Erreur lors de la planification de l'entretien"
       );
       if (errorTimerRef.current) {
         clearTimeout(errorTimerRef.current);
@@ -353,6 +502,19 @@ export default function Recruitment() {
 
     var nextColumn = pipelineOrder[currentIndex + 1];
 
+    if (nextColumn === "Entretien") {
+      var foundCandidate = allCandidatures.find(function (c) {
+        return c.id === modalCandidate.id;
+      });
+
+      setEntretienModal({
+        candidate: foundCandidate || modalCandidate,
+        fromColumn: currentColumn,
+      });
+      closeModal();
+      return;
+    }
+
     // Simulate drop
     var tempDragging = {
       candidateId: modalCandidate.id,
@@ -387,6 +549,45 @@ export default function Recruitment() {
         });
       });
     });
+  }
+
+  function handleRefuseFromModal() {
+    if (!modalCandidate) return;
+
+    var candidateId = modalCandidate.id;
+    var candidateName = modalCandidate.name;
+
+    refuserCandidature(candidateId)
+      .then(function () {
+        setAllCandidatures(function (prev) {
+          return prev.map(function (c) {
+            if (c.id === candidateId) {
+              return { ...c, _etape: "refuse" };
+            }
+            return c;
+          });
+        });
+        closeModal();
+        setSuccessToast(candidateName + " a ete refuse.");
+        if (successTimerRef.current) {
+          clearTimeout(successTimerRef.current);
+        }
+        successTimerRef.current = setTimeout(function () {
+          setSuccessToast(null);
+        }, 3000);
+      })
+      .catch(function (err) {
+        setErrorToast(
+          err?.response?.data?.message ||
+            "Erreur lors du refus de la candidature"
+        );
+        if (errorTimerRef.current) {
+          clearTimeout(errorTimerRef.current);
+        }
+        errorTimerRef.current = setTimeout(function () {
+          setErrorToast(null);
+        }, 3000);
+      });
   }
 
   /* ── render ─────────────────────────────────── */
@@ -520,7 +721,14 @@ export default function Recruitment() {
         pipelineOrder={pipelineOrder}
         onClose={closeModal}
         onNextStage={moveToNextStage}
+        onRefuse={handleRefuseFromModal}
         findCandidateColumn={findCandidateColumn}
+      />
+
+      <EntretienModal
+        candidate={entretienModal ? entretienModal.candidate : null}
+        onConfirm={handleEntretienConfirm}
+        onCancel={handleEntretienCancel}
       />
 
       {lastMove && (
@@ -546,6 +754,113 @@ export default function Recruitment() {
           <span className="break-words font-body text-sm font-medium">
             {errorToast}
           </span>
+        </div>
+      )}
+
+      {successToast && (
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-emerald-500 px-4 py-3 text-white shadow-lg animate-fade-in sm:right-auto sm:max-w-md">
+          <span className="material-symbols-outlined text-lg">check_circle</span>
+          <span className="break-words font-body text-sm font-medium">
+            {successToast}
+          </span>
+        </div>
+      )}
+
+      {dragging && (
+        <div
+          className={
+            "fixed bottom-8 left-1/2 z-50 -translate-x-1/2 flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-8 py-5 transition-all duration-200 shadow-xl " +
+            (trashHover
+              ? "border-red-500 bg-red-50 scale-110"
+              : "border-red-300 bg-white/90")
+          }
+          onDragOver={function (e) {
+            e.preventDefault();
+            setTrashHover(true);
+          }}
+          onDragEnter={function (e) {
+            e.preventDefault();
+            setTrashHover(true);
+          }}
+          onDragLeave={function (e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) setTrashHover(false);
+          }}
+          onDrop={handleTrashDrop}
+        >
+          <span
+            className={
+              "material-symbols-outlined text-4xl transition-colors duration-200 " +
+              (trashHover ? "text-red-600" : "text-red-400")
+            }
+          >
+            delete
+          </span>
+          <span
+            className={
+              "font-body text-sm font-semibold transition-colors duration-200 " +
+              (trashHover ? "text-red-600" : "text-red-400")
+            }
+          >
+            {trashHover ? "Relâcher pour supprimer" : "Glisser ici pour supprimer"}
+          </span>
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={function () {
+            setDeleteConfirm(null);
+          }}
+        >
+          <div
+            className="relative w-full max-w-[400px] rounded-2xl border border-border bg-white p-6 shadow-2xl"
+            onClick={function (e) {
+              e.stopPropagation();
+            }}
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100">
+                <span className="material-symbols-outlined text-2xl text-red-600">
+                  delete_forever
+                </span>
+              </div>
+              <div>
+                <h3 className="font-display text-base font-bold text-text-primary">
+                  Supprimer le candidat
+                </h3>
+                <p className="font-body text-sm text-text-secondary">
+                  Cette action est irréversible
+                </p>
+              </div>
+            </div>
+            <p className="mb-6 rounded-xl bg-red-50 px-4 py-3 font-body text-sm text-red-700">
+              Êtes-vous sûr de vouloir supprimer{" "}
+              <span className="font-semibold">{deleteConfirm.name}</span> du
+              pipeline ?
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={function () {
+                  setDeleteConfirm(null);
+                }}
+                className="rounded-xl border border-border bg-white px-4 py-2.5 font-body text-sm font-medium text-text-secondary transition-all hover:bg-bg-soft"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2.5 font-body text-sm font-medium text-white shadow-md transition-all hover:bg-red-600"
+              >
+                <span className="material-symbols-outlined text-lg">
+                  delete_forever
+                </span>
+                Supprimer
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

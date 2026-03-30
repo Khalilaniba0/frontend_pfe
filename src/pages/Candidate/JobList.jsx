@@ -5,7 +5,7 @@ import JobCard from "components/Candidate/JobCard.jsx";
 import Navbar from "components/layout/Navbar.jsx";
 import { getAllOffres } from "service/restApiJobs.js";
 
-const QUICK_FILTERS = ["CDI", "CDD", "Teletravail", "Senior (+5 ans)"];
+const QUICK_FILTERS = ["CDI", "CDD", "Télétravail", "Senior (+5 ans)"];
 
 function matchesQuickFilter(offre, filter) {
   const normalizedFilter = filter.toLowerCase();
@@ -15,8 +15,8 @@ function matchesQuickFilter(offre, filter) {
   const experience =
     `${offre?.experience || ""} ${offre?.niveauExperience || ""}`.toLowerCase();
 
-  if (normalizedFilter === "teletravail") {
-    return /(teletravail|remote|hybrid|hybride)/.test(localisation);
+  if (normalizedFilter === "teletravail" || normalizedFilter === "télétravail") {
+    return /(teletravail|télétravail|remote|hybrid|hybride)/.test(localisation);
   }
 
   if (normalizedFilter === "senior (+5 ans)") {
@@ -112,11 +112,11 @@ export default function JobList() {
             <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(58,123,213,0.15)_0%,transparent_70%)]" />
 
             <h1 className="max-w-2xl font-display text-4xl font-bold leading-[1.05] tracking-tight text-slate-900 md:text-6xl">
-              Trouvez votre prochain defi professionnel.
+              Trouvez votre prochain défi professionnel.
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-600 md:text-base">
-              Explorez des opportunites exclusives parmi les meilleures entreprises
-              technologiques et creatives.
+              Explorez des opportunités exclusives parmi les meilleures entreprises
+              technologiques et créatives.
             </p>
 
             <form
@@ -133,7 +133,7 @@ export default function JobList() {
                   onChange={function (event) {
                     setSearchTerm(event.target.value);
                   }}
-                  placeholder="Poste, mot-cle..."
+                  placeholder="Poste, mot-clé..."
                   className="w-full border-none p-0 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-0"
                 />
               </label>
@@ -146,7 +146,7 @@ export default function JobList() {
                   onChange={function (event) {
                     setLocationTerm(event.target.value);
                   }}
-                  placeholder="Ville ou teletravail"
+                  placeholder="Ville ou télétravail"
                   className="w-full border-none p-0 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-0"
                 />
               </label>
@@ -189,7 +189,7 @@ export default function JobList() {
           <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
             <div>
               <h2 className="font-display text-3xl font-bold tracking-tight text-slate-900">
-                Dernieres offres
+                Dernières offres
               </h2>
               <p className="text-sm text-slate-500">
                 {loading
@@ -249,10 +249,10 @@ export default function JobList() {
           {!loading && !errorMessage && filteredOffres.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white px-5 py-10 text-center shadow-sm">
               <p className="font-medium text-slate-700">
-                Aucune offre ne correspond a votre recherche.
+                Aucune offre ne correspond à votre recherche.
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                Essayez d'enlever un filtre ou de changer vos mots-cles.
+                Essayez d'enlever un filtre ou de changer vos mots-clés.
               </p>
             </div>
           ) : null}
@@ -287,7 +287,7 @@ export default function JobList() {
       </main>
 
       <footer id="apropos" className="border-t border-slate-200 bg-bg-soft px-6 py-7 text-center text-xs text-slate-500 md:px-8">
-        © {new Date().getFullYear()} Talentia Candidate. Tous droits reserves.
+        © {new Date().getFullYear()} Talentia Candidate. Tous droits réservés.
       </footer>
     </div>
   );

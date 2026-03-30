@@ -2,7 +2,6 @@ import axios from "axios";
 
 const API_URL =
   process.env.REACT_APP_API_URL ||
-  process.env.VITE_API_URL ||
   "http://localhost:5000";
 
 function readCookie(name) {
@@ -17,40 +16,14 @@ function getCandidateJwtToken() {
   return readCookie("jwt_candidat");
 }
 
-export async function getAllOffresRH() {
-  return await axios.get(`${API_URL}/offre/getAllOffres`, { withCredentials: true });
-}
+
 export async function getOffreById(id) {
   const token = getCandidateJwtToken();
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-  const endpoints = [
-    `/offre/getOffreById/${id}`,
-    `/offre/getOffre/${id}`,
-    `/offre/${id}`,
-  ];
-
-  let lastError;
-
-  for (let index = 0; index < endpoints.length; index += 1) {
-    try {
-      return await axios.get(`${API_URL}${endpoints[index]}`);
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  for (let index = 0; index < endpoints.length; index += 1) {
-    try {
-      return await axios.get(`${API_URL}${endpoints[index]}`, {
-        headers,
-        withCredentials: true,
-      });
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError;
+  return await axios.get(`${API_URL}/offre/getOffreById/${id}`, {
+    withCredentials: true,
+    headers,
+  });
 }
 export async function getOffreByEntreprise(entrepriseId) {
   if (entrepriseId) {

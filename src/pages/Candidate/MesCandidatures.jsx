@@ -72,12 +72,12 @@ export default function MesCandidatures() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
             Mes Candidatures
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 font-body text-sm text-text-secondary">
             {loading
               ? "Chargement…"
               : `${filtered.length} candidature(s) au total`}
@@ -86,13 +86,13 @@ export default function MesCandidatures() {
 
         {/* Filter */}
         <div className="flex items-center gap-2">
-          <Filter size={16} className="text-gray-400" />
+          <span className="material-symbols-outlined text-text-muted text-lg">filter_list</span>
           <select
             value={filterEtape}
             onChange={function (e) {
               setFilterEtape(e.target.value);
             }}
-            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+            className="rounded-xl border border-border bg-white px-3 py-2 font-body text-sm text-text-primary transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             {ETAPE_OPTIONS.map(function (opt) {
               return (
@@ -119,20 +119,20 @@ export default function MesCandidatures() {
             return (
               <div
                 key={i}
-                className="h-24 animate-pulse rounded-2xl border border-gray-100 bg-white"
+                className="h-28 animate-pulse rounded-2xl border border-border bg-white"
               />
             );
           })}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
-          <Inbox size={40} className="mx-auto mb-3 text-gray-300" />
-          <p className="font-medium text-gray-600">
+        <div className="rounded-2xl border border-border bg-white px-6 py-16 text-center shadow-sm">
+          <span className="material-symbols-outlined mx-auto mb-3 text-4xl text-text-muted">inbox</span>
+          <p className="font-display text-lg font-bold text-text-primary">
             {filterEtape
               ? "Aucune candidature pour cette étape"
               : "Vous n'avez pas encore postulé"}
           </p>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-1 font-body text-sm text-text-secondary">
             Explorez nos offres et commencez à postuler !
           </p>
         </div>

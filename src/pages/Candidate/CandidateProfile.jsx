@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { User, Mail, Phone, Globe, Save, Loader2, CheckCircle } from "lucide-react";
 import { useCandidateAuth } from "context/CandidateAuthContext";
 import { mettreAJourProfil } from "service/restApiCandidat";
 
@@ -51,24 +50,26 @@ export default function CandidateProfile() {
     .toUpperCase();
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6 pt-2">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Mon Profil</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
+          Mon Profil
+        </h1>
+        <p className="mt-1 font-body text-sm text-text-secondary">
           Gérez vos informations personnelles.
         </p>
       </div>
 
       {/* Avatar + email */}
-      <div className="flex items-center gap-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-xl font-bold text-white shadow-md">
+      <div className="flex items-center gap-5 rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary font-display text-xl font-bold text-white shadow-md">
           {initials}
         </div>
         <div className="min-w-0">
-          <h2 className="truncate text-lg font-bold text-gray-900">
+          <h2 className="truncate font-display text-lg font-bold text-text-primary">
             {candidat?.nom || "Candidat"}
           </h2>
-          <p className="truncate text-sm text-gray-500">
+          <p className="truncate font-body text-sm text-text-secondary">
             {candidat?.email || ""}
           </p>
         </div>
@@ -77,87 +78,87 @@ export default function CandidateProfile() {
       {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+        className="space-y-5 rounded-2xl border border-border bg-white p-6 shadow-sm"
       >
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-body text-sm text-red-700">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-700">
-            <CheckCircle size={16} />
+          <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-body text-sm text-emerald-700">
+            <span className="material-symbols-outlined text-[18px]">check_circle</span>
             Profil mis à jour avec succès !
           </div>
         )}
 
         {/* Nom */}
         <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1.5 block font-body text-[10px] font-bold uppercase tracking-wider text-text-muted">
             Nom complet
           </label>
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 transition-colors focus-within:border-teal-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-teal-500/20">
-            <User size={16} className="shrink-0 text-gray-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-bg-page px-4 py-2.5 transition-colors focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20">
+            <span className="material-symbols-outlined shrink-0 text-[18px] text-text-muted">person</span>
             <input
               name="nom"
               value={form.nom}
               onChange={handleChange}
-              className="w-full border-none bg-transparent p-0 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+              className="w-full border-none bg-transparent p-0 font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-0"
             />
           </div>
         </div>
 
         {/* Email (read-only) */}
         <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1.5 block font-body text-[10px] font-bold uppercase tracking-wider text-text-muted">
             Email
           </label>
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-100 px-4 py-2.5">
-            <Mail size={16} className="shrink-0 text-gray-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-bg-page px-4 py-2.5 opacity-70">
+            <span className="material-symbols-outlined shrink-0 text-[18px] text-text-muted">mail</span>
             <input
               value={candidat?.email || ""}
               readOnly
-              className="w-full border-none bg-transparent p-0 text-sm text-gray-500 focus:outline-none focus:ring-0"
+              className="w-full border-none bg-transparent p-0 font-body text-sm text-text-secondary focus:outline-none focus:ring-0"
             />
           </div>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1.5 font-body text-xs text-text-muted">
             L'email ne peut pas être modifié.
           </p>
         </div>
 
         {/* Téléphone */}
         <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1.5 block font-body text-[10px] font-bold uppercase tracking-wider text-text-muted">
             Téléphone
           </label>
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 transition-colors focus-within:border-teal-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-teal-500/20">
-            <Phone size={16} className="shrink-0 text-gray-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-bg-page px-4 py-2.5 transition-colors focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20">
+            <span className="material-symbols-outlined shrink-0 text-[18px] text-text-muted">call</span>
             <input
               name="telephone"
               type="tel"
               value={form.telephone}
               onChange={handleChange}
               placeholder="+212 6XX XXX XXX"
-              className="w-full border-none bg-transparent p-0 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+              className="w-full border-none bg-transparent p-0 font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-0"
             />
           </div>
         </div>
 
         {/* Portfolio */}
         <div>
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <label className="mb-1.5 block font-body text-[10px] font-bold uppercase tracking-wider text-text-muted">
             Portfolio / Site web
           </label>
-          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 transition-colors focus-within:border-teal-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-teal-500/20">
-            <Globe size={16} className="shrink-0 text-gray-400" />
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-bg-page px-4 py-2.5 transition-colors focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20">
+            <span className="material-symbols-outlined shrink-0 text-[18px] text-text-muted">language</span>
             <input
               name="portfolio_url"
               type="url"
               value={form.portfolio_url}
               onChange={handleChange}
               placeholder="https://monportfolio.com"
-              className="w-full border-none bg-transparent p-0 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-0"
+              className="w-full border-none bg-transparent p-0 font-body text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-0"
             />
           </div>
         </div>
@@ -165,16 +166,16 @@ export default function CandidateProfile() {
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center justify-center gap-2 rounded-xl bg-teal-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-600 disabled:opacity-60"
+          className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-dark disabled:opacity-60"
         >
           {saving ? (
             <>
-              <Loader2 size={16} className="animate-spin" />
+              <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
               Sauvegarde…
             </>
           ) : (
             <>
-              <Save size={16} />
+              <span className="material-symbols-outlined text-[18px]">save</span>
               Sauvegarder les modifications
             </>
           )}

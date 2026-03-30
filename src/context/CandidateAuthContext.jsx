@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { getCandidateJwtToken } from "service/restApiJobs";
 import {
   connecterCandidat,
   deconnecterCandidat,
@@ -26,11 +25,6 @@ export function CandidateAuthProvider({ children }) {
   useEffect(function () {
     async function hydrate() {
       try {
-        const token = getCandidateJwtToken();
-        if (!token) {
-          setCandidat(null);
-          return;
-        }
         const res = await getMonProfil();
         setCandidatFromResponse(res, setCandidat);
       } catch {

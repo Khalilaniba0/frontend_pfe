@@ -6,11 +6,11 @@ const API_URL =
 
 /* ── helpers ─────────────────────────────────────── */
 
-function safeArray(res) {
-  const d = res?.data;
-  if (Array.isArray(d?.data)) return d.data;
-  if (Array.isArray(d)) return d;
-  return [];
+function extractArrayOrThrow(res, endpoint) {
+  const payload = res?.data;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload)) return payload;
+  throw new Error(`Format de reponse invalide pour ${endpoint}`);
 }
 
 function startOfWeek() {
@@ -38,13 +38,16 @@ export async function getDashboardStats() {
 
   const [offresRes, candidaturesRes, entretiensRes] = await Promise.all([
     axios.get(`${API_URL}/offre/getOffresByEntreprise`, opts),
-    axios.get(`${API_URL}/condidature/getAllCandidatures`, opts),
+    axios.get(`${API_URL}/candidature/getAllCandidatures`, opts),
     axios.get(`${API_URL}/entretien/getAllEntretiens`, opts),
   ]);
 
-  const offres = safeArray(offresRes);
-  const candidatures = safeArray(candidaturesRes);
-  const entretiens = safeArray(entretiensRes);
+  const offres = extractArrayOrThrow(offresRes, "/offre/getOffresByEntreprise");
+  const candidatures = extractArrayOrThrow(
+    candidaturesRes,
+    "/candidature/getAllCandidatures"
+  );
+  const entretiens = extractArrayOrThrow(entretiensRes, "/entretien/getAllEntretiens");
 
   const now = new Date();
   const weekStart = startOfWeek();
@@ -122,10 +125,10 @@ export async function getDashboardStats() {
 /* ── recent candidatures ─────────────────────────── */
 
 export async function getRecentCandidatures() {
-  const res = await axios.get(`${API_URL}/condidature/getAllCandidatures`, {
+  const res = await axios.get(`${API_URL}/candidature/getAllCandidatures`, {
     withCredentials: true,
   });
-  const items = safeArray(res);
+  const items = extractArrayOrThrow(res, "/candidature/getAllCandidatures");
 
   return items
     .slice()
@@ -141,7 +144,7 @@ export async function getUpcomingEntretiens() {
   const res = await axios.get(`${API_URL}/entretien/getAllEntretiens`, {
     withCredentials: true,
   });
-  const items = safeArray(res);
+  const items = extractArrayOrThrow(res, "/entretien/getAllEntretiens");
   const now = new Date();
 
   return items
@@ -160,10 +163,10 @@ export async function getUpcomingEntretiens() {
 /* ── hiring chart data (last 6 months) ───────────── */
 
 export async function getHiringChartData() {
-  const res = await axios.get(`${API_URL}/condidature/getAllCandidatures`, {
+  const res = await axios.get(`${API_URL}/candidature/getAllCandidatures`, {
     withCredentials: true,
   });
-  const items = safeArray(res);
+  const items = extractArrayOrThrow(res, "/candidature/getAllCandidatures");
 
   const MONTH_NAMES = [
     "Jan", "Fév", "Mar", "Avr", "Mai", "Juin",
@@ -176,18 +179,18 @@ export async function getHiringChartData() {
   const pourvus = [];
   const tauxConversion = [];
 
-  for (var i = 5; i >= 0; i--) {
-    var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    var m = d.getMonth();
-    var y = d.getFullYear();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const m = d.getMonth();
+    const y = d.getFullYear();
     labels.push(MONTH_NAMES[m]);
 
-    var monthItems = items.filter(function (c) {
-      var cd = new Date(c.createdAt);
+    const monthItems = items.filter(function (c) {
+      const cd = new Date(c.createdAt);
       return cd.getMonth() === m && cd.getFullYear() === y;
     });
 
-    var accepted = monthItems.filter(function (c) {
+    const accepted = monthItems.filter(function (c) {
       return c.etape === "accepte";
     });
 

@@ -28,6 +28,7 @@ import CandidateSignup from "pages/Candidate/CandidateSignup";
 import CandidateDashboard from "pages/Candidate/CandidateDashboard";
 import MesCandidatures from "pages/Candidate/MesCandidatures";
 import CandidateProfile from "pages/Candidate/CandidateProfile";
+import CandidateOffresList from "pages/Candidate/CandidateOffresList";
 import JobList from "pages/Candidate/JobList";
 import JobDetail from "pages/Candidate/JobDetail";
 
@@ -87,7 +88,7 @@ export default function App() {
         <Route path={ROUTES.CANDIDATE.ROOT} element={<CandidateLayout />}>
           <Route path="dashboard" element={<CandidateDashboard />} />
           <Route path="mes-candidatures" element={<MesCandidatures />} />
-          <Route path="offres" element={<JobList />} />
+          <Route path="offres" element={<CandidateOffresList />} />
           <Route path="profil" element={<CandidateProfile />} />
         </Route>
       </Route>

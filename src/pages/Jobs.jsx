@@ -2,8 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import JobStatCard from "components/Jobs/JobStatCard";
 import JobsTable from "components/Jobs/JobsTable";
-import SourceChart from "components/Jobs/SourceChart";
-import RecruitmentTimeCard from "components/Jobs/RecruitmentTimeCard";
+
 import CreateJobModal from "components/Jobs/CreateJobModal";
 import {
   deleteOffre,
@@ -87,7 +86,7 @@ export default function Jobs() {
     try {
       const [offresRes, candidaturesRes] = await Promise.all([
         getOffreByEntreprise(),
-        axios.get(`${API_URL}/condidature/getAllCandidatures`, { withCredentials: true }).catch(function () { return { data: [] }; }),
+        axios.get(`${API_URL}/candidature/getAllCandidatures`, { withCredentials: true }).catch(function () { return { data: [] }; }),
       ]);
       const data = offresRes?.data?.data || offresRes?.data || [];
       setOffres(Array.isArray(data) ? data : []);
@@ -385,13 +384,7 @@ export default function Jobs() {
         <JobsTable jobs={jobs} total={jobs.length} />
       )}
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <SourceChart sources={sources} />
-        <RecruitmentTimeCard
-          days={recrutementStats.days}
-          improvement={recrutementStats.improvement}
-        />
-      </section>
+      
 
       {showCreateModal && (
         <CreateJobModal

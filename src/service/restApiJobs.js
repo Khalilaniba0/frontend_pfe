@@ -2,7 +2,6 @@ import axios from "axios";
 
 const API_URL =
   process.env.REACT_APP_API_URL ||
-  process.env.VITE_API_URL ||
   "http://localhost:5000";
 
 function readCookie(name) {
@@ -37,48 +36,20 @@ function normalizeOffre(offre) {
   };
 }
 
+function extractOffresOrThrow(payload) {
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.offres)) return payload.offres;
+  if (Array.isArray(payload)) return payload;
+  throw new Error("Format de reponse invalide pour /offre/getOffresDisponibles");
+}
+
 export async function getAllOffres() {
-  const token = getCandidateJwtToken();
-  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-  const publicEndpoints = [
-    "/offre/getAllOffresDisponibles",
-    "/offre/getOffresDisponibles",
-    "/offre/getAllOffres",
-  ];
-
-  let response;
-
-  try {
-    // Public listing should work for visitors without forcing credentialed CORS.
-    for (let index = 0; index < publicEndpoints.length; index += 1) {
-      try {
-        response = await axios.get(`${API_URL}${publicEndpoints[index]}`);
-        break;
-      } catch (publicError) {
-        if (index === publicEndpoints.length - 1) {
-          throw publicError;
-        }
-      }
-    }
-  } catch (error) {
-    if (!token) {
-      throw error;
-    }
-
-    response = await axios.get(`${API_URL}/offre/getAllOffres`, {
-      headers,
-      withCredentials: true,
-    });
-  }
+  const response = await axios.get(`${API_URL}/offre/getOffresDisponibles`, {
+    withCredentials: true,
+  });
 
   const payload = response?.data;
-  const offres = Array.isArray(payload?.data)
-    ? payload.data
-    : Array.isArray(payload?.offres)
-    ? payload.offres
-    : Array.isArray(payload)
-    ? payload
-    : [];
+  const offres = extractOffresOrThrow(payload);
 
   return {
     ...response,

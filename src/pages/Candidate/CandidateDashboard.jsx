@@ -4,14 +4,15 @@ import { Briefcase, Calendar, Search } from "lucide-react";
 import { useCandidateAuth } from "context/CandidateAuthContext";
 import { getMesCandidatures } from "service/restApiCandidature";
 import { getAllOffres } from "service/restApiJobs";
+import StatCard from "components/Dashboard/StatCard";
 
 const ETAPE_CONFIG = {
-  soumise:            { label: "Candidature reçue",  cls: "bg-gray-100 text-gray-600"    },
-  preselectionne:     { label: "En cours d'examen",  cls: "bg-blue-100 text-blue-700"    },
-  entretien_planifie: { label: "Entretien prévu",    cls: "bg-teal-100 text-teal-700"    },
-  entretien_passe:    { label: "Entretien passé",    cls: "bg-purple-100 text-purple-700" },
-  accepte:            { label: "Accepté",            cls: "bg-green-100 text-green-700"  },
-  refuse:             { label: "Refusé",             cls: "bg-red-100 text-red-600"      },
+  soumise: { label: "Candidature reçue", cls: "bg-gray-100 text-gray-600" },
+  preselectionne: { label: "En cours d'examen", cls: "bg-blue-100 text-blue-700" },
+  entretien_planifie: { label: "Entretien prévu", cls: "bg-amber-50 text-amber-600" },
+  entretien_passe: { label: "Entretien passé", cls: "bg-purple-100 text-purple-700" },
+  accepte: { label: "Accepté", cls: "bg-emerald-50 text-emerald-600" },
+  refuse: { label: "Refusé", cls: "bg-red-50 text-red-600" },
 };
 
 export default function CandidateDashboard() {
@@ -22,6 +23,13 @@ export default function CandidateDashboard() {
   const [offres, setOffres] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -30,9 +38,9 @@ export default function CandidateDashboard() {
           getAllOffres(),
         ]);
         const cList = Array.isArray(cRes?.data?.data) ? cRes.data.data
-                    : Array.isArray(cRes?.data) ? cRes.data : [];
+          : Array.isArray(cRes?.data) ? cRes.data : [];
         const oList = Array.isArray(oRes?.data?.data) ? oRes.data.data
-                    : Array.isArray(oRes?.data) ? oRes.data : [];
+          : Array.isArray(oRes?.data) ? oRes.data : [];
         setCandidatures(cList);
         setOffres(oList.slice(0, 3));
       } catch {
@@ -50,12 +58,12 @@ export default function CandidateDashboard() {
 
   if (loading) {
     return (
-      <div className="p-8 space-y-4 animate-pulse">
+      <div className="animate-fade-in p-6 md:p-8 max-w-6xl mx-auto space-y-4 animate-pulse">
         <div className="h-8 bg-gray-200 rounded w-64" />
         <div className="h-4 bg-gray-200 rounded w-48" />
         <div className="grid grid-cols-3 gap-4 mt-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 bg-gray-200 rounded-xl" />
+            <div key={i} className="h-32 bg-gray-200 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -63,104 +71,120 @@ export default function CandidateDashboard() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto">
+    <div className="animate-fade-in p-6 md:p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Bonjour, {candidat?.nom || "Candidat"} !
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Suivez l'état de vos candidatures en un clin d'œil.
+      <header className="mb-8 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
+            Bonjour, {candidat?.nom || "Candidat"} !
+          </h1>
+          <p className="mt-1 font-body text-sm text-text-secondary">
+            Suivez l'état de vos candidatures en un clin d'œil.
+          </p>
+        </div>
+        <p className="font-body text-sm capitalize text-text-muted">
+          {formattedDate}
         </p>
-      </div>
+      </header>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <StatCard
-          label="Candidatures envoyées"
-          value={candidatures.length}
-          icon={<Briefcase className="w-5 h-5 text-teal-500" />}
-        />
-        <StatCard
-          label="Entretiens prévus"
-          value={entretiensPreus}
-          icon={<Calendar className="w-5 h-5 text-teal-500" />}
-        />
-        <StatCard
-          label="Offres disponibles"
-          value={offres.length}
-          icon={<Search className="w-5 h-5 text-teal-500" />}
-          onClick={() => navigate("/candidat/offres")}
-          clickable
-        />
+        <div onClick={() => navigate("/candidat/mes-candidatures")} className="cursor-pointer">
+          <StatCard
+            label="Candidatures"
+            value={candidatures.length}
+            icon="work"
+            subLabel="Envoyées au total"
+            color="primary"
+          />
+        </div>
+        <div onClick={() => navigate("/candidat/mes-candidatures")} className="cursor-pointer">
+          <StatCard
+            label="Entretiens"
+            value={entretiensPreus}
+            icon="event"
+            subLabel="Prévus prochainement"
+            color="warning"
+          />
+        </div>
+        <div onClick={() => navigate("/candidat/offres")} className="cursor-pointer">
+          <StatCard
+            label="Offres d'emploi"
+            value={offres.length > 0 ? "+" + offres.length : "0"}
+            icon="search"
+            subLabel="Disponibles"
+            color="secondary"
+          />
+        </div>
       </div>
 
       {/* Candidatures en cours */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Mes candidatures
+          <h2 className="font-display text-lg font-bold text-text-primary">
+            Mes candidatures récentes
           </h2>
           <button
             onClick={() => navigate("/candidat/mes-candidatures")}
-            className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+            className="font-body text-sm font-semibold text-primary transition-colors hover:text-primary-dark"
           >
             Voir tout →
           </button>
         </div>
 
         {candidatures.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-            <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">
+          <div className="rounded-2xl border border-border bg-white py-12 text-center">
+            <span className="material-symbols-outlined text-4xl text-text-muted mb-3 mx-auto">inbox</span>
+            <p className="font-body text-sm text-text-secondary">
               Vous n'avez pas encore postulé à une offre.
             </p>
             <button
               onClick={() => navigate("/candidat/offres")}
-              className="mt-4 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              className="mt-4 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white transition-all hover:bg-primary-dark"
             >
               Parcourir les offres
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
-            {candidatures.slice(0, 3).map((c) => {
-              const etape = ETAPE_CONFIG[c.etape] || ETAPE_CONFIG.soumise;
-              const poste =
-                c.offre?.poste || c.offre?.post || c.nom || "Poste";
-              const entreprise = c.offre?.entreprise?.nom || "";
-              const date = c.createdAt
-                ? new Date(c.createdAt).toLocaleDateString("fr-FR", {
+          <div className="overflow-hidden rounded-2xl border border-border bg-white">
+            <div className="divide-y divide-border">
+              {candidatures.slice(0, 3).map((c) => {
+                const etape = ETAPE_CONFIG[c.etape] || ETAPE_CONFIG.soumise;
+                const poste = c.offre?.poste || c.nom || "Poste inconnu";
+                const entreprise = c.offre?.entreprise?.nom || "Entreprise confidentielle";
+                const date = c.createdAt
+                  ? new Date(c.createdAt).toLocaleDateString("fr-FR", {
                     day: "numeric",
                     month: "short",
                   })
-                : "";
-              return (
-                <div
-                  key={c._id}
-                  className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-                      <Briefcase className="w-4 h-4 text-teal-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {poste}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {[entreprise, date].filter(Boolean).join(" · ")}
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`text-xs font-medium px-3 py-1 rounded-full ${etape.cls}`}
+                  : "";
+                return (
+                  <div
+                    key={c._id}
+                    className="flex items-center justify-between p-5 transition-colors hover:bg-bg-soft"
                   >
-                    {etape.label}
-                  </span>
-                </div>
-              );
-            })}
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
+                        <span className="material-symbols-outlined text-xl">work</span>
+                      </div>
+                      <div>
+                        <p className="font-display font-semibold text-text-primary">
+                          {poste}
+                        </p>
+                        <p className="font-body text-xs text-text-secondary mt-0.5">
+                          {[entreprise, date].filter(Boolean).join(" • ")}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`font-body text-xs font-semibold px-3 py-1 rounded-full ${etape.cls}`}
+                    >
+                      {etape.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </section>
@@ -168,43 +192,28 @@ export default function CandidateDashboard() {
       {/* Recommandations */}
       {offres.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Offres pour vous
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-lg font-bold text-text-primary">
+              Offres recommandées
+            </h2>
+            <button
+              onClick={() => navigate("/candidat/offres")}
+              className="font-body text-sm font-semibold text-primary transition-colors hover:text-primary-dark"
+            >
+              Plus d'offres →
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {offres.map((offre) => (
               <OffreCard
                 key={offre._id}
                 offre={offre}
-                onClick={() => navigate(`/offres/${offre._id}`)}
+                onClick={() => navigate(`/candidat/offres/${offre._id}`)}
               />
             ))}
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon, onClick, clickable }) {
-  return (
-    <div
-      onClick={onClick}
-      className={`bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4 ${
-        clickable
-          ? "cursor-pointer hover:border-teal-300 transition-colors"
-          : ""
-      }`}
-    >
-      <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center flex-shrink-0">
-        {icon}
-      </div>
-      <div>
-        <p className="text-xs text-gray-500 uppercase tracking-wide">
-          {label}
-        </p>
-        <p className="text-2xl font-bold text-gray-900 mt-0.5">{value}</p>
-      </div>
     </div>
   );
 }
@@ -216,30 +225,47 @@ function OffreCard({ offre, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:border-teal-300 hover:shadow-sm transition-all"
+      className="group flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-border bg-white p-5 transition-all duration-200 hover:border-primary/40 hover:shadow-md"
     >
-      {isUrgent && (
-        <span className="text-xs font-semibold bg-red-50 text-red-600 px-2 py-0.5 rounded-full mb-2 inline-block">
-          URGENT
-        </span>
-      )}
-      <p className="text-sm font-semibold text-gray-900 mt-1">
-        {offre.poste || offre.post}
-      </p>
-      <p className="text-xs text-gray-500 mt-1">
-        {offre.entreprise?.nom && <span>{offre.entreprise.nom}</span>}
-        {offre.localisation && <span> · {offre.localisation}</span>}
-      </p>
-      {(offre.salaireMin || offre.salaireMax) && (
-        <p className="text-xs text-teal-600 font-medium mt-2">
-          {offre.salaireMin && `${offre.salaireMin}k`}
-          {offre.salaireMin && offre.salaireMax && " – "}
-          {offre.salaireMax && `${offre.salaireMax}k€`}
+      <div>
+        <div className="flex flex-col mb-3">
+          {isUrgent && (
+            <span className="self-start font-body text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-600 px-2.5 py-1 rounded-full mb-2">
+              URGENT
+            </span>
+          )}
+          <h3 className="font-display text-base font-bold text-text-primary group-hover:text-primary transition-colors">
+            {offre.poste || offre.post}
+          </h3>
+          <p className="font-body text-sm text-text-secondary mt-1 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-sm">business_center</span>
+            {offre.entreprise?.nom || "Entreprise confidentielle"}
+          </p>
+          {(offre.type || offre.modalite) && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {offre.type && (
+                <span className="rounded-lg bg-bg-soft px-2.5 py-1 font-body text-xs font-medium text-text-secondary">
+                  {offre.type}
+                </span>
+              )}
+              {offre.modalite && (
+                <span className="rounded-lg bg-bg-page px-2.5 py-1 font-body text-xs font-medium text-text-secondary">
+                  {offre.modalite}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+        <p className="font-body text-xs text-text-muted flex items-center gap-1">
+          <span className="material-symbols-outlined text-[14px]">location_on</span>
+          {offre.localisation || "Non spécifié"}
         </p>
-      )}
-      <button className="mt-3 text-xs text-teal-600 font-medium hover:text-teal-700">
-        Voir l'offre →
-      </button>
+        <button className="flex items-center justify-center h-8 w-8 rounded-full bg-primary-light text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+          <span className="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
     </div>
   );
 }
