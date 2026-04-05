@@ -1,51 +1,54 @@
 import axios from "axios";
+import { API_URL } from "config/api";
 
-const API_URL =
-  process.env.REACT_APP_API_URL ||
-  "http://localhost:5000";
+function getCandidateToken() {
+  try {
+    return window.localStorage.getItem("candidatToken");
+  } catch {
+    return null;
+  }
+}
+
+function withCandidateAuth(config) {
+  const token = getCandidateToken();
+  if (!token) {
+    return config;
+  }
+
+  return {
+    ...config,
+    headers: {
+      ...(config?.headers || {}),
+      Authorization: `Bearer ${token}`,
+    },
+  };
+}
 
 export async function postuler(formData) {
-  return await axios.post(`${API_URL}/candidature/postuler`, formData, {
+  return await axios.post(
+    `${API_URL}/candidature/postuler`,
+    formData,
+    withCandidateAuth({
     withCredentials: true,
     headers: { "Content-Type": "multipart/form-data" },
-  });
-}
-
-export async function getMesCandidatures() {
-  return await axios.get(`${API_URL}/candidature/mesCandidatures`, {
-    withCredentials: true,
-  });
-}
-
-export async function annulerCandidature(id) {
-  return await axios.delete(`${API_URL}/candidature/annuler/${id}`, {
-    withCredentials: true,
-  });
-}
-
-export async function modifierCandidature(id, payload) {
-  return await axios.put(`${API_URL}/candidature/modifier/${id}`, payload, {
-    withCredentials: true,
-  });
-}
-
-export async function getCandidatureById(id) {
-  return await axios.get(`${API_URL}/candidature/getCandidatureById/${id}`, {
-    withCredentials: true,
-  });
-}
-
-export async function getCandidaturesByOffre(offreId) {
-  return await axios.get(
-    `${API_URL}/candidature/getCandidaturesByOffre/${offreId}`,
-    {
-      withCredentials: true,
-    }
+    })
   );
 }
 
-export async function deleteCandidatureById(id) {
-  return await axios.delete(`${API_URL}/candidature/deleteCandidatureById/${id}`, {
+export async function getMesCandidatures() {
+  return await axios.get(
+    `${API_URL}/candidature/mesCandidatures`,
+    withCandidateAuth({
     withCredentials: true,
-  });
+    })
+  );
+}
+
+export async function annulerCandidature(id) {
+  return await axios.delete(
+    `${API_URL}/candidature/annuler/${id}`,
+    withCandidateAuth({
+    withCredentials: true,
+    })
+  );
 }

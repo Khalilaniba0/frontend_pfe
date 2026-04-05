@@ -2,35 +2,37 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { ROUTES } from "constants/routes";
-import ProtectedRoute from "components/common/ProtectedRoute";
-import CandidateAuthGuard from "components/common/CandidateAuthGuard";
+import ProtectedRoute from "components/commun/RouteProtegee";
+import CandidateAuthGuard from "components/commun/GardeAuthCandidat";
 
-import PublicLayout from "components/layout/publicLayout";
-import AdminLayout from "components/layout/adminLayout";
-import CandidateLayout from "components/layout/candidateLayout";
+import PublicLayout from "components/miseEnPage/MiseEnPagePublique";
+import AdminLayout from "components/miseEnPage/MiseEnPageAdmin";
+import CandidateLayout from "components/miseEnPage/MiseEnPageCandidat";
 
-import SelectionPage from "pages/SelectionPage";
-import LandingPage from "pages/LandingPage";
-import Login from "pages/Login";
-import SignUp from "pages/SignUp";
-import ForgotPassword from "pages/ForgotPassword";
-import ProfileForm from "pages/ProfileForm";
+import SelectionPage from "pages/PageSelection";
+import LandingPage from "pages/PageAccueil";
+import Login from "pages/Connexion";
+import SignUp from "pages/Inscription";
+import ForgotPassword from "pages/MotDePasseOublie";
+import ProfileForm from "pages/FormulaireProfil";
 
-import Dashboard from "pages/Dashboard";
-import Recruitment from "pages/Recruitment";
-import Jobs from "pages/Jobs";
-import Interviews from "pages/Interviews";
-import Users from "pages/Users";
-import Settings from "pages/Settings";
+import Dashboard from "pages/TableauDeBord";
+import Recruitment from "pages/Recrutement";
+import Jobs from "pages/Offres";
+import Interviews from "pages/Entretiens";
+import Users from "pages/Utilisateurs";
+import Settings from "pages/Parametres";
 
-import CandidateLogin from "pages/Candidate/CandidateLogin";
-import CandidateSignup from "pages/Candidate/CandidateSignup";
-import CandidateDashboard from "pages/Candidate/CandidateDashboard";
-import MesCandidatures from "pages/Candidate/MesCandidatures";
-import CandidateProfile from "pages/Candidate/CandidateProfile";
-import CandidateOffresList from "pages/Candidate/CandidateOffresList";
-import JobList from "pages/Candidate/JobList";
-import JobDetail from "pages/Candidate/JobDetail";
+import CandidateLogin from "pages/Candidat/ConnexionCandidat";
+import CandidateSignup from "pages/Candidat/InscriptionCandidat";
+import CandidateDashboard from "pages/Candidat/TableauDeBordCandidat";
+import MesCandidatures from "pages/Candidat/MesCandidatures";
+import CandidateInterviews from "pages/Candidat/EntretiensCandidat";
+import CandidateProfile from "pages/Candidat/ProfilCandidat";
+import CandidateOffresList from "pages/Candidat/ListeOffresCandidat";
+import JobList from "pages/Candidat/ListeOffresPubliques";
+import JobDetail from "pages/Candidat/DetailOffrePublique";
+import CandidateJobDetail from "pages/Candidat/DetailOffreCandidat";
 
 export default function App() {
   return (
@@ -88,7 +90,9 @@ export default function App() {
         <Route path={ROUTES.CANDIDATE.ROOT} element={<CandidateLayout />}>
           <Route path="dashboard" element={<CandidateDashboard />} />
           <Route path="mes-candidatures" element={<MesCandidatures />} />
+          <Route path="entretiens" element={<CandidateInterviews />} />
           <Route path="offres" element={<CandidateOffresList />} />
+          <Route path="offres/:id" element={<CandidateJobDetail />} />
           <Route path="profil" element={<CandidateProfile />} />
         </Route>
       </Route>

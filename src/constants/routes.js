@@ -25,8 +25,10 @@ const CANDIDATE_ROUTES = Object.freeze({
   OFFRES: "/offres",
   SPACE_OFFRES: "/candidat/offres",
   OFFRES_DETAIL: "/offres/:id",
+  SPACE_OFFRES_DETAIL: "/candidat/offres/:id",
   DASHBOARD: "/candidat/dashboard",
   MES_CANDIDATURES: "/candidat/mes-candidatures",
+  ENTRETIENS: "/candidat/entretiens",
   PROFILE: "/candidat/profil",
 });
 
@@ -65,8 +67,6 @@ export const ROUTES = Object.freeze({
   DASHBOARD: ADMIN_ROUTES.ROOT,
   DASHBOARD_RECRUITMENT: ADMIN_ROUTES.RECRUITMENT,
   JOBS: ADMIN_ROUTES.JOBS,
-  DASHBOARD_EMPLOYEES: ADMIN_ROUTES.USERS,
-  DASHBOARD_TIME_OFF: ADMIN_ROUTES.INTERVIEWS,
   DASHBOARD_SETTINGS: ADMIN_ROUTES.SETTINGS,
 });
 

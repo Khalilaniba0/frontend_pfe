@@ -1,173 +1,148 @@
-# Backend Map: Consommable vs Statique (Axios)
+# Guide Axios - Etat Reel Front/Backend
 
-Objectif: ce fichier liste clairement
-- ce qui est deja consommable depuis le backend
-- ce qui est encore statique dans le front et doit etre remplace par le backend
+Derniere mise a jour: 2026-04-02
 
-La methode Axios reste la meme dans tout le projet:
-- import axios
-- const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"
-- fonctions service qui retournent await axios.get/post/put/delete(...)
+Objectif: decrire ce qui est deja consomme via Axios et ce qui reste partiellement statique.
 
-## 1) Deja consommable (backend branche)
+## 1) Convention Axios du projet
 
-### Utilisateurs
-- Fichier: src/service/restApiUser.js
-- getAllUsers() -> GET /user/getAllUsers
-- deleteUser(id) -> DELETE /user/deleteUser/:id
-- Utilisation actuelle: src/components/Users/UserTable.jsx
+Ce projet est en Create React App.
 
-### Offres candidat
-- Fichier: src/service/restApiJobs.js
-- getAllOffres() -> GET /offre/getAllOffres
-- Utilisation actuelle: src/pages/Candidate/JobList.jsx
-- Notes:
-  - lit le token cookie jwt_candidat
-  - envoie Authorization: Bearer <token> si disponible
-  - utilise withCredentials: true
+Convention utilisee:
+- `import axios from "axios"`
+- `const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"`
+- `withCredentials: true` selon les flux
+- `Authorization: Bearer ...` ajoutee sur certains appels (token RH/candidat)
 
-## 2) Statique a remplacer par le backend
-
-## Priorite haute (a connecter en premier)
-
-### Auth utilisateur RH hardcode
-- Fichier: src/context/AuthContext.jsx
-- Statique actuel: user fixe (Jane Doe, role admin)
-- A remplacer par backend:
-  - GET /auth/me
-  - POST /auth/login
-  - POST /auth/logout
-
-### Dashboard (stats globales)
-- Fichier: src/pages/Dashboard.jsx
-- Statique actuel: MOCK_STATS + setTimeout simulation
-- A remplacer par backend:
-  - GET /dashboard/stats
-
-### Dashboard (graphe recrutement)
-- Fichier: src/components/Dashboard/HiringChart.jsx
-- Statique actuel: chartData local (labels, candidatures, pourvus, taux)
-- A remplacer par backend:
-  - GET /dashboard/hiring-stats
-
-### Dashboard (activite + entretiens)
-- Fichiers:
-  - src/components/Dashboard/RecentActivity.jsx
-  - src/components/Dashboard/UpcomingInterviews.jsx
-- Statique actuel: listes activities[] et interviews[] locales
-- A remplacer par backend:
-  - GET /dashboard/activities
-  - GET /interviews/upcoming
-
-### Recrutement Pipeline
-- Fichier: src/pages/Recruitment.jsx
-- Statique actuel:
-  - allCandidatesForCandidature[]
-  - initialPipelineData[]
-  - jobOpenings[]
-- A remplacer par backend:
-  - GET /recruitment/pipeline
-  - GET /candidates
-  - PATCH /recruitment/pipeline/move
-
-### Jobs RH
-- Fichier: src/pages/Jobs.jsx
-- Statique actuel:
-  - STATS[]
-  - JOBS[]
-  - SOURCES[]
-  - creation d'offre en local state seulement
-- A remplacer par backend:
-  - GET /jobs/stats
-  - GET /jobs
-  - POST /jobs
-  - GET /jobs/sources
-
-### Interviews RH
-- Fichiers:
-  - src/pages/Interviews.jsx
-  - src/constants/interviewsData.js
-  - src/components/Interviews/EntretiensEnLigneTab.jsx
-  - src/components/Interviews/CreateInterviewModal.jsx
-- Statique actuel:
-  - CALENDAR_EVENTS
-  - ENTRETIENS_EN_LIGNE
-  - CANDIDATS_DISPONIBLES / RECRUTEURS_DISPONIBLES
-- A remplacer par backend:
-  - GET /interviews/calendar
-  - GET /interviews/online
-  - POST /interviews
-  - GET /users/recruiters
-  - GET /candidates/available
-
-### Users RH (creation)
-- Fichier: src/pages/Users.jsx
-- Statique actuel: creation en local (pas de POST backend)
-- A remplacer par backend:
-  - POST /user/create
-  - PUT /user/update/:id
-
-### Securite / sessions
-- Fichier: src/components/Settings/tabs/SecuriteTab.jsx
-- Statique actuel: INITIAL_SESSIONS local
-- A remplacer par backend:
-  - GET /auth/sessions
-  - DELETE /auth/sessions/:id
-  - PUT /auth/password
-
-## Priorite moyenne
-
-### Modales et listes de reference
-- Fichiers:
-  - src/components/Jobs/CreateJobModal.jsx (departments, contract types, teams)
-  - src/components/Settings/tabs/IntegrationsTab.jsx
-- Donnees statiques actuelles: options codées en dur
-- A remplacer si besoin metier dynamique:
-  - GET /meta/departments
-  - GET /meta/contract-types
-  - GET /integrations
-
-## 3) Statique a garder (normal, pas backend)
-
-Ces elements peuvent rester statiques car ce sont des constantes UI/navigation:
-- src/constants/routes.js
-- src/constants/navigation.js
-- labels visuels, couleurs, icones et classes CSS
-
-## 4) Template service Axios (meme methode projet)
+Exemple minimal:
 
 ```js
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-export async function getDashboardStats() {
-  return await axios.get(`${API_URL}/dashboard/stats`);
-}
-
-export async function getHiringStats() {
-  return await axios.get(`${API_URL}/dashboard/hiring-stats`);
-}
-
-export async function getPipeline() {
-  return await axios.get(`${API_URL}/recruitment/pipeline`);
-}
-
-export async function moveCandidate(payload) {
-  return await axios.patch(`${API_URL}/recruitment/pipeline/move`, payload);
+export async function getSomething() {
+  return await axios.get(`${API_URL}/some/endpoint`, {
+    withCredentials: true,
+  });
 }
 ```
 
-## 5) Regle de migration frontend
+## 2) Domaines deja branches backend
 
-Pour chaque page/composant qui contient des tableaux statiques:
-1. creer une fonction dans src/service/*.js
-2. appeler la fonction dans useEffect (GET) ou handleSubmit (POST/PUT/PATCH/DELETE)
-3. remplacer la constante statique par les donnees de reponse API
-4. garder try/catch cote composant et afficher error/loading
+### Auth RH + entreprise
+- `src/service/restApiAuthentificationentification.js`
+- `src/service/restApiEntreprise.js`
+- utilise par `AuthContext`, signup, settings
+
+### Auth candidat + profil
+- `src/service/restApiCandidat.js`
+- utilise par `CandidateAuthContext`, login/signup candidat, profil
+
+### Offres candidat et detail
+- `src/service/restApiOffresPubliques.js`
+- `src/service/restApiOffresEntreprise.js`
+- utilise par `useOffres`, `JobList`, `CandidateOffresList`, `JobDetail`
+
+### Candidatures candidat
+- `src/service/restApiCandidature.js`
+- utilise par `PostulerModal`, `MesCandidatures`, `CandidateDashboard`
+
+### Dashboard RH
+- `src/service/restApiTableauDeBord.js`
+- agrege dans `src/hooks/useTableauDeBord.js`
+
+### Interviews RH
+- `src/service/restApiEntretiens.js`
+- orchestre dans `src/hooks/useEntretiens.js`
+
+### Recruitment pipeline RH
+- `src/service/restApiRecrutement.js`
+- utilise par `Recrutement.jsx` et `useRecrutement.js`
+
+### Users RH
+- `src/service/restApiUtilisateurs.js`
+- utilise par `useUtilisateurs.js`, `UserTable`, `ManageUsersModal`
+
+### Notifications candidat
+- `src/service/restApiNotificationss.js`
+- utilise par `useNotificationsSysteme.js`, `NotificationPanel.jsx`
+
+## 3) Endpoints principaux actuellement consommes
+
+### Candidat
+- `POST /candidat/inscrire`
+- `POST /candidat/connecter`
+- `POST /candidat/deconnecter`
+- `GET /candidat/monProfil`
+- `PUT /candidat/mettreAJourProfil`
+
+### Candidature
+- `POST /candidature/postuler`
+- `GET /candidature/mesCandidatures`
+- `DELETE /candidature/annuler/:id`
+- `GET /candidature/getAllCandidatures`
+- `PUT /candidature/updateCandidatureEtape/:id`
+- `PUT /candidature/refuserCandidature/:id`
+- `DELETE /candidature/deleteCandidatureById/:id`
+
+### Offres
+- `GET /offre/getOffresDisponibles`
+- `GET /offre/getOffreById/:id`
+- `GET /offre/getOffresByEntreprise`
+- `GET /offre/getOffresByEntreprise/:entrepriseId`
+- `POST /offre/createOffre`
+- `PUT /offre/updateOffre/:id`
+- `PUT /offre/updateOffreStatus/:id`
+- `DELETE /offre/deleteOffreById/:id`
+
+### Interviews
+- `GET /entretien/getAllEntretiens`
+- `POST /entretien/createEntretien`
+- `DELETE /entretien/deleteEntretienById/:id`
+
+### Users/Auth/Entreprise
+- `GET /user/getAllUsers`
+- `GET /user/getUserById/:id`
+- `POST /user/createRh`
+- `POST /user/createAdmin`
+- `PUT /user/updateUser/:id`
+- `DELETE /user/deleteUser/:id`
+- `POST /user/login`
+- `POST /user/logout`
+- `POST /entreprise/registerEntreprise`
+- `GET /entreprise/getMyEntreprise`
+- `PUT /entreprise/updateEntreprise`
+
+### Notifications
+- `GET /notification/getNotificationsByCandidat/:candidatId`
+- `PUT /notification/markAsRead/:id`
+- routes delete testees en fallback:
+  - `/notification/deleteNotification/:id`
+  - `/notification/deleteNotificationById/:id`
+  - `/notification/deleteById/:id`
+  - `/notification/delete/:id`
+
+## 4) Ce qui reste encore partiellement statique
+
+- `src/components/Parametres/tabs/IntegrationsTab.jsx`
+  - interactions de test webhook et affichage encore orientes UI locale
+- `src/components/Parametres/tabs/ApparenceTab.jsx`
+  - logique purement front
+- contenus marketing et sections landing (normalement statiques)
+
+## 5) Regles de migration pour les prochains ecrans
+
+1. Ajouter/mettre a jour la fonction API dans `src/service/*`.
+2. Creer un hook metier si la page est complexe (`src/hooks/*`).
+3. Normaliser les reponses (`data.data`, `data`, etc.).
+4. Gerer `loading`, `error`, retry et feedback utilisateur (toast).
+5. Eviter les appels Axios directs dans les composants quand un service existe deja.
 
 ## 6) Configuration .env
 
 ```env
-VITE_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:5000
 ```
+
+Note: `VITE_API_URL` ne s'applique pas a CRA.

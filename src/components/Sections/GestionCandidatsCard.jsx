@@ -1,5 +1,5 @@
 import React from "react";
-import FeatureCard from "./FeatureCard.jsx";
+import FeatureCard from "./CarteFonctionnalite.jsx";
 
 const icon = (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">

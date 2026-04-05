@@ -1,0 +1,551 @@
+// Lignes : 335 | Couche : page | Depend de : useInterviews, InterviewsLayout, InterviewCalendar, EntretiensEnLigneTab, CreateInterviewModal
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+import InterviewsLayout from "components/Entretiens/MiseEnPageEntretiens";
+import InterviewCalendar from "components/Entretiens/CalendrierEntretiens";
+import EntretiensEnLigneTab from "components/Entretiens/EntretiensEnLigneTab";
+import CreateInterviewModal from "components/Entretiens/ModalCreationEntretien";
+import InterviewDetailsModal from "components/Entretiens/ModalDetailsEntretien";
+import Toast from "components/commun/NotificationToast";
+import { useToast } from "hooks/useNotificationsToast";
+import { useInterviews } from "hooks/useEntretiens";
+import { useAuth } from "context/ContexteAuth";
+import { connectGoogleCalendar } from "service/restApiEntretiens";
+import { getUserById } from "service/restApiUtilisateurs";
+
+const CALENDAR_ALLOWED_ETAPES = new Set([
+  "entretien_planifie",
+  "entretien",
+  "entretien_passe",
+  "test_technique",
+  "test technique",
+  "accepte",
+  "accepté",
+  "offre",
+]);
+
+function normalizeEtape(value) {
+  if (!value || typeof value !== "string") return "";
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function normalizeText(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+function getCandidatureEmail(candidature) {
+  return normalizeText(
+    candidature?.email ||
+      candidature?.candidatEmail ||
+      candidature?.emailCandidat ||
+      candidature?.candidat?.email ||
+      candidature?.candidat?.user?.email ||
+      ""
+  );
+}
+
+function getCandidaturePoste(candidature) {
+  return normalizeText(
+    candidature?.offre?.poste || candidature?.offre?.post || candidature?.poste || ""
+  );
+}
+
+function findMatchingCandidature(candidatures, email, poste) {
+  if (!Array.isArray(candidatures) || candidatures.length === 0 || !email) {
+    return null;
+  }
+
+  const byEmail = candidatures.filter(function (candidature) {
+    return getCandidatureEmail(candidature) === email;
+  });
+
+  if (byEmail.length === 0) return null;
+  if (!poste) return byEmail[0];
+
+  const exactPoste = byEmail.find(function (candidature) {
+    const candidaturePoste = getCandidaturePoste(candidature);
+    return candidaturePoste && candidaturePoste === poste;
+  });
+
+  return exactPoste || byEmail[0];
+}
+
+function getCandidatureId(entretien) {
+  if (!entretien) return "";
+
+  if (entretien.candidatureId) return entretien.candidatureId;
+  if (entretien.candidature_id) return entretien.candidature_id;
+
+  const nested = entretien.candidature;
+  if (typeof nested === "string") return nested;
+  if (nested && typeof nested === "object") return nested._id || nested.id || "";
+
+  return "";
+}
+
+function isCancelledInterview(entretien) {
+  const status =
+    entretien?.reponse ||
+    entretien?.status ||
+    entretien?.statut ||
+    entretien?.etat ||
+    "";
+
+  return normalizeEtape(status) === "annule";
+}
+
+function canDisplayInCalendar(entretien, candidatureEtapesById) {
+  if (isCancelledInterview(entretien)) {
+    return false;
+  }
+
+  const etape =
+    entretien?.candidature?.etape ||
+    entretien?.etapeCandidature ||
+    entretien?.candidatureEtape ||
+    entretien?.etape ||
+    "";
+
+  const normalized = normalizeEtape(etape);
+
+  if (normalized) return CALENDAR_ALLOWED_ETAPES.has(normalized);
+
+  const candidatureId = getCandidatureId(entretien);
+  if (candidatureId) {
+    const etapeFromMap = normalizeEtape(candidatureEtapesById[candidatureId]);
+    if (!etapeFromMap) return false;
+    return CALENDAR_ALLOWED_ETAPES.has(etapeFromMap);
+  }
+
+  // Entretiens créés sans candidature (appel direct par email): on les affiche.
+  return true;
+}
+
+function hasGoogleTokens(googleTokens) {
+  if (!googleTokens) {
+    return false;
+  }
+  if (Array.isArray(googleTokens)) {
+    return googleTokens.length > 0;
+  }
+  if (typeof googleTokens === "object") {
+    return Object.keys(googleTokens).length > 0;
+  }
+  return Boolean(googleTokens);
+}
+
+export default function Interviews() {
+  const location = useLocation();
+  const { user } = useAuth();
+  const isRhUser = user?.role === "rh";
+  const [activeTab, setActiveTab] = useState("calendrier");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState(null);
+  const [deletingInterview, setDeletingInterview] = useState(false);
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [isCheckingGoogleConnection, setIsCheckingGoogleConnection] = useState(true);
+  const {
+    interviews: entretiens,
+    candidatures,
+    loading,
+    error,
+    addInterview,
+    removeInterview,
+    refetch,
+  } = useInterviews();
+  const { toast, showToast, hideToast } = useToast();
+
+  useEffect(
+    function () {
+      let isMounted = true;
+
+      if (!isRhUser) {
+        setIsGoogleConnected(false);
+        setIsCheckingGoogleConnection(false);
+        return function () {
+          isMounted = false;
+        };
+      }
+
+      async function detectGoogleConnection() {
+        setIsCheckingGoogleConnection(true);
+
+        const params = new URLSearchParams(location.search);
+        const connectedFromQuery = params.get("google") === "connected";
+        const connectedFromStoredUser = hasGoogleTokens(user?.googleTokens);
+
+        if (connectedFromQuery && isMounted) {
+          setIsGoogleConnected(true);
+          showToast("Google Calendar connecté avec succès", "success");
+        }
+
+        if (connectedFromStoredUser && isMounted) {
+          setIsGoogleConnected(true);
+        }
+
+        if (!user?._id) {
+          if (isMounted) {
+            setIsGoogleConnected(connectedFromQuery || connectedFromStoredUser);
+            setIsCheckingGoogleConnection(false);
+          }
+          return;
+        }
+
+        try {
+          const response = await getUserById(user._id);
+          const apiUser = response?.data?.data || response?.data?.user || response?.data;
+          const googleTokens =
+            apiUser?.googleTokens ||
+            response?.data?.utilisateur?.googleTokens ||
+            response?.data?.data?.utilisateur?.googleTokens;
+
+          if (isMounted) {
+            setIsGoogleConnected(
+              connectedFromQuery || connectedFromStoredUser || hasGoogleTokens(googleTokens)
+            );
+          }
+        } catch {
+          if (isMounted) {
+            setIsGoogleConnected(connectedFromQuery || connectedFromStoredUser);
+          }
+        } finally {
+          if (isMounted) {
+            setIsCheckingGoogleConnection(false);
+          }
+        }
+      }
+
+      detectGoogleConnection();
+
+      return function () {
+        isMounted = false;
+      };
+    },
+    [isRhUser, location.search, showToast, user?._id, user?.googleTokens],
+  );
+
+  const candidatureEtapesById = useMemo(function () {
+    return candidatures.reduce(function (acc, candidature) {
+      if (candidature?._id && candidature?.etape) {
+        acc[candidature._id] = candidature.etape;
+      }
+      return acc;
+    }, {});
+  }, [candidatures]);
+
+  /* ── Build calendar events from entretiens ─── */
+
+  const now = new Date();
+
+  const calendarEvents = entretiens
+    .filter(function (entretien) {
+      return canDisplayInCalendar(entretien, candidatureEtapesById);
+    })
+    .map(function (e) {
+      const d = new Date(e.dateEntretien || e.date_entretien);
+      if (isNaN(d.getTime())) return null;
+
+      const candidatName =
+        e.candidatName ||
+        e.candidatNom ||
+        e.candidat?.nom ||
+        e.candidatEmail ||
+        e.emailCandidat ||
+        e.email ||
+        e.candidature?.nom ||
+        e.candidature?.candidat?.nom ||
+        "Entretien";
+
+      const isToday =
+        d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear();
+
+      return {
+        id: e._id || e.id || d.getTime(),
+        day: d.getDate(),
+        month: d.getMonth(),
+        year: d.getFullYear(),
+        title: candidatName,
+        time: d.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        color: e.typeEntretien === "visio" ? "primary" : "secondary",
+        isToday: isToday,
+        entretien: e,
+      };
+    })
+    .filter(function (e) {
+      return e !== null;
+    });
+
+  /* ── handle create ─────────────────────────── */
+
+  const handleCreateInterview = async function (payload) {
+    try {
+      const normalizedEmail = normalizeText(
+        payload?.candidatEmail || payload?.emailCandidat || payload?.email || ""
+      );
+      const normalizedPoste = normalizeText(payload?.poste || "");
+
+      let matchedCandidature = findMatchingCandidature(
+        candidatures,
+        normalizedEmail,
+        normalizedPoste
+      );
+
+      if (!matchedCandidature?._id && normalizedEmail) {
+        matchedCandidature = findMatchingCandidature(
+          candidatures,
+          normalizedEmail,
+          normalizedPoste
+        );
+      }
+
+      const finalPayload = {
+        ...payload,
+        date_entretien: payload?.date_entretien || payload?.dateEntretien,
+      };
+
+      if (matchedCandidature?._id) {
+        finalPayload.candidature = matchedCandidature._id;
+        finalPayload.candidatureId = matchedCandidature._id;
+      }
+
+      const response = await addInterview(finalPayload);
+      setShowModal(false);
+
+      if (response?.data?.googleWarning) {
+        showToast(
+          "Entretien créé mais non synchronisé avec Google Calendar. Connectez votre compte Google dans Paramètres > Intégrations.",
+          "warning"
+        );
+      } else {
+        showToast("Entretien programme avec succes.", "success");
+      }
+
+      return response;
+    } catch (err) {
+      showToast(
+        err?.response?.data?.message ||
+          "Erreur lors de la création de l'entretien",
+        "error"
+      );
+    }
+  };
+
+  const handleDeleteInterview = async function () {
+    const id = selectedInterview?._id || selectedInterview?.id;
+
+    if (!id) {
+      showToast("Impossible de supprimer cet entretien.", "error");
+      return;
+    }
+
+    try {
+      setDeletingInterview(true);
+      await removeInterview(id);
+      setSelectedInterview(null);
+      showToast("Entretien supprimé avec succès.", "success");
+    } catch (err) {
+      showToast(
+        err?.response?.data?.message ||
+          "Erreur lors de la suppression de l'entretien",
+        "error"
+      );
+    } finally {
+      setDeletingInterview(false);
+    }
+  };
+
+  const handleGoogleConnect = function () {
+    connectGoogleCalendar("/dashboard/interviews");
+  };
+
+  /* ── tabs (pass data down) ─────────────────── */
+
+  function CalendrierTab() {
+    return (
+      <div className="w-full">
+        {loading ? (
+          <div className="py-12 text-center">
+            <p className="font-body text-sm text-text-muted">
+              Chargement du calendrier...
+            </p>
+          </div>
+        ) : error ? (
+          <div className="py-12 text-center">
+            <p className="font-body text-sm text-red-500">{error}</p>
+          </div>
+        ) : calendarEvents.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="font-body text-sm text-text-muted">
+              Aucun entretien affichable dans le calendrier.
+            </p>
+          </div>
+        ) : (
+          <InterviewCalendar
+            events={calendarEvents}
+            currentMonth={now.getMonth()}
+            currentYear={now.getFullYear()}
+            onEventClick={function (event) {
+              setSelectedInterview(event?.entretien || null);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  const TABS = {
+    calendrier: <CalendrierTab />,
+    "en-ligne": (
+      <EntretiensEnLigneTab
+        entretiens={entretiens}
+        loading={loading}
+        error={error}
+      />
+    ),
+  };
+
+  return (
+    <>
+      <div className="animate-fade-in">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-display text-xl font-bold tracking-tight text-text-primary md:text-3xl lg:text-4xl">
+              Centre de planification
+            </h1>
+            <p className="mt-1 font-body text-sm text-text-secondary">
+              Gérez et planifiez vos entretiens de recrutement
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={function () {
+              setShowModal(true);
+            }}
+            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-body text-sm font-semibold text-white shadow-md shadow-primary/20 transition-all duration-150 hover:bg-primary-dark hover:shadow-lg"
+          >
+            <span className="material-symbols-outlined text-lg">add</span>
+            Programmer un entretien
+          </button>
+        </header>
+
+        {isRhUser && (
+          <div className="mb-5 rounded-xl border border-border bg-white px-4 py-3 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <span className="material-symbols-outlined text-xl">calendar_month</span>
+                </div>
+                <div>
+                  <p className="font-body text-sm font-semibold text-text-primary">
+                    Synchronisation Google Calendar
+                  </p>
+                  <p className="font-body text-xs text-text-muted">
+                    Reliez votre compte Google pour créer et mettre à jour les liens Meet automatiquement.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={
+                    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-body text-xs font-medium " +
+                    (isGoogleConnected
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-amber-50 text-amber-700")
+                  }
+                >
+                  <span
+                    className={
+                      "h-1.5 w-1.5 rounded-full " +
+                      (isGoogleConnected ? "bg-emerald-500" : "bg-amber-500")
+                    }
+                  ></span>
+                  {isGoogleConnected ? "Connecté" : "Non connecté"}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={handleGoogleConnect}
+                  disabled={isCheckingGoogleConnection}
+                  className="rounded-lg bg-primary px-3 py-2 font-body text-xs font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {isGoogleConnected ? "Reconnecter Google" : "Connecter Google"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-5 flex animate-slide-up items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+            <span className="material-symbols-outlined flex-shrink-0 text-xl text-red-600">
+              error
+            </span>
+            <div className="flex-1">
+              <p className="font-body text-sm font-semibold text-red-800">
+                Erreur de chargement
+              </p>
+              <p className="font-body text-xs text-red-700">{error}</p>
+            </div>
+            <button
+              type="button"
+              onClick={function () {
+                refetch();
+              }}
+              className="rounded-lg border border-red-300 bg-white px-3 py-1.5 font-body text-xs font-semibold text-red-700 transition-colors hover:bg-red-100"
+            >
+              Reessayer
+            </button>
+          </div>
+        )}
+
+        <InterviewsLayout activeTab={activeTab} onTabChange={setActiveTab}>
+          {TABS[activeTab]}
+        </InterviewsLayout>
+      </div>
+
+      {showModal && (
+        <CreateInterviewModal
+          onClose={function () {
+            setShowModal(false);
+          }}
+          onSubmit={handleCreateInterview}
+        />
+      )}
+
+      {selectedInterview && (
+        <InterviewDetailsModal
+          interview={selectedInterview}
+          deleting={deletingInterview}
+          onClose={function () {
+            if (!deletingInterview) {
+              setSelectedInterview(null);
+            }
+          }}
+          onDelete={handleDeleteInterview}
+        />
+      )}
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
+      )}
+    </>
+  );
+}
